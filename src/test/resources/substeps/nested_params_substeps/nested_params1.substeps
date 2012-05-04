@@ -1,0 +1,9 @@
+# Copyright Technophobia Ltd 2012
+# substep file to simulate a defect around nested parameter passing
+
+Define: Given I register on Liferay 6 as "<fName>" "<surname>"
+   ClearAndSendKeys "<fName>" to id firstName
+    When I enter "<fName>" in the field id "firstName"
+    
+Define: When I enter "<value>" in the field id "<id>" 
+    ClearAndSendKeys "<value>" to id <id>

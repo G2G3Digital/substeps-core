@@ -1,0 +1,10 @@
+# Copyright Technophobia Ltd 2012
+
+# tightly defined substeps for test purposes
+
+Define: Test_Given <substep_param> defined in a substep
+    Test_Whatever gets called with <substep_param>
+    
+    
+Define: Test_Given <param_in_quotes> defined in another substep
+    Test_Whatever is called with a quoted parameter <param_in_quotes>     

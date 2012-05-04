@@ -1,0 +1,405 @@
+# Copyright Technophobia Ltd 2012
+Scenario Outline: User submitting blank registration form
+		When I register as a new user 
+      And I enter a <Object> of <Data>
+		  And I click Submit
+		Then I am <Result>
+			And I am not registered with the system
+			And I am shown the registration page  
+  
+  Examples:
+    |Object|Data|Result|
+    |Title||Please enter a title.|
+    |First name||Please enter a valid first name.|
+    |Last name||Please enter a valid last name.|
+    |Email||Please enter a valid email address|
+    |Professional title||Please enter your professional title|
+    |Password||That password is too short (or too long). Please make sure your password is a minimum of 8 characters.|
+    |Retype Password||no error message|
+    |Password reminder||Your password reminder cannot be blank or contain your password |
+  
+  
+  
+  
+  Scenario Outline: User providing invalid email addresses
+    When I register as a new user 
+		  And I edit the email address to <Data>
+		  And I click Submit
+		Then I am not registered with the system
+			And I am not shown a lightbox pop-up confirming the registration
+			And I am shown <Result>
+			And I am shown the registration page
+			
+  Examples:
+    |Data|Result|
+    |test-usertechnophobiacom|Please enter a valid email address|
+    |test-user@technophobiacom|Please enter a valid email address|
+    |test-usertechnophobia.com|Please enter a valid email address|
+
+
+
+  Scenario: User registering with non-matching passwords
+		When I register as a new user
+		  And I edit the password to 'password-test'
+		  And I edit the password confirmation to 'password-tes'
+		  And I click Submit
+		Then I am not registered with the system
+			And I am not shown a lightbox pop-up confirming the registration
+			And I am shown an error message stating that 'The passwords you enter do not match. Please re-enter your password'
+			And I am shown the registration page
+	
+  
+  
+  		
+  Scenario: User registering with password reminder the same as the password 
+		When I register as a new user 
+		  And I edit the password to 'password-test'
+      And I edit the password reminder to 'password-test'
+      And I click Submit
+		Then I am not registered with the system
+			And I am not shown a lightbox pop-up confirming the registration
+			And I am shown an error message stating that 'Your password reminder cannot be blank or contain your password'
+			And I am shown the registration page
+	
+  		
+			
+			
+  Scenario: User registering with invalid password - password too short 
+		When I register as a new user
+		  And I edit the password to 'passwor'
+		  And I edit the password confirmation to 'passwor'
+		  And I click Submit
+		Then I am not registered with the system
+			And I am not shown a lightbox pop-up confirming the registration
+			And I am shown an error message stating that 'That password is too short (or too long). Please make sure your password is a minimum of 8 characters.'
+			And I am shown the registration page				
+      
+      
+      
+      	
+  Scenario: User registering with the same email address as an already registered user user
+	 Given a user has already registered with the email address 'test-user1@technophobia.com'
+			And I am an un-registered user
+			And I am on the registration page
+    When I register as a new user  
+      And I enter an email of 'test-user1@technophobia.com'
+		  And I select 'Submit'
+	Then I am not registered with the system
+			And I am not shown a lightbox pop-up confirming the registration
+			And I am shown the error message 'The email address you requested is already taken.'
+			And I am shown the registration page
+			
+			
+			
+			
+  Scenario Outline: User providing invalid details for the first name, last name, email, & professional title fields
+    When I register as a new user 
+        And I enter a <Object> of <Data>
+        And I click Submit
+  		Then I am shown <ErrorMessage>
+  			And I am <Registered>
+  			And I am shown <Page>  
+    
+    Examples:
+      |Object|Data|ErrorMessage|Registered|Page|
+      |First name|This first name has a character length of seventy five chars and is acepted|No error message for first name|registered with the system|the lightbox pop-up confirming the registration|
+      |First name|This first name has a character length of seventy six charas and is rejected|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|lowercase character test qwertyuiopasdfghjklzxcvbnm|No error message for first name|registered with the system|the lightbox pop-up confirming the registration|
+    	|First name|UPPERCASE CHARACTER TEST QWERTYUIOPASDFGHJKLZXCVBNM|No error message for first name|registered with the system|the lightbox pop-up confirming the registration|		
+    	|First name|No numbers are allowed - 1234567890 |Please enter a valid first name.|not registered with the system|the registration page|		
+    	|First name|Test first name 5|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name '|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first-name|No error message for first name|registered with the system|the lightbox pop-up confirming the registration|
+      |First name|Test first name !|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name "|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name �|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name $|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name %|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name ^|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name &|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name *|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name (|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name )|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name _|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name =|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name +|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name {|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name }|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name [|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name ]|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name ;|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name :|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name @|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name #|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name ~|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name ,|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name .|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name /|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name <|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name >|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name ?|Please enter a valid first name.|not registered with the system|the registration page|
+      |First name|Test first name \|Please enter a valid first name.|not registered with the system|the registration page|
+      |Last name|This last name has a character length of seventy five chars and is accepted|No error message for last name|registered with the system|the lightbox pop-up confirming the registration|
+      |Last name|This last name has a character length of seventy six characs and is rejected|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|lowercase character test qwertyuiopasdfghjklzxcvbnm|No error message for first name|registered with the system|the lightbox pop-up confirming the registration|
+    	|Last name|UPPERCASE CHARACTER TEST QWERTYUIOPASDFGHJKLZXCVBNM|No error message for first name|registered with the system|the lightbox pop-up confirming the registration|
+      |Last name|No numbers are allowed - 1234567890 |Please enter a valid last name.|not registered with the system|the registration page|		
+    	|Last name|Test last name 5|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test last-name|No error message for last name|registered with the system|the lightbox pop-up confirming the registration|
+      |Last name|Test Last name !|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name "|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name �|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name $|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name %|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name ^|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name &|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name *|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name (|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name )|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name _|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name =|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name +|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name {|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name }|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name [|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name ]|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name ;|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name :|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name @|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name #|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name ~|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name ,|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name .|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name /|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name <|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name >|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name ?|Please enter a valid last name.|not registered with the system|the registration page|
+      |Last name|Test Last name \|Please enter a valid last name.|not registered with the system|the registration page|
+      |Email|test-user1thisemailaddresshas100charsinittesttesttesttesttesttesttesttesttesttestte@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-user1thisemailaddresshas101charsinittesttesttesttesttesttesttesttesttesttesttes@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-qwertyuiopasdfghjklzxcvbnm@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-QWERTYUIOPASDFGHJKLZXCVBNM@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-0123456789@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail!@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail#@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail$@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail%@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail&@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail'@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail*@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail+@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail-@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail/@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail=@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail?@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail^@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail_@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail`@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail{@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail}@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail~@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail.@technophobia.com|No error message for email|registered with the system|the lightbox pop-up confirming the registration|
+      |Email|test-testemail\@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail"@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail�@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail[@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail]@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail(@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail)@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail;@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail:@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail@@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail<@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail,@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail>@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|.test-testemail@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Email|test-testemail"@technophobia.com|Please enter a valid email address|not registered with the system|the registration page|
+      |Professional title|Professional title � this title has a character length of 100 characters & should be accepted � test|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title � this title has a character length of 101 characters & should be accepted - testt|Please enter your professional title|not registered with the system|the registration page|
+      |Professional title|Professional title - qwertyuiopasdfghjklzxcvbnm|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - QWERTYUIOPASDFGHJKLZXCVBNM|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 1|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 2|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 3|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 4|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 5|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 6|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 7|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 8|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 9|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - 0|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - !|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - "|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - �|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - $|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - %|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - ^|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - &|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - *|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - (|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - )|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - _|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - +|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - =|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - [|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - ]|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - {|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - }|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - :|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - ;|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - @|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - '|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - #|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - ~|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - <|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - >|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - ?|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - ,|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - .|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - /|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - `|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+      |Professional title|Professional title - \|No error message for professional title|registered with the system|the lightbox pop-up confirming the registration|
+    
+    
+    
+  Scenario Outline: User providing invalid details for the password field
+    When I register as a new user 
+        And I enter a <Object> of <Data>
+        And I enter a Password confirm of <Data>
+  		  And I click Submit
+  		Then I am shown <ErrorMessage>
+  			And I am <Registered>
+  			And I am shown <Page>  
+  			
+  	Examples:
+    	|Object|Data|ErrorMessage|Registered|Page|
+      |Password|Passwor|That password is too short (or too long). Please make sure your password is a minimum of 8 characters.|not registered with the system|the registration page|
+      |Password|Password|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|PasswordPassword|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|PasswordPasswordP|That password is too short (or too long). Please make sure your password is a minimum of 8 characters.|not registered with the system|the registration page|
+      |Password|qwertyuiopasdfgh|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|jklzxcvbnm|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|QWERTYUIOPASDFGH|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|JKLZXCVBNM|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-1|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-2|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-3|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-4|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-5|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-6|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-7|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-8|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-9|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-0|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-!|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-"|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-�|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-$|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-%|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-^|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-&|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-*|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-(|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-)|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-_|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-=|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-+|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-{|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-}|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-[|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-]|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-;|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-'|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-#|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-:|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-@|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-~|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-,|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-.|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-/|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-<|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password->|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-?|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-\|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      |Password|password-`|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      
+    
+    
+  
+  Scenario Outline: User providing invalid details for the password confirm field
+    When I register as a new user 
+        And I enter a <Object> of <Data>
+        And I enter a Password of <Data>
+  		  And I click Submit
+  		Then I am shown <ErrorMessage>
+  			And I am <Registered>
+  			And I am shown <Page>  
+  	
+    Examples:
+      |Object|Data|ErrorMessage|Registered|Page|		
+      |Password confirm|Passwor|No error message for password reminder|not registered with the system|the registration page|
+      |Password confirm|Password|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password confirm|PasswordPassword|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password confirm|PasswordPasswordP|No error message for password reminder|not registered with the system|the registration page|
+      |Password confirm|qwertyuiopasdfgh|No error message for password|registered with the system|the lightbox pop-up confirming the registration|
+      
+    
+  
+  
+  Scenario Outline: User providing invalid details for the password reminder field
+    When I register as a new user 
+        And I enter a <Object> of <Data>
+  		  And I click Submit
+  		Then I am shown <ErrorMessage>
+  			And I am <Registered>
+  			And I am shown <Page>
+  			
+  	Examples:
+    	|Object|Data|Result|
+      |Password reminder|reminder � this has 75 characters and is accepted test test testtt|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � this has 76 characters and is rejected test test testttt|Your password reminder cannot be blank or contain your password|not registered with the system|the registration page| 
+      |Password reminder|reminder � qwertyuiopasdfghjklzxcvbnm|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � QWERTYUIOPASDFGHJKLZXCVBNM|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � 1|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � 2|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � 3|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � 4|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � 5|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � 6|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � 7|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � 8|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � 9|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � 0|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � !|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � "|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � �|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � `|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � $|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � %|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � ^|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � &|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � *|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � (|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � )|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � -|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � _|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � =|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � +|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � -|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration| 
+      |Password reminder|reminder � [|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � ]|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � {|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � }|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � ;|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � '|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � ~|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � :|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � @|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � #|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � ,|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � .|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � /|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � <|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � >|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+      |Password reminder|reminder � ?|No error message for password reminder|registered with the system|the lightbox pop-up confirming the registration|
+         

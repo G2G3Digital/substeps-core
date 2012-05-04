@@ -1,0 +1,38 @@
+## Copyright Technophobia Ltd 2012 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- Copyright Technophobia Ltd 2012 -->
+<html>
+<head>
+</head>
+<body>
+
+<p>$!node.getType() - $node.filename - Result: $node.result.result.toString()</p>
+
+File: $node.id in 
+
+<p>Details: $node.getDebugStringForThisNode()</p>
+
+#if ($node.result.thrown)
+
+<p>$node.result.thrown.message</p>
+
+<pre>
+$node.result.getStackTrace()
+</pre>
+
+#end
+
+
+	
+	<table width="100%">
+
+	#foreach( $child in $node.children )
+		<tr><td  style="$child.getStyle() ">
+			$child.getDescription()
+		</td></tr>		
+	#end
+	
+	</table>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Copyright Technophobia Ltd 2012
+# some substeps defined in a folder
+
+Define: Given a substep in a folder with param1 "<name1>"
+		Then method with param <name1>

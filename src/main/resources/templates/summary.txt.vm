@@ -1,0 +1,42 @@
+## Copyright Technophobia Ltd 2012 
+
+features.total=$stats.getTotalFeatures()
+features.total.run=$stats.getTotalFeaturesRun()
+features.total.passed=$stats.getTotalFeaturesPassed()
+features.total.failed=$stats.getTotalFeaturesFailed()
+features.total.skipped=$stats.getTotalFeaturesSkipped()
+features.total.success.pc=$stats.getTotalFeaturesSuccess()
+
+scenarios.total=$stats.getTotalScenarios()
+scenarios.total.run=$stats.getTotalScenariosRun()
+scenarios.total.passed=$stats.getTotalScenariosPassed()
+scenarios.total.failed=$stats.getTotalScenariosFailed()
+scenarios.total.skipped=$stats.getTotalScenariosSkipped()
+scenarios.total.success.pc=$stats.getTotalScenariosSuccess() 
+
+scenario.steps.total=$stats.getTotalScenarioSteps()
+scenario.steps.total.run=$stats.getTotalScenarioStepsRun()
+scenario.steps.total.passed=$stats.getTotalScenarioStepsPassed()
+scenario.steps.total.failed=$stats.getTotalScenarioStepsFailed()
+scenario.steps.total.skipped=$stats.getTotalScenarioStepsSkipped()
+scenario.steps.total.success.pc=$stats.getTotalScenarioStepsSuccess()
+
+## break down by tag
+
+#foreach( $statSet in $stats.sortedList )
+    
+features.${statSet.tag}=$statSet.featureStats.count
+features.${statSet.tag}.run=$statSet.featureStats.run
+features.${statSet.tag}.passed=$statSet.featureStats.passed
+features.${statSet.tag}.failed=$statSet.featureStats.failed
+features.${statSet.tag}.success.pc=$statSet.featureStats.getSuccessPc()
+
+    
+scenarios.${statSet.tag}=$statSet.scenarioStats.count
+scenarios.${statSet.tag}.run=$statSet.scenarioStats.run
+scenarios.${statSet.tag}.passed=$statSet.scenarioStats.passed
+scenarios.${statSet.tag}.failed=$statSet.scenarioStats.failed
+scenarios.${statSet.tag}.success.pc=$statSet.scenarioStats.getSuccessPc()
+
+#end
+    

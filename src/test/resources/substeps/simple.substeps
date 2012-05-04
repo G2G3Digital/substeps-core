@@ -1,0 +1,26 @@
+# Copyright Technophobia Ltd 2012
+# a definition of a substep
+Define: Given series of substeps is executed
+		When an event occurs 
+		Then bad things happen 
+		And people get upset
+
+Define: Given substep with param1 <name1> and param2 <name2>
+		Then method with param <name1>
+		Then another method with param <name2>
+
+Define: Given a step with a parameter <parameter>
+		Then the substep gets the whole <parameter>
+		
+Define: Given a substep
+    Given something
+
+Define:  Given another substep
+  Given something
+
+Define:  Given yet another substep
+  Given something
+  
+Define: Then a method with a quoted '<param>' 
+	Then method with param <param>    			
+           	

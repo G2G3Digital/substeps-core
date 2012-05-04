@@ -1,0 +1,10 @@
+# Copyright Technophobia Ltd 2012
+# some substeps to support failing tests
+
+Define: Given step 1
+    SingleWord
+    Test_Then something blows up
+    Test_Then something else has happened
+
+Define: Given step 2
+    Test_Then something has happened

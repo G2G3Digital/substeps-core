@@ -1,6 +1,16 @@
+target/
+.settings/
+.classpath
+.project
+logs/
+*.log
+velocity.log*
+.tomcatplugin
+*.dump
+classes/
 *.class
-
+*jacoco.exec
 # Package Files #
-*.jar
+*~
 *.war
 *.ear

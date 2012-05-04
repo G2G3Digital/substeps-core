@@ -1,0 +1,114 @@
+## Copyright Technophobia Ltd 2012 
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!-- Copyright Technophobia Ltd 2012 -->
+<html>
+<head>
+</head>
+<body>
+
+<table width="100%">
+
+<tr><td width="50%" valign="top">
+
+     
+    <h2>Test Report</h2>
+        
+    <table>
+        <tr>
+            <td>&nbsp;</td>
+            <td>Number</td>
+            <td>Run</td>
+            <td>Passed</td>
+            <td>Failed</td>
+            <td>Skipped</td>
+            <td>Success %</td>
+        </tr>
+        
+        <tr>
+            <td>Features</td>
+            <td>$stats.getTotalFeatures()</td>
+            <td>$stats.getTotalFeaturesRun()</td>
+            <td>$stats.getTotalFeaturesPassed()</td>
+            <td>$stats.getTotalFeaturesFailed()</td>
+            <td>$stats.getTotalFeaturesSkipped()</td>
+            <td>$stats.getTotalFeaturesSuccess() %</td>
+        </tr>
+
+        <tr>
+            <td>Scenarios</td>
+            <td>$stats.getTotalScenarios()</td>
+            <td>$stats.getTotalScenariosRun()</td>
+            <td>$stats.getTotalScenariosPassed()</td>
+            <td>$stats.getTotalScenariosFailed()</td>
+            <td>$stats.getTotalScenariosSkipped()</td>
+            <td>$stats.getTotalScenariosSuccess() %</td>
+        </tr>
+
+        <tr>
+            <td>Scenario steps</td>
+           <td>$stats.getTotalScenarioSteps()</td>
+            <td>$stats.getTotalScenarioStepsRun()</td>
+            <td>$stats.getTotalScenarioStepsPassed()</td>
+            <td>$stats.getTotalScenarioStepsFailed()</td>
+            <td>$stats.getTotalScenarioStepsSkipped()</td>
+            <td>$stats.getTotalScenarioStepsSuccess() %</td>
+        </tr>
+    </table>
+
+    </td>
+    
+    <td width="50%">
+    
+    
+    
+    
+    <h3>By Tag</h3>
+    <table>
+        <tr>
+            <td>Tag</td>
+            <td># Features </td>
+            <td>Features Run</td>
+            <td>Features Passed</td>
+            <td>Features Failed</td>
+            <td>Success %</td>
+            <td>&nbsp;</td>
+            <td># Scenarios </td>
+            <td>Scenarios Run</td>
+            <td>Scenarios Passed</td>
+            <td>Scenarios Failed</td>
+            <td>Success %</td>
+        </tr>
+        
+        #foreach( $statSet in $stats.sortedList )
+		
+        <tr>
+            <td>$statSet.tag</td>
+            <td>$statSet.featureStats.count </td>
+            <td>$statSet.featureStats.run</td>
+            <td>$statSet.featureStats.passed</td>
+            <td>$statSet.featureStats.failed</td>
+            <td>$statSet.featureStats.getSuccessPc() %</td>
+            <td>&nbsp;</td>
+            <td>$statSet.scenarioStats.count </td>
+            <td>$statSet.scenarioStats.run</td>
+            <td>$statSet.scenarioStats.passed</td>
+            <td>$statSet.scenarioStats.failed</td>
+            <td>$statSet.scenarioStats.getSuccessPc() %</td> 
+        </tr>
+
+		#end
+
+       
+        
+    </table>
+	
+    
+    </td>
+    </tr>
+</table>
+
+
+</body>
+</html>
