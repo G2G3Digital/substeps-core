@@ -32,31 +32,44 @@ import com.technophobia.substeps.runner.EclipseDescriptionProvider.DescriptorSta
  * 
  */
 public class ReportData {
-    private List<ExecutionNode> nodeList;
+//    private List<ExecutionNode> nodeList;
     private DescriptorStatus status;
+
+    private List<ExecutionNode> rootNodes;
 
 
     public String getNodeImage(final ExecutionNode node) {
         return "img/" + node.getResult().getResult() + ".png";
     }
 
-
-    public void addExecutionNode(final ExecutionNode node) {
-        if (nodeList == null) {
-            nodeList = new ArrayList<ExecutionNode>();
+    public void addRootExecutionNode(final ExecutionNode node) {
+        if (rootNodes == null) {
+        	rootNodes = new ArrayList<ExecutionNode>();
         }
-        nodeList.add(node);
+        rootNodes.add(node);
     }
+
+    
+
+//    public void addExecutionNode(final ExecutionNode node) {
+//        if (nodeList == null) {
+//            nodeList = new ArrayList<ExecutionNode>();
+//        }
+//        nodeList.add(node);
+//    }
 
 
 
     /**
+     * @deprecated
      * @param rootNode
      *            the rootNode to set
-     */
-    public void addDataFromRootNode(final ExecutionNode rootNode) {
-        flattenTree(rootNode);
-
+     */ 
+    
+    @Deprecated
+	public void addDataFromRootNode(final ExecutionNode rootNode) {
+//        flattenTree(rootNode);
+    	addRootExecutionNode(rootNode);
 //        nodeList.remove(rootNode);
 
     }
@@ -65,12 +78,14 @@ public class ReportData {
      * @param root
      * @param data
      */
-    private void flattenTree(final ExecutionNode node) {
-        addExecutionNode(node);
+    private void flattenTree(final List<ExecutionNode> nodeList, final ExecutionNode node) {
+        
+    	nodeList.add(node);
+//    	addExecutionNode(node);
 
         if (node.hasChildren()) {
             for (final ExecutionNode child : node.getChildren()) {
-                flattenTree(child);
+                flattenTree(nodeList, child);
             }
         }
     }
@@ -80,6 +95,13 @@ public class ReportData {
      * @return the nodeList
      */
     public List<ExecutionNode> getNodeList() {
+    	
+    	final List<ExecutionNode> nodeList = new ArrayList<ExecutionNode>();
+    	
+    	for (final ExecutionNode rootNode: this.rootNodes){
+    		flattenTree(nodeList, rootNode);
+    	}
+    			
         return nodeList;
     }
 
@@ -88,7 +110,67 @@ public class ReportData {
         return node.getId() + "-details.html";
     }
 
+    
 
+    public String getDescriptionForNode2(final ExecutionNode node) {
+        final StringBuilder buf = new StringBuilder();
+        
+        if (node.getParent() == null){
+        	buf.append(0).append(", \"");
+        	
+        	if (node.getLine() != null){
+        		buf.append(node.getLine());
+        	}
+        	else {
+        		buf.append("executionNodeRoot\"");
+        	}
+        }
+        else
+        {
+        
+        buf.append(status.getIndexStringForNode(node)).append(": ");
+
+        if (node.getFeature() != null) {
+
+            // buf.append("F: ").append(status.featureCount).append(": ")
+            buf.append(node.getFeature().getName());
+
+        } else if (node.getScenarioName() != null) {
+
+            if (node.isOutlineScenario()) {
+                buf.append("ScnO: ");
+            } else {
+                buf.append("Scn: ");
+            }
+            // buf.append(status.featureCount).append("-").append(status.scenarioCount).append(": ")
+            buf.append(node.getScenarioName());
+        }
+
+        if (node.getParent() != null && node.getParent().isOutlineScenario()) {
+
+            // buf.append("ScnO:").append(status.featureCount).append("-")
+            // .append(status.scenarioCount).append("-")
+            buf.append(node.getRowNumber()).append(" ").append(node.getParent().getScenarioName())
+                    .append(":");
+        }
+
+        if (node.getLine() != null) {
+            // buf.append("ScnO:").append(status.featureCount).append("-")
+            // .append(status.scenarioCount).append("-").append(status.stepCount).append(": ")
+            buf.append(node.getLine());
+        }
+
+        String rtn = buf.toString();
+        if (rtn.contains("\"")) {
+
+            rtn = "'" + rtn + "'";
+        } else {
+            rtn = "\"" + rtn + "\"";
+        }
+        }
+        return StringEscapeUtils.escapeHtml(buf.toString());
+    }
+    
     public String getDescriptionForNode(final ExecutionNode node) {
         final StringBuilder buf = new StringBuilder();
 
@@ -195,5 +277,13 @@ public class ReportData {
     public void setStatus(final DescriptorStatus status) {
         this.status = status;
     }
+
+	/**
+	 * @return the rootNodes
+	 */
+	public List<ExecutionNode> getRootNodes()
+	{
+		return rootNodes;
+	}
 
 }

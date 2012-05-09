@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.velocity.VelocityContext;
@@ -33,6 +34,8 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import com.technophobia.substeps.execution.ExecutionNode;
@@ -70,7 +73,7 @@ public class ExecutionReportBuilder {
 
             copyStaticResources(reportDir);
 
-            buildMainReport(data, reportDir);
+            buildMainReport2(data, reportDir);
 
             for (final ExecutionNode node : data.getNodeList()) {
 
@@ -216,13 +219,206 @@ public class ExecutionReportBuilder {
 
         vCtx.put("data", data);
 
-        final String vml = "report.vm";
+        vCtx.put("root_node", 
+
+        data.getNodeList().get(0));
+        
+        final String vml = "report2.vm";
         final String targetFilename = "tree.html";
 
         renderAndWriteToFile(reportDir, vCtx, vml, targetFilename);
     }
+    
+    private static final String EMPTY_IMAGE = "<img src=\"img/empty.gif\" alt=\"\"/>";
+    
+    private static final String EXPANDED = "img/minusbottom.gif";
+    private static final String LAST_CHILD = "img/joinbottom.gif";
+    private static final String CHILD = "img/join.gif";
+    private static final String COLLAPSED = "img/plus.gif";
+
+    /**
+	 * @param node
+	 * @return
+	 */
+	private String getTreeNodeImage(final ExecutionNode node)
+	{
+		String img;
+		if (node.hasChildren()){
+			
+			// return + or - depending on depth
+			if (node.getDepth() >=3){
+				img = COLLAPSED;
+			}
+			else{
+				img = EXPANDED;
+			}
+		}
+		else{
+			
+			// are we last ?
+			final List<ExecutionNode> siblings = node.getParent().getChildren();
+			
+			if (siblings.indexOf(node) == siblings.size()-1){
+				img = LAST_CHILD;
+			}
+			else{
+				img = CHILD;
+			}
+		}
+		return img;
+	}
 
 
+    
+    
+    private void appendMainData(final StringBuilder buf, final ExecutionNode node, final ReportData reportData){
+    	
+    	final String image = reportData.getNodeImage(node);
+    	
+    	final String treeImage = getTreeNodeImage(node);
+    	
+    	buf.append("<a href=\"javascript: o(")
+    	.append(node.getId())
+    	.append(");\"><img id=\"jd")
+    	.append(node.getId())
+    	.append("\" src=\"")
+    	.append(treeImage)
+    	.append("\" alt=\"\"/></a>\n<img id=\"id")
+    	.append(node.getId())
+    	.append("\" src=\"")
+    	.append(image)
+	.append("\" alt=\"\"/>\n<a id=\"sd")
+	.append(node.getId())
+    .append("\" class=\"node\" href=\"")
+    .append(node.getId())
+    .append("-details.html\" target=\"detailsFrame\" onclick=\"javascript: d.s(")
+	.append(node.getId())
+    .append(");\">")
+    .append(reportData.getDescriptionForNode2(node))
+    .append("</a>");
+
+    }
+
+
+
+	private void appendTreeNode(final StringBuilder buf, final ExecutionNode node,final ReportData reportData){
+
+    	buf.append("<div class=\"dTreeNode\">");
+    	
+    	buf.append(Strings.repeat(EMPTY_IMAGE, node.getDepth()));
+
+    	// 		#main_data($node_id $description $image $tree_image)
+
+    	appendMainData(buf, node, reportData);
+		
+    	buf.append("</div>");
+    }
+    
+    public void buildTreeString(final StringBuilder buf, final ExecutionNode node, final ReportData data){
+
+    	
+    	String display = getDisplay(node.getDepth());
+    	
+//    	System.out.println("<div id dd" + (node.getId() -1) + " start");
+    	
+    	
+    	if (node.getParent() == null && node.hasChildren()){
+	    	parentDivStart(node.getId() -1, buf, display);
+    		
+    	}
+    	
+	    	appendTreeNode(buf, node, data);
+	    	
+	    	if (node.hasChildren()){
+	    
+	    		display = getDisplay(node.getDepth()+1);
+	    		parentDivStart(node.getId(), buf, display);
+	    		
+	    		// todo - no <div id="dd3" class="clip" style="display: block;"> IF NO CHILDREN
+	    		
+	    		for (final ExecutionNode child: node.getChildren()){
+	    			buf.append("<!-- child id " + child.getId() + " -->");
+	    		
+	    			buildTreeString(buf, child, data);
+	    			
+	    			buf.append("<!-- end child id " + child.getId() + " -->");
+	    		}
+	    		
+	    		buf.append("</div>");
+	    	}
+    	
+	    	if (node.hasChildren()){	
+//		    System.out.println("<div id dd" + (node.getId() -1) + " end");
+	
+//	    	buf.append("</div> <!-- dd id ")
+//	    	.append(node.getId() -1)
+//	    	.append(" buildTreeString end -->")
+//	    	;
+	    	}    	
+    }
+
+
+	/**
+	 * @param depth
+	 * @return
+	 */
+	private String getDisplay(final int depth)
+	{
+		String display = "block";
+    	// TODO make this a parameter
+    	if (depth >=4 ){
+    		display = "none";
+    	}
+    	return display;
+	}
+
+
+	/**
+	 * @param node
+	 * @param buf
+	 * @param display
+	 */
+	public void parentDivStart(final long id, final StringBuilder buf, final String display)
+	{
+		buf.append("<div id=\"dd")
+		.append(id)
+		.append("\" class=\"clip\" style=\"display: ")
+		.append(display)
+		.append(";\">");
+	}
+    
+
+    private void buildMainReport2(final ReportData data, final File reportDir) throws IOException {
+
+        final DescriptorStatus status = new DescriptorStatus();
+
+        final VelocityContext vCtx = new VelocityContext();
+
+        data.setStatus(status);
+
+//
+//        vCtx.put("root_node", 
+//
+//        data.getNodeList().get(0));
+        
+        final String vml = "report2.vm";
+
+        final StringBuilder buf  = new StringBuilder();
+        
+        for (final ExecutionNode rootNode : data.getRootNodes()){
+        	
+        	buildTreeString(buf, rootNode, data);
+        }
+        
+        vCtx.put("tree", buf.toString());
+        
+        final String targetFilename = "tree.html";
+        
+        renderAndWriteToFile(reportDir, vCtx, vml, targetFilename);
+
+    }
+
+    
     /**
      * @param reportDir
      * @param vCtx
@@ -234,12 +430,25 @@ public class ExecutionReportBuilder {
             final String vml, final String targetFilename) throws IOException {
         final String rendered = renderText(vml, vCtx);
 
-        final File mainreport = new File(reportDir, targetFilename);
+        writeToFile(reportDir, targetFilename, rendered);
+    }
+
+
+	/**
+	 * @param reportDir
+	 * @param targetFilename
+	 * @param rendered
+	 * @throws IOException
+	 */
+	private void writeToFile(final File reportDir, final String targetFilename, final String rendered)
+			throws IOException
+	{
+		final File mainreport = new File(reportDir, targetFilename);
 
         mainreport.createNewFile();
 
         Files.write(rendered, mainreport, Charset.defaultCharset());
-    }
+	}
 
 
     private String generateJS(final ExecutionNode node, final DescriptorStatus status) {
