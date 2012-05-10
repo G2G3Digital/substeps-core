@@ -329,7 +329,30 @@ public class ExecutionNode {
         return buf.toString();
     }
 
+    @Override
+    public String toString(){
+    	return this.id + ":" + getDescription() + " children size: " + getChildrenSize();
+    }
+    
+    public String treeToString(){
+        final StringBuilder buf = new StringBuilder();
 
+        buf.append(this.toString());
+        buf.append("\n");
+        if (this.hasChildren()){
+        	
+        	for (final ExecutionNode child : this.getChildren()){
+        		
+                buf.append(Strings.repeat("\t", this.depth));
+                buf.append(child.treeToString());
+                buf.append("\n");
+        	}
+        }
+        
+        
+        return buf.toString();
+    }
+    
     public String getDebugStringForThisNode() {
         final StringBuilder buf = new StringBuilder();
 
@@ -606,14 +629,22 @@ public class ExecutionNode {
     @Override
     public boolean equals(final Object obj) {
         if (this == obj)
-            return true;
+		{
+			return true;
+		}
         if (obj == null)
-            return false;
+		{
+			return false;
+		}
         if (getClass() != obj.getClass())
-            return false;
+		{
+			return false;
+		}
         final ExecutionNode other = (ExecutionNode) obj;
         if (id != other.id)
-            return false;
+		{
+			return false;
+		}
         return true;
     }
 
@@ -680,7 +711,7 @@ public class ExecutionNode {
             } else if (isScenario()) {
 
                 rtn = scenarioName;
-            } else if (parent.isOutlineScenario()) {
+            } else if (parent!= null && parent.isOutlineScenario()) {
                 rtn = parent.scenarioName + " [" + rowNumber + "]";
             }
         }
@@ -798,4 +829,20 @@ public class ExecutionNode {
         }
         return rtn;
     }
+
+
+	/**
+	 * @return
+	 */
+	public int getChildrenSize()
+	{
+		int rtn = 0;
+		
+		if (children != null){
+			rtn = children.size();
+		}
+		
+		return rtn;
+	}
+	
 }
