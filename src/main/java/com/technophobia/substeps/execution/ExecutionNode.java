@@ -280,38 +280,6 @@ public class ExecutionNode {
     }
 
 
-    private Feature getFeatureName() {
-        Feature localFeature = null;
-        ExecutionNode tempNode = this;
-
-        while (localFeature == null && tempNode != null) {
-            localFeature = tempNode.feature;
-
-            if (localFeature == null) {
-                tempNode = tempNode.getParent();
-            }
-        }
-        return localFeature;
-
-    }
-
-
-    private String getScenarioNameForNode() {
-        String localScenarioName = null;
-        ExecutionNode tempNode = this;
-
-        while (localScenarioName == null && tempNode != null) {
-            localScenarioName = tempNode.scenarioName;
-
-            if (localScenarioName == null) {
-                tempNode = tempNode.getParent();
-            }
-        }
-        return localScenarioName;
-
-    }
-
-
     public String printTree() {
         // traverse the tree
         final StringBuilder buf = new StringBuilder();
@@ -364,10 +332,8 @@ public class ExecutionNode {
             if (feature != null) {
                 buf.append(feature.getName()).append(" in ").append(feature.getFilename())
                         .append("\n");
-            } else if (parent != null) {
-                if (scenarioName != null) {
-                    buf.append(scenarioName).append("\n");
-                }
+            } else if (scenarioName != null) {
+                buf.append(scenarioName).append("\n");
             }
 
             if (rowNumber > -1) {
@@ -428,12 +394,10 @@ public class ExecutionNode {
 
             if (feature != null) {
                 buf.append(feature.getName()).append("\n");
-            } else if (parent != null) {
-                if (scenarioName != null) {
+            } else if (scenarioName != null) {
                     buf.append(scenarioName).append("\n");
-                }
             }
-
+ 
             if (rowNumber > -1) {
                 buf.append(" outline #: ").append(rowNumber).append("\n");
             }
@@ -615,9 +579,9 @@ public class ExecutionNode {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result + (int) (id ^ (id >>> 32));
-        return result;
+        int res = 1;
+        res = prime * res + (int) (id ^ (id >>> 32));
+        return res;
     }
 
 
@@ -661,8 +625,8 @@ public class ExecutionNode {
         } else if (parent != null) {
             filename = parent.getFilename();
             return filename;
-        } else if (filename == null) {
-            return "unknown";
+        } else  {
+        	filename = "unknown";
         }
 
         return filename;
