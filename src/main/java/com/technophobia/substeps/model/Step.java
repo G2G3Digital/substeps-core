@@ -93,7 +93,7 @@ public class Step {
 	}
 
 	
-	public Step(final String line, File source) {
+	public Step(final String line, final File source) {
 		this(line, false, source);
 	}
 
@@ -101,7 +101,7 @@ public class Step {
 		this(theLine, isSubStep, null);
 	}
 	
-	public Step(final String theLine, final boolean isSubStep, File source) {
+	public Step(final String theLine, final boolean isSubStep, final File source) {
 		if (theLine == null || theLine.length() == 0) {
 			throw new IllegalArgumentException("null or empty args");
 		}
@@ -128,10 +128,7 @@ public class Step {
 			// we've got just an annotation with no parameter
 			keyword = line;
 			// param = "";
-		} else {
-			// param = null;
-		}
-
+		} 
 	}
 
 	// only used in tests
@@ -257,7 +254,7 @@ public class Step {
 	/**
 	 * @param replacedInlineTable
 	 */
-	public void setSubstitutedInlineTable(List<Map<String, String>> substitutedInlineTable)
+	public void setSubstitutedInlineTable(final List<Map<String, String>> substitutedInlineTable)
 	{
 		this.substitutedInlineTable = substitutedInlineTable;
 	}
@@ -270,8 +267,8 @@ public class Step {
 		return source;
 	}
 	
-	public Step cloneWithAlternativeLine(String alt){
-		Step step = new Step(alt, this.pattern !=null);
+	public Step cloneWithAlternativeLine(final String alt){
+		final Step step = new Step(alt, this.pattern !=null);
 		
 		step.inlineTable = this.inlineTable;
 				
