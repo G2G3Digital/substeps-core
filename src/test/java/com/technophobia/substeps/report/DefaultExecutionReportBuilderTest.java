@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.Feature;
-import com.technophobia.substeps.runner.EclipseDescriptionProvider.DescriptorStatus;
 
 
 
@@ -34,7 +33,7 @@ import com.technophobia.substeps.runner.EclipseDescriptionProvider.DescriptorSta
  * @author ian
  *
  */
-public class ExecutionReportBuilderTest
+public class DefaultExecutionReportBuilderTest
 {
     public void nonFailingMethod() {
         System.out.println("no fail");
@@ -134,11 +133,11 @@ public class ExecutionReportBuilderTest
 	@Test
 	public void testReportBuilding(){
 		
-		final ExecutionReportBuilder builder = new ExecutionReportBuilder();
+		final DefaultExecutionReportBuilder builder = new DefaultExecutionReportBuilder();
 		
-        final DescriptorStatus status = new DescriptorStatus();
+//        final DescriptorStatus status = new DescriptorStatus();
         final ReportData data = getData();
-        data.setStatus(status);
+//        data.setStatus(status);
         
         final ExecutionNode root = data.getNodeList().get(0);
 		

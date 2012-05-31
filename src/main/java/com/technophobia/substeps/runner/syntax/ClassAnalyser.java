@@ -59,13 +59,10 @@ public class ClassAnalyser {
 
             final StepImplementation impl = StepImplementation.parse(stepAnnotation.value(),
                     loadedClass, m);
+            Assert.assertNotNull("unable to resolve the keyword / method for: " + stepAnnotation.value()
+                    + " in class: " + loadedClass, impl);
 
-            if (impl != null) {
-                syntax.addStepImplementation(impl);
-            } else {
-                Assert.fail("unable to resolve the keyword / method for: " + stepAnnotation.value()
-                        + " in class: " + loadedClass);
-            }
+            syntax.addStepImplementation(impl);
         }
     }
 

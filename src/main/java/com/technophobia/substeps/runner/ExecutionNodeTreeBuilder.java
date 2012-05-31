@@ -135,9 +135,7 @@ public class ExecutionNodeTreeBuilder {
 
                     else {
 
-                        final Map<String, String> outlineParameters = null;
-
-                        buildExectionNodeForScenario(scenario, outlineParameters, scenarioNode);
+                        buildExectionNodeForScenario(scenario, null, scenarioNode);
                     }
                 } catch (final Throwable t) {
 

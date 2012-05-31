@@ -32,7 +32,6 @@ import org.junit.runner.notification.RunNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import com.google.common.base.Strings;
 import com.technophobia.substeps.execution.ExecutionNode;
 
@@ -218,7 +217,7 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         if (classContainingTheTests != null) {
 	        executionConfig.setDescription(classContainingTheTests.getSimpleName());
 	        
-	        BeforeAndAfterProcessors annotation = classContainingTheTests.getAnnotation(BeforeAndAfterProcessors.class);
+	        final BeforeAndAfterProcessors annotation = classContainingTheTests.getAnnotation(BeforeAndAfterProcessors.class);
 	        if (annotation != null){
 	        	executionConfig.setInitialisationClasses(annotation.value());	
 	        }
@@ -259,9 +258,9 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
 //
 //        rootNode = nodeTreeBuilder.buildExecutionNodeTree();
         
-        System.out.println("rootNode.toDebugString():\n" + rootNode.toDebugString());
+        log.debug("rootNode.toDebugString():\n" + rootNode.toDebugString());
 
-        Map<Long, Description> descriptionMap = descriptionProvider.buildDescriptionMap(rootNode, classContainingTheTests);
+        final Map<Long, Description> descriptionMap = descriptionProvider.buildDescriptionMap(rootNode, classContainingTheTests);
         thisDescription = descriptionMap.get(Long.valueOf(rootNode.getId()));
         notifier = new JunitNotifier();
 
@@ -303,7 +302,7 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
             thisDescription = getDescription();
         }
 
-        System.out.println("Description tree:\n" + printDescription(thisDescription, 0));
+        log.debug("Description tree:\n" + printDescription(thisDescription, 0));
 
         ExecutionContext.put(Scope.SUITE, JunitNotifier.NOTIFIER_EXECUTION_KEY, notifier);
 

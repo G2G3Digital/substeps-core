@@ -23,11 +23,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author ian
  */
 public class ExecutionConfig {
-    /**
+
+    private final Logger log = LoggerFactory.getLogger(ExecutionConfig.class);
+	
+	/**
+	 * 
      * @parameter
      */
     private String description;
@@ -264,7 +271,8 @@ public class ExecutionConfig {
         }
 
         if (systemProperties != null) {
-            System.out.println("Configuring system properties [" + systemProperties.size()
+        	
+            log.debug("Configuring system properties [" + systemProperties.size()
                     + "] for execution");
             final Properties existing = System.getProperties();
             systemProperties.putAll(existing);
@@ -279,7 +287,7 @@ public class ExecutionConfig {
 
             initialisationClasses = initialisationClassList.toArray(initialisationClasses);
         }
-        System.out.println(printParameters());
+        log.debug(printParameters());
     }
 
 

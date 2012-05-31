@@ -36,7 +36,7 @@ public class ReportDataTest {
         final ExecutionNode root = new ExecutionNode();
 
         final ReportData data = new ReportData();
-        data.addDataFromRootNode(root);
+        data.addRootExecutionNode(root);
 
         final ExecutionStats stats = new ExecutionStats();
         stats.buildStats(data);

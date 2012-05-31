@@ -41,8 +41,8 @@ public class TestCounters {
     	double rtn = 0.0;
         if (run > 0) {
 
-            double d =  (double)passed / (double)run * 100;
-            BigDecimal bd = BigDecimal.valueOf(d).setScale(1, RoundingMode.HALF_UP);
+            final double d =  (double)passed / (double)run * 100;
+            final BigDecimal bd = BigDecimal.valueOf(d).setScale(1, RoundingMode.HALF_UP);
             rtn = bd.doubleValue();
         }
         return rtn;
@@ -121,41 +121,32 @@ public class TestCounters {
 
         final ExecutionNodeResult result = node.getResult();
 
+        count++;
+        
         switch (result.getResult()) {
-        case IGNORED: {
+        case IGNORED:
+        case NOT_INCLUDED:
+        case NOT_RUN: {
             ignored++;
-            count++;
-            break;
-        }
-        case NOT_INCLUDED: {
-            ignored++;
-            count++;
+            
             break;
         }
 
-        case NOT_RUN: {
-            ignored++;
-            count++;
-            break;
-        }
 
         case RUNNING: {
             run++;
-            count++;
             break;
         }
 
         case PASSED: {
             run++;
             passed++;
-            count++;
             break;
         }
 
         case FAILED: {
             run++;
             failed++;
-            count++;
             break;
         }
 

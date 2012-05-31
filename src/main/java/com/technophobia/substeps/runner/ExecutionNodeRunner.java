@@ -352,19 +352,11 @@ public class ExecutionNodeRunner {
             }
             break;
         }
-        case SCENARIO_BACKGROUND: {
+        case SCENARIO_BACKGROUND: 
+        case SCENARIO_OUTLINE_ROW:
+        case STEP:
+        {
             rtn = Scope.STEP;
-
-            break;
-        }
-        case SCENARIO_OUTLINE_ROW: {
-            rtn = Scope.STEP;
-
-            break;
-        }
-        case STEP: {
-            rtn = Scope.STEP;
-
             break;
         }
         default: {
