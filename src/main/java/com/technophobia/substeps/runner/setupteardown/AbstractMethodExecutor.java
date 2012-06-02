@@ -28,14 +28,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-
 import com.google.common.collect.Maps;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryScenario;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
 
 public abstract class AbstractMethodExecutor implements MethodExecutor {
 
@@ -63,7 +62,7 @@ public abstract class AbstractMethodExecutor implements MethodExecutor {
     /**
 	 * @param targetClass
 	 */
-	private void sortMethodList(Class<?> targetClass)
+	private void sortMethodList(final Class<?> targetClass)
 	{
         final Class<?>[] processorClasses = getInitialisationClasses(targetClass);
         
@@ -74,7 +73,7 @@ public abstract class AbstractMethodExecutor implements MethodExecutor {
         // order of execution is base classes first, then the order of processorClasses, reversed for tear downs
         
         // build up the order:
-        List<Class<?>> hierarchy = new ArrayList<Class<?>>();
+        final List<Class<?>> hierarchy = new ArrayList<Class<?>>();
         
         for (int i = processorClasses.length; i > 0; i--){
 //        for (Class<?> processorClass : ){

@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -303,8 +304,7 @@ public class ExecutionConfig {
                 stepImplementationClassList.add(implClass);
 
             } catch (final ClassNotFoundException e) {
-                // TODO - fail
-                e.printStackTrace();
+                Assert.fail("ClassNotFoundException: " + e.getMessage());
             }
         }
         return stepImplementationClassList;

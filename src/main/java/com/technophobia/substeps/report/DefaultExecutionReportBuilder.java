@@ -52,7 +52,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     private final Properties velocityProperties = new Properties();
 
     private final DescriptorStatus status = new DescriptorStatus();
-
     
     /**
      * @parameter default-value = ${project.build.directory}
@@ -95,11 +94,9 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
             buildSummaryData(stats, reportDir);
 
-            // stats.getSortedList();
-
         } catch (final IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	
+        	log.error("IOException: ", e);
         }
 
         // go through the flattened list and write out any exception stack
@@ -139,7 +136,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
      */
     private void copyStaticResources(final File reportDir) throws IOException {
         copyStaticResource(reportDir, "report_frame.html", "");
-        // copyStaticResource(reportDir, "summary.html", "");
 
         copyStaticResource(reportDir, "dtree.css", "");
         copyStaticResource(reportDir, "dtree.js", "");
@@ -181,9 +177,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         Files.copy(new FileInputSupplier(resourceAsStream), newOutput);
     }
 
-    private class FileInputSupplier implements InputSupplier<InputStream> {
-        InputStream is;
-
+    private static class FileInputSupplier implements InputSupplier<InputStream> {
+        private final InputStream is;
 
         public FileInputSupplier(final InputStream is) {
             this.is = is;
@@ -260,7 +255,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     }
 
     
-    private void appendMainData(final StringBuilder buf, final ExecutionNode node, final ReportData reportData){
+    private void appendMainData(final StringBuilder buf, final ExecutionNode node){
     	
     	final String image = getNodeImage(node);
     	
@@ -305,11 +300,23 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         else
         {
         
-        buf.append(status.getIndexStringForNode(node)).append(": ");
+        buildDescriptionString(status, node, buf);
+
+		}
+        return StringEscapeUtils.escapeHtml(buf.toString());
+    }
+
+
+	/**
+	 * @param node
+	 * @param buf
+	 */
+	public static void buildDescriptionString(final DescriptorStatus descriptorStatus, final ExecutionNode node, final StringBuilder buf)
+	{
+		buf.append(descriptorStatus.getIndexStringForNode(node)).append(": ");
 
         if (node.getFeature() != null) {
 
-            // buf.append("F: ").append(status.featureCount).append(": ")
             buf.append(node.getFeature().getName());
 
         } else if (node.getScenarioName() != null) {
@@ -319,39 +326,29 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             } else {
                 buf.append("Scn: ");
             }
-            // buf.append(status.featureCount).append("-").append(status.scenarioCount).append(": ")
             buf.append(node.getScenarioName());
         }
 
         if (node.getParent() != null && node.getParent().isOutlineScenario()) {
 
-            // buf.append("ScnO:").append(status.featureCount).append("-")
-            // .append(status.scenarioCount).append("-")
             buf.append(node.getRowNumber()).append(" ").append(node.getParent().getScenarioName())
                     .append(":");
         }
 
         if (node.getLine() != null) {
-            // buf.append("ScnO:").append(status.featureCount).append("-")
-            // .append(status.scenarioCount).append("-").append(status.stepCount).append(": ")
             buf.append(node.getLine());
         }
-
-		}
-        return StringEscapeUtils.escapeHtml(buf.toString());
-    }
+	}
 
     
 
-	private void appendTreeNode(final StringBuilder buf, final ExecutionNode node,final ReportData reportData){
+	private void appendTreeNode(final StringBuilder buf, final ExecutionNode node){
 
     	buf.append("<div class=\"dTreeNode\">");
     	
     	buf.append(Strings.repeat(EMPTY_IMAGE, node.getDepth()));
 
-    	// 		#main_data($node_id $description $image $tree_image)
-
-    	appendMainData(buf, node, reportData);
+    	appendMainData(buf, node);
 		
     	buf.append("</div>");
     }
@@ -359,38 +356,34 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     /* (non-Javadoc)
 	 * @see com.technophobia.substeps.report.ExecutionReportBuilder#buildTreeString(java.lang.StringBuilder, com.technophobia.substeps.execution.ExecutionNode, com.technophobia.substeps.report.ReportData)
 	 */
-    public void buildTreeString(final StringBuilder buf, final ExecutionNode node, final ReportData data){
-
+    public void buildTreeString(final StringBuilder buf, final ExecutionNode node, 
+    		final ReportData data){
     	
     	String display = getDisplay(node.getDepth());
     	
-//    	System.out.println("<div id dd" + (node.getId() -1) + " start");
-    	
-    	
     	if (node.getParent() == null && node.hasChildren()){
 	    	parentDivStart(node.getId() -1, buf, display);
-    		
     	}
     	
-	    	appendTreeNode(buf, node, data);
-	    	
-	    	if (node.hasChildren()){
-	    
-	    		display = getDisplay(node.getDepth()+1);
-	    		parentDivStart(node.getId(), buf, display);
-	    		
-	    		// todo - no <div id="dd3" class="clip" style="display: block;"> IF NO CHILDREN
-	    		
-	    		for (final ExecutionNode child: node.getChildren()){
-	    			buf.append("<!-- child id " + child.getId() + " -->");
-	    		
-	    			buildTreeString(buf, child, data);
-	    			
-	    			buf.append("<!-- end child id " + child.getId() + " -->");
-	    		}
-	    		
-	    		buf.append("</div>");
-	    	}
+    	appendTreeNode(buf, node);
+    	
+    	if (node.hasChildren()){
+    
+    		display = getDisplay(node.getDepth()+1);
+    		parentDivStart(node.getId(), buf, display);
+    		
+    		// todo - no <div id="dd3" class="clip" style="display: block;"> IF NO CHILDREN
+    		
+    		for (final ExecutionNode child: node.getChildren()){
+    			buf.append("<!-- child id " + child.getId() + " -->");
+    		
+    			buildTreeString(buf, child, data);
+    			
+    			buf.append("<!-- end child id " + child.getId() + " -->");
+    		}
+    		
+    		buf.append("</div>");
+    	}
     }
 
 
@@ -424,16 +417,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     private void buildMainReport(final ReportData data, final File reportDir) throws IOException {
 
-
         final VelocityContext vCtx = new VelocityContext();
 
-//        data.setStatus(status);
-
-//
-//        vCtx.put("root_node", 
-//
-//        data.getNodeList().get(0));
-        
         final String vml = "report2.vm";
 
         final StringBuilder buf  = new StringBuilder();
@@ -497,16 +482,10 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
             writer = new StringWriter();
 
-            // if (velocityEngine.resourceExists(vm))
-            // {
             velocityEngine.getTemplate("templates/" + vm).merge(vCtx, writer);
 
             rendered = writer.getBuffer().toString();
-            // }
-            // else
-            // {
-            // log.error("resource: " + vm + " can't be found");
-            // }
+
         } catch (final ResourceNotFoundException e) {
             throw new RuntimeException(e);
         } catch (final ParseErrorException e) {
@@ -523,12 +502,10 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                     writer.close();
                 }
             } catch (final IOException e) {
-                e.printStackTrace();
+
+            	log.error("IOException: ", e);
             }
         }
         return rendered;
     }
-
-
-
 }

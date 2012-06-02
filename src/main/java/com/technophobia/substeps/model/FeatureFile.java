@@ -22,8 +22,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.runner.Description;
-
 public class FeatureFile extends RootFeature {
 
     private File sourceFile;
@@ -31,51 +29,26 @@ public class FeatureFile extends RootFeature {
     private String description;
     private List<Scenario> scenarios;
 
-    private Description junitDescription;
-
-
     @Override
     public String toString() {
         return "Feature: " + name;
     }
 
-
-    /**
-     * @return the junitDescription
-     */
-    public Description getJunitDescription() {
-        return junitDescription;
-    }
-
-
-    /**
-     * @param junitDescription
-     *            the junitDescription to set
-     */
-    public void setJunitDescription(final Description junitDescription) {
-        this.junitDescription = junitDescription;
-    }
-
-
     public String getDescription() {
         return description;
     }
-
 
     public void setDescription(final String description) {
         this.description = description;
     }
 
-
     public List<Scenario> getScenarios() {
         return scenarios;
     }
 
-
     public void setName(final String name) {
         this.name = name;
     }
-
 
     public FeatureFile() {
     }

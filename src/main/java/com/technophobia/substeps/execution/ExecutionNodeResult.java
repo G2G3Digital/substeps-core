@@ -31,11 +31,6 @@ public class ExecutionNodeResult {
 
     private Throwable thrown = null;
 
-    private long start, end = 0;
-
-
-    // long duration ?
-
     public String getStackTrace() {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
@@ -86,8 +81,6 @@ public class ExecutionNodeResult {
      * @param theException
      */
     public void setFailed(final Throwable theException) {
-        end = System.currentTimeMillis();
-
         result = ExecutionResult.FAILED;
         thrown = theException;
     }
@@ -97,8 +90,6 @@ public class ExecutionNodeResult {
 	 * 
 	 */
     public void setFinished() {
-        end = System.currentTimeMillis();
-
         result = ExecutionResult.PASSED;
     }
 
@@ -107,7 +98,6 @@ public class ExecutionNodeResult {
 	 * 
 	 */
     public void setStarted() {
-        start = System.currentTimeMillis();
         result = ExecutionResult.RUNNING;
     }
 

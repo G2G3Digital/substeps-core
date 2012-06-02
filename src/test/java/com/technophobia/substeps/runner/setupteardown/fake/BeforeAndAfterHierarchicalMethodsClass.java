@@ -18,12 +18,13 @@
  */
 package com.technophobia.substeps.runner.setupteardown.fake;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryScenario;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
+
 
 public class BeforeAndAfterHierarchicalMethodsClass extends BeforeAndAfterHierarchicalMethodsParentClass {
 

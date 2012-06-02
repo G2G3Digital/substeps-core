@@ -21,12 +21,13 @@ package com.technophobia.substeps.runner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryScenario;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
+
 
 
 /**
@@ -35,7 +36,7 @@ import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryScenario;
  * @author imoore
  * 
  */
-public class BeforeAndAftersTestParent extends BaseBDDRunnerTest {
+public class BeforeAndAftersTestParent extends BaseJunitFeatureRunnerTest {
 	private static final Logger log = LoggerFactory.getLogger(BeforeAndAftersTestParent.class);
 
 	public static int parentBeforeAllFeaturesCounter = 0;

@@ -22,7 +22,7 @@ import com.technophobia.substeps.model.SubSteps.AdditionalStepImplementations;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
 
 @StepImplementations
-@AdditionalStepImplementations({ BDDRunnerStepImplementations.class })
-public class BDDRunnerStepImplementationsContainer {
+@AdditionalStepImplementations({ MockStepImplementations.class })
+public class MockStepImplementationsContainer {
     // No-op
 }

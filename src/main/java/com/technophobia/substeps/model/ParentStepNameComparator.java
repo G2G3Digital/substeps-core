@@ -18,6 +18,7 @@
  */
 package com.technophobia.substeps.model;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -26,8 +27,13 @@ import java.util.Comparator;
  * @author imoore
  * 
  */
-public class ParentStepNameComparator implements Comparator<ParentStep> {
+public class ParentStepNameComparator implements Comparator<ParentStep>, Serializable  {
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3603889012021182256L;
+
+	/**
      * {@inheritDoc}
      */
     public int compare(final ParentStep p1, final ParentStep p2) {

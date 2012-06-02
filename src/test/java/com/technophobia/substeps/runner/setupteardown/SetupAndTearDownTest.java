@@ -28,11 +28,7 @@ import org.junit.Test;
 
 import com.technophobia.substeps.runner.BeforeAndAftersStaticTest;
 import com.technophobia.substeps.runner.BeforeAndAftersTestParent;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
-import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodState;
-import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfterProcessors;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing1;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing2;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing3;
@@ -74,18 +70,24 @@ public class SetupAndTearDownTest {
 	@Test
 	public void testOrderingOfSetupAndTearDown(){
 		
-		MethodExecutor executor = 
+		final BeforeAndAfterProcessorMethodExecutor executor = 
 		 new BeforeAndAfterProcessorMethodExecutor() ;
 		
-		SetupAndTearDown setupAndTearDown = new SetupAndTearDown( executor);
+		executor.setInitialisationClasses(new Class<?>[]{ BeforeAndAfterSequencing3.class, 
+	    	BeforeAndAfterSequencing2.class,
+	    	BeforeAndAfterSequencing1.class });
+		
+		final SetupAndTearDown setupAndTearDown = new SetupAndTearDown( executor);
 		
 		setupAndTearDown.initialise(ClassWithBeforesAndAfters.class);
+		
+		
 		
 		try {
 			setupAndTearDown.runBeforeAll();
 			setupAndTearDown.runAfterAll();
 		}
-		catch (Throwable e) {
+		catch (final Throwable e) {
 			
 			e.printStackTrace();
 			Assert.fail("befores and afters shouldn't fail for this test");

@@ -33,14 +33,13 @@ import org.junit.runner.notification.RunNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterEveryScenario;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryFeature;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeEveryScenario;
-import com.technophobia.substeps.stepimplementations.BDDRunnerStepImplementations;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
+import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 
 
 /**
@@ -160,7 +159,7 @@ public class BeforeAndAftersTest extends BeforeAndAftersTestParent {
 		final JunitFeatureRunner runner = new JunitFeatureRunner(testNotifier);
 
 		final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-		stepImplsList.add(BDDRunnerStepImplementations.class);
+		stepImplsList.add(MockStepImplementations.class);
 
 		// @FeatureFiles(featureFile = "./target/test-classes/features",
 		// subStepsFile = "./target/test-classes/substeps", stepImplementations
@@ -171,11 +170,11 @@ public class BeforeAndAftersTest extends BeforeAndAftersTestParent {
 		runner.init(this.getClass(), stepImplsList, "./target/test-classes/features", "@beforesAndAfters",
 				"./target/test-classes/substeps/simple.substeps");
 
-		final BDDRunnerStepImplementations stepImpls = new BDDRunnerStepImplementations(this);
+		final MockStepImplementations stepImpls = new MockStepImplementations(this);
 
 		final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
 
-		implsCache.put(BDDRunnerStepImplementations.class, stepImpls);
+		implsCache.put(MockStepImplementations.class, stepImpls);
 
 		final RunNotifier notifier = mock(RunNotifier.class);
 

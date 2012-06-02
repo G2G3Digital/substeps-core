@@ -39,22 +39,23 @@ import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodState;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeMultipleObject;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeObject;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorHierarchicalFakeObject;
+import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterHierarchicalMethodsClass;
+import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterMethodsClass;
 
 
 public class BeforeAndAfterProcessorMethodExecutorTest {
 
     @Test
     public void canLocateBeforeAndAfterAnnotatedMethods() throws Throwable {
-        final MethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
+        final BeforeAndAfterProcessorMethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
 
+        executor.setInitialisationClasses(new Class<?>[]{BeforeAndAfterMethodsClass.class});
+        
         executor.locate(BeforeAndAfterAnnotationProcessorFakeObject.class);
         checkNotSet(isBeforeAllFeaturesExecuted, isBeforeEveryFeatureExecuted, isBeforeEveryScenarioExecuted, isAfterEveryScenarioExecuted,
                 isAfterEveryFeatureExecuted, isAfterAllFeaturesExecuted);
@@ -77,8 +78,10 @@ public class BeforeAndAfterProcessorMethodExecutorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void canLocateBeforeAndAfterAnnotatedMethodsInClassHierarchy() throws Throwable {
-        final MethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
+        final BeforeAndAfterProcessorMethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
 
+        executor.setInitialisationClasses(new Class<?>[]{BeforeAndAfterHierarchicalMethodsClass.class});
+        
         executor.locate(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class);
         checkNotSet(isBeforeAllFeaturesHierarchyExecuted, isBeforeEveryFeatureHierarchyExecuted, isBeforeEveryScenarioHierarchyExecuted,
                 isAfterEveryScenarioHierarchyExecuted, isAfterEveryFeatureHierarchyExecuted, isAfterAllFeaturesHierarchyExecuted);
@@ -112,8 +115,10 @@ public class BeforeAndAfterProcessorMethodExecutorTest {
 
     @Test
     public void canLocateBeforeAndAfterAnnotatedMethodsForMultipleAnnotationProcessors() throws Throwable {
-        final MethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
+        final BeforeAndAfterProcessorMethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
 
+        executor.setInitialisationClasses(new Class<?>[]{ BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.class, BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.class });
+        
         executor.locate(BeforeAndAfterAnnotationProcessorFakeMultipleObject.class);
         checkNotSet(BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.isBeforeAllFeaturesExecuted,
                 BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.isBeforeAllFeaturesExecuted);

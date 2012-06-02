@@ -36,7 +36,6 @@ public final class SyntaxBuilder {
     private SyntaxBuilder() {
     }
 
-
     public static List<Class<?>> getStepImplementationClasses(final ClassLoader classLoader,
             final String[] classpath) {
         final ClasspathScanner cpScanner = new ClasspathScanner();
@@ -48,29 +47,16 @@ public final class SyntaxBuilder {
     }
 
 
-    public static Syntax buildSyntaxFromClasspath(final ClassLoader classLoader,
-            final String[] classpath, final File subStepsFile) {
-        final Syntax syntax = buildBaseSyntaxFromClasspath(classLoader, classpath);
-
-        if (subStepsFile != null) {
-            final SubStepDefinitionParser subStepParser = new SubStepDefinitionParser();
-            syntax.setSubStepsMap(subStepParser.loadSubSteps(subStepsFile));
-        }
-
-        return syntax;
-    }
-
-
-    public static Syntax buildSyntax(final ClassLoader classLoader,
+    public static Syntax buildSyntax(
             final List<Class<?>> stepImplementationClasses, final File subStepsFile) {
-        return buildSyntax(classLoader, stepImplementationClasses, subStepsFile, true, null);
+        return buildSyntax( stepImplementationClasses, subStepsFile, true, null);
     }
 
 
-    public static Syntax buildSyntax(final ClassLoader classLoader,
+    public static Syntax buildSyntax(
             final List<Class<?>> stepImplementationClasses, final File subStepsFile,
             final boolean strict, final String[] nonStrictKeywordPrecedence) {
-        final Syntax syntax = buildBaseSyntax(classLoader, stepImplementationClasses);
+        final Syntax syntax = buildBaseSyntax( stepImplementationClasses);
 
         syntax.setStrict(strict, nonStrictKeywordPrecedence);
 
@@ -83,7 +69,7 @@ public final class SyntaxBuilder {
     }
 
 
-    private static Syntax buildBaseSyntax(final ClassLoader classLoader,
+    private static Syntax buildBaseSyntax(
             final List<Class<?>> stepImplementationClasses) {
         // step implementations (arranged by StepDefinition, ie the annotation)
         // +
@@ -97,10 +83,6 @@ public final class SyntaxBuilder {
             implClassList = stepImplementationClasses;
         } else {
             implClassList = Collections.emptyList();
-            // final ClasspathScanner cpScanner = new ClasspathScanner();
-            // implClassList =
-            // cpScanner.getClassesWithAnnotation(BDDRunner.StepImplementations.class,
-            // classLoader);
         }
 
         final ClassAnalyser analyser = new ClassAnalyser();
@@ -110,27 +92,4 @@ public final class SyntaxBuilder {
 
         return syntax;
     }
-
-
-    private static Syntax buildBaseSyntaxFromClasspath(final ClassLoader classLoader,
-            final String[] classpath) {
-        // step implementations (arranged by StepDefinition, ie the annotation)
-        // +
-        // sub step definitions
-
-        final Syntax syntax = new Syntax();
-
-        final ClasspathScanner cpScanner = new ClasspathScanner();
-
-        final List<Class<?>> implClassList = cpScanner.getClassesWithAnnotation(
-                SubSteps.StepImplementations.class, classLoader, classpath);
-
-        final ClassAnalyser analyser = new ClassAnalyser();
-        for (final Class<?> implClass : implClassList) {
-            analyser.analyseClass(implClass, syntax);
-        }
-
-        return syntax;
-    }
-
 }

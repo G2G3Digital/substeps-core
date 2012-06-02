@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.model.Syntax;
-import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor2;
+import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
 
@@ -63,7 +63,7 @@ public class ExecutionNodeRunner {
         config = theConfig;
         config.initProperties();
 
-        final BeforeAndAfterProcessorMethodExecutor2 methExecutor = new BeforeAndAfterProcessorMethodExecutor2();
+        final BeforeAndAfterProcessorMethodExecutor methExecutor = new BeforeAndAfterProcessorMethodExecutor();
 
         methExecutor.setInitialisationClasses(config.getInitialisationClasses());
 
@@ -85,8 +85,7 @@ public class ExecutionNodeRunner {
             subStepsFile = new File(config.getSubStepsFileName());
         }
 
-        final Syntax syntax = SyntaxBuilder.buildSyntax(Thread.currentThread()
-                .getContextClassLoader(), config.getStepImplementationClasses(), subStepsFile,
+        final Syntax syntax = SyntaxBuilder.buildSyntax( config.getStepImplementationClasses(), subStepsFile,
                 config.isStrict(), config.getNonStrictKeywordPrecedence());
 
         final TestParameters parameters = new TestParameters(tagmanager, syntax,

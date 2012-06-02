@@ -25,12 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
 
 /**
  * Implementation of {@link MethodExecutor} that instantiates objects referenced
@@ -57,7 +55,8 @@ public class BeforeAndAfterProcessorMethodExecutor extends AbstractMethodExecuto
         }
     }
 
-    public void locate(final Class<?> targetClass) {
+    @Override
+	public void locate(final Class<?> targetClass) {
         super.locate(targetClass);
 
         for (final Class<?> processorClass : getInitialisationClasses(targetClass)) {
@@ -65,7 +64,8 @@ public class BeforeAndAfterProcessorMethodExecutor extends AbstractMethodExecuto
         }
     }
 
-    protected List<Method> methodsFor(final Class<?> targetClass) {
+    @Override
+	protected List<Method> methodsFor(final Class<?> targetClass) {
 
         final List<Method> methods = new ArrayList<Method>();
         
@@ -80,7 +80,8 @@ public class BeforeAndAfterProcessorMethodExecutor extends AbstractMethodExecuto
 
 
    
-    protected List<Class<?>> classHierarchyFor(final Class<?> processorClass) {
+    @Override
+	protected List<Class<?>> classHierarchyFor(final Class<?> processorClass) {
 
 //        final Class<?>[] processorClasses = getInitialisationClasses(targetClass);
 
@@ -112,11 +113,13 @@ public class BeforeAndAfterProcessorMethodExecutor extends AbstractMethodExecuto
         Collections.addAll(methods, processorClass.getMethods());
     }
 
-
+    private Class<?>[] initialisationClasses = null;
     
+	@Override
 	public Class<?>[] getInitialisationClasses(final Class<?> targetClass) {
-        if (targetClass.isAnnotationPresent(BeforeAndAfterProcessors.class)) {
-            return targetClass.getAnnotation(BeforeAndAfterProcessors.class).value();
+        
+		if (initialisationClasses != null) {
+            return initialisationClasses;
         }
         return new Class<?>[0];
     }
@@ -143,4 +146,20 @@ public class BeforeAndAfterProcessorMethodExecutor extends AbstractMethodExecuto
 
         return Collections2.transform(suitableClassDefs, Functions.forMap(instanceMap));
     }
+
+	/**
+	 * @return the initialisationClasses
+	 */
+	public Class<?>[] getInitialisationClasses()
+	{
+		return initialisationClasses;
+	}
+
+	/**
+	 * @param initialisationClasses the initialisationClasses to set
+	 */
+	public void setInitialisationClasses(Class<?>[] initialisationClasses)
+	{
+		this.initialisationClasses = initialisationClasses;
+	}
 }

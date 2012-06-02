@@ -348,32 +348,8 @@ public class ExecutionNode {
                 buf.append(line);
             }
 
-            if (targetClass != null && targetMethod != null) {
-                buf.append("  -  ").append(targetClass.getSimpleName()).append(".")
-                        .append(targetMethod.getName()).append("(");
+            appendMethodInfo(buf);
 
-                if (methodArgs != null) {
-                    boolean commaRequired = false;
-                    for (final Object arg : methodArgs) {
-                        if (commaRequired) {
-                            buf.append(", ");
-                        }
-
-                        boolean quotes = false;
-                        if (arg instanceof String) {
-                            quotes = true;
-                            buf.append("\"");
-                        }
-                        buf.append(arg.toString());
-                        if (quotes) {
-                            buf.append("\"");
-                        }
-                        commaRequired = true;
-                    }
-                }
-
-                buf.append(")");
-            }
         } else {
             buf.append(": Root");
         }
@@ -418,32 +394,7 @@ public class ExecutionNode {
                 printedLine = true;
             }
 
-            if (targetClass != null && targetMethod != null) {
-                buf.append("  -  ").append(targetClass.getSimpleName()).append(".")
-                        .append(targetMethod.getName()).append("(");
-
-                if (methodArgs != null) {
-                    boolean commaRequired = false;
-                    for (final Object arg : methodArgs) {
-                        if (commaRequired) {
-                            buf.append(", ");
-                        }
-
-                        boolean quotes = false;
-                        if (arg instanceof String) {
-                            quotes = true;
-                            buf.append("\"");
-                        }
-                        buf.append(arg.toString());
-                        if (quotes) {
-                            buf.append("\"");
-                        }
-                        commaRequired = true;
-                    }
-                }
-
-                buf.append(")");
-            }
+            appendMethodInfo(buf);
 
             if (printedLine) {
                 buf.append("\n");
@@ -459,6 +410,40 @@ public class ExecutionNode {
         // else we're root
         return buf.toString();
     }
+
+
+	/**
+	 * @param buf
+	 */
+	public void appendMethodInfo(final StringBuilder buf)
+	{
+		if (targetClass != null && targetMethod != null) {
+		    buf.append("  -  ").append(targetClass.getSimpleName()).append(".")
+		            .append(targetMethod.getName()).append("(");
+
+		    if (methodArgs != null) {
+		        boolean commaRequired = false;
+		        for (final Object arg : methodArgs) {
+		            if (commaRequired) {
+		                buf.append(", ");
+		            }
+
+		            boolean quotes = false;
+		            if (arg instanceof String) {
+		                quotes = true;
+		                buf.append("\"");
+		            }
+		            buf.append(arg.toString());
+		            if (quotes) {
+		                buf.append("\"");
+		            }
+		            commaRequired = true;
+		        }
+		    }
+
+		    buf.append(")");
+		}
+	}
 
 
     /**

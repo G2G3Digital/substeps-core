@@ -34,71 +34,23 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfterProcessors;
 
 public class JunitFeatureRunner extends org.junit.runner.Runner  {
     private final Logger log = LoggerFactory.getLogger(JunitFeatureRunner.class);
-
-    // TODO move these annotations off elsewhere ??
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public static @interface FeatureFiles {
         String featureFile();
-
-
         String subStepsFile() default "";
-
-
         Class<?>[] stepImplementations();
-
-
         String tagList() default "";
-
-
         boolean strict() default true;
-
-
         String[] nonStrictKeywordPrecedence() default {};
-
-
         Class<? extends DescriptionProvider> descriptionProvider() default EclipseDescriptionProvider.class;
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    public static @interface BeforeAndAfterProcessors {
-        Class<?>[] value();
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public static @interface BeforeAllFeatures {
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public static @interface AfterAllFeatures {
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public static @interface BeforeEveryFeature {
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public static @interface BeforeEveryScenario {
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public static @interface AfterEveryFeature {
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    public static @interface AfterEveryScenario {
-    }
 
     private final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
@@ -107,10 +59,6 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
     private DescriptionProvider descriptionProvider = null;
 
     private Class<?> classContainingTheTests;
-
-//    private SetupAndTearDown setupAndTearDown;
-
-//    private Syntax syntax;
 
     private Description thisDescription;
 
@@ -202,9 +150,6 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         Assert.assertNotNull("descriptionProvider cannot be null", descriptionProvider);
 
         classContainingTheTests = reportedClass;
-//        setupAndTearDown = new SetupAndTearDown(determineMethodExecutorsFromClass(classContainingTheTests));
-//        setupAndTearDown.initialise(classContainingTheTests);
-
 
         executionConfig = new ExecutionConfig();
         executionConfig.setTags(tags);
@@ -232,31 +177,6 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
 
         
         rootNode = runner.prepareExecutionConfig(executionConfig, notifier);
-        
-        
-        // tags ??
-//        TagManager tagmanager = new TagManager(tags);
-//        insertCommandLineTags(tagmanager);
-//
-//        File subStepsFile = null;
-//
-//        if (subStepsFileName != null) {
-//            subStepsFile = new File(subStepsFileName);
-//        }
-
-//        syntax = SyntaxBuilder.buildSyntax(Thread.currentThread().getContextClassLoader(),
-//                stepImplementationClasses, subStepsFile, strict, nonStrictKeywordPrecedence);
-
-        // load up the features
-
-
-        
-//        TestParameters parameters = new TestParameters(tagmanager, syntax, featureFile);
-//        parameters.init();
-//        
-//        final ExecutionNodeTreeBuilder nodeTreeBuilder = new ExecutionNodeTreeBuilder(parameters);
-//
-//        rootNode = nodeTreeBuilder.buildExecutionNodeTree();
         
         log.debug("rootNode.toDebugString():\n" + rootNode.toDebugString());
 
@@ -295,7 +215,7 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
     @Override
     public void run(final RunNotifier junitNotifier) {
 
-        System.out.println("rootNode.toDebugString:\n" + rootNode.toDebugString());
+        log.debug("rootNode.toDebugString:\n" + rootNode.toDebugString());
 
         // for maven
         if (thisDescription == null) {
@@ -312,16 +232,8 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         Assert.assertNotNull("execution config has not been initialised", executionConfig);
 
         runner.run();
-        
-        
-
     }
 
-
-    /**
-     * @param thisDescription2
-     * @return
-     */
     private String printDescription(final Description desc, final int depth) {
         final StringBuilder buf = new StringBuilder();
 
@@ -344,6 +256,4 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
     public ExecutionNode getRootExecutionNode() {
         return rootNode;
     }
-
-
 }

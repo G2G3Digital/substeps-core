@@ -37,20 +37,20 @@ import com.technophobia.substeps.runner.TestCallback;
  * 
  */
 @StepImplementations
-public class BDDRunnerStepImplementations {
-    private final Logger log = LoggerFactory.getLogger(BDDRunnerStepImplementations.class);
+public class MockStepImplementations {
+    private final Logger log = LoggerFactory.getLogger(MockStepImplementations.class);
 
     private static boolean delay = false;
     private TestCallback callback;
 
 
-    public BDDRunnerStepImplementations(final TestCallback callback) {
+    public MockStepImplementations(final TestCallback callback) {
         log.debug("BDDRunnerStepImplementations ctor with callback");
         this.callback = callback;
     }
 
 
-    public BDDRunnerStepImplementations() {
+    public MockStepImplementations() {
         log.debug("BDDRunnerStepImplementations ctor");
     }
 

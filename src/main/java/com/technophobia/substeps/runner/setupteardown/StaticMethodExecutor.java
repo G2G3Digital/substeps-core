@@ -45,7 +45,8 @@ public class StaticMethodExecutor extends AbstractMethodExecutor {
     }
 
 
-    protected List<Method> methodsFor(final Class<?> targetClass) {
+    @Override
+	protected List<Method> methodsFor(final Class<?> targetClass) {
         final Collection<Method> allMethods = Arrays.asList(targetClass.getMethods());
         return new ArrayList<Method>(Collections2.filter(allMethods, new Predicate<Method>() {
             public boolean apply(final Method method) {
@@ -63,9 +64,10 @@ public class StaticMethodExecutor extends AbstractMethodExecutor {
 
             catch (final InvocationTargetException e) {
                 throw e.getTargetException();
-            } catch (final Throwable e) {
-                throw e;
-            }
+            } 
+//            catch (final Throwable e) {
+//                throw e;
+//            }
         }
     }
 
@@ -74,7 +76,7 @@ public class StaticMethodExecutor extends AbstractMethodExecutor {
 	 * @see uk.co.itmoore.bddrunner.runner.setupteardown.AbstractMethodExecutor#getInitialisationClasses(java.lang.Class)
 	 */
 	@Override
-	protected Class<?>[] getInitialisationClasses(Class<?> targetClass)
+	protected Class<?>[] getInitialisationClasses(final Class<?> targetClass)
 	{
 		return new Class<?>[]{targetClass};
 	}

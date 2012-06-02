@@ -38,7 +38,7 @@ import com.technophobia.substeps.runner.JunitFeatureRunner;
  * @author imoore
  * 
  */
-public abstract class BaseBDDRunnerTest implements TestCallback {
+public abstract class BaseJunitFeatureRunnerTest implements TestCallback {
 	protected TestNotifier testNotifier = null;
 	// List<MethodInvocation> invocations = null;
 
@@ -71,11 +71,6 @@ public abstract class BaseBDDRunnerTest implements TestCallback {
 //			runnerField.setAccessible(true);
 
 			final Object runnerObject = runnerField.get(runner);
-
-//			final Field stepRunnerField = runnerObject.getClass().getDeclaredField("stepRunner");
-//			stepRunnerField.setAccessible(true);
-//
-//			final Object stepRunnerObject = stepRunnerField.get(runnerObject);
 
 			final Field implCacheField = runnerObject.getClass().getDeclaredField("implsCache");
 			implCacheField.setAccessible(true);
