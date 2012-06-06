@@ -26,13 +26,6 @@ package com.technophobia.substeps.runner.setupteardown;
  */
 public interface MethodExecutor {
 
-    /**
-     * Find and prepare methods to be executed
-     * 
-     * @param targetClass
-     *            The class referencing the methods
-     */
-    void locate(Class<?> targetClass);
 
 
     /**
@@ -44,5 +37,5 @@ public interface MethodExecutor {
      *            A flag signifying which methods to be executed
      * @throws Throwable
      */
-    void executeMethods(Class<?> targetClass, MethodState currentState) throws Throwable;
+    void executeMethods(MethodState currentState) throws Throwable;
 }

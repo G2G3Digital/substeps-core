@@ -86,12 +86,10 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         // @RunWith....
 
 
-        log.debug("JunitStepRunner2 ctor with class: " + classContainingTheTests.getSimpleName());
+        log.debug("JunitFeatureRunner ctor with class: " + classContainingTheTests.getSimpleName());
 
         final FeatureFiles annotation = classContainingTheTests.getAnnotation(FeatureFiles.class);
-        if (annotation == null) {
-            Assert.fail("no Feature file annotation specified on the test class");
-        }
+        Assert.assertNotNull("no Feature file annotation specified on the test class", annotation);
 
         List<Class<?>> stepImpls = null;
 
@@ -105,10 +103,6 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         init(classContainingTheTests, stepImpls, annotation.featureFile(), annotation.tagList(),
                 annotation.subStepsFile(), annotation.strict(),
                 annotation.nonStrictKeywordPrecedence(), annotation.descriptionProvider());
-
-        // TODO - perform -D overrides here ? Separate class to hold the values,
-        // then init using that?
-        // Speak to Stu about what he's doing here..?
     }
 
 
@@ -169,13 +163,6 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
 	        
         }        
 
-        // not required by junit
-// junit always fail fast - used by devs and testers ?
-//      private boolean fastFailParseErrors = true;
-//      private String nonFatalTags;
-//      private String[] stepImplementationClassNames;
-
-        
         rootNode = runner.prepareExecutionConfig(executionConfig, notifier);
         
         log.debug("rootNode.toDebugString():\n" + rootNode.toDebugString());

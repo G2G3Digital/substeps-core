@@ -56,6 +56,7 @@ public class TagManager {
             // parse, process and store
             parseTextValue(tagList);
         }
+        insertCommandLineTags();
     }
 
 
@@ -170,10 +171,7 @@ public class TagManager {
     }
 
 
-	/**
-	 * 
-	 */
-	public void insertCommandLineTags()
+	private void insertCommandLineTags()
 	{
 		final String tagParams = System.getProperty("tags");
         if (tagParams != null) {

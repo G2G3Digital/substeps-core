@@ -27,6 +27,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +43,6 @@ import org.junit.runner.Description;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.execution.Feature;
-import com.technophobia.substeps.runner.ExecutionConfig;
-import com.technophobia.substeps.runner.ExecutionNodeRunner;
-import com.technophobia.substeps.runner.IJunitNotifier;
-import com.technophobia.substeps.runner.INotifier;
-import com.technophobia.substeps.runner.JunitNotifier;
-import com.technophobia.substeps.runner.SubStepConfigurationException;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.steps.TestStepImplementations;
 
@@ -68,13 +63,13 @@ public class ExecutionNodeRunnerTest {
         final String substeps = "./target/test-classes/substeps/error.substeps";
         final INotifier notifier = mock(INotifier.class);
 		
-		ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier);
+		final ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier);
         
         // check the rootNode tree is in the state we expect
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
         
-        ExecutionNode featureNode = rootNode.getChild(0);
-        ExecutionNode scenarioNode = featureNode.getChild(0);
+        final ExecutionNode featureNode = rootNode.getChild(0);
+        final ExecutionNode scenarioNode = featureNode.getChild(0);
         
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
         
@@ -89,13 +84,13 @@ public class ExecutionNodeRunnerTest {
         final String substeps = "./target/test-classes/substeps/duplicates2.substeps";
         final INotifier notifier = mock(INotifier.class);
 		
-		ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier);
+		final ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier);
         
         // check the rootNode tree is in the state we expect
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
         
-        ExecutionNode featureNode = rootNode.getChild(0);
-        ExecutionNode scenarioNode = featureNode.getChild(0);
+        final ExecutionNode featureNode = rootNode.getChild(0);
+        final ExecutionNode scenarioNode = featureNode.getChild(0);
         
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
         
@@ -114,17 +109,17 @@ public class ExecutionNodeRunnerTest {
         final String substeps = "./target/test-classes/substeps/simple.substeps";
         final INotifier notifier = mock(INotifier.class);
 		
-		ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier);
+		final ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier);
         
 		System.out.println("\n\n\n\n\n*************\n\n" + rootNode.toDebugString());
 		
         // check the rootNode tree is in the state we expect
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
         
-        ExecutionNode featureNode = rootNode.getChild(0);
-        ExecutionNode scenarioNode = featureNode.getChild(0); 
+        final ExecutionNode featureNode = rootNode.getChild(0);
+        final ExecutionNode scenarioNode = featureNode.getChild(0); 
         
-        ExecutionNode scenarioOutlineNode2 = scenarioNode.getChild(1);
+        final ExecutionNode scenarioOutlineNode2 = scenarioNode.getChild(1);
         
         Assert.assertThat(scenarioOutlineNode2.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
         
@@ -137,8 +132,8 @@ public class ExecutionNodeRunnerTest {
 	//	replacing: <message> with: You must enter the following information to proceed:$Sort code.$Bank Account Name.$Bank Account Number. in string: Then a method with a quoted '<message>'
 		
 		String rtn = "Then a method with a quoted '<message>'";
-		String key = "message";
-		String val = "You must enter the following information to proceed:$Sort code.$Bank Account Name.$Bank Account Number.";
+		final String key = "message";
+		final String val = "You must enter the following information to proceed:$Sort code.$Bank Account Name.$Bank Account Number.";
 		
 		rtn = rtn.replaceAll("<" + key + ">", Matcher.quoteReplacement(val));
 		
@@ -160,13 +155,13 @@ public class ExecutionNodeRunnerTest {
 	private ExecutionNode runExecutionTest(final String feature, final String tags, final String substeps,
 			final INotifier notifier)
 	{
-		ExecutionConfig executionConfig = new ExecutionConfig();
+		final ExecutionConfig executionConfig = new ExecutionConfig();
 
 		executionConfig.setTags(tags);
         executionConfig.setFeatureFile(feature);
         executionConfig.setSubStepsFileName(substeps);
         
-        List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
+        final List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
         stepImplementationClasses.add(TestStepImplementations.class);
         
         executionConfig.setStepImplementationClasses(stepImplementationClasses);
@@ -174,13 +169,50 @@ public class ExecutionNodeRunnerTest {
         // this results in test failure rather than exception
         executionConfig.setFastFailParseErrors(false);
         
-        ExecutionNodeRunner runner = new ExecutionNodeRunner();
+        final ExecutionNodeRunner runner = new ExecutionNodeRunner();
         
         
-        ExecutionNode rootNode = runner.prepareExecutionConfig(executionConfig, notifier);
+        final ExecutionNode rootNode = runner.prepareExecutionConfig(executionConfig, notifier);
         
         runner.run();
 		return rootNode;
+	}
+	
+	private void setPrivateField(final Object target, final String fieldName, final Object value){
+		
+		Field field;
+		try
+		{
+			field = target.getClass().getDeclaredField(fieldName);
+			final boolean currentAccessibility = field.isAccessible();
+
+			field.setAccessible(true);
+			
+			field.set(target, value);
+			
+			field.setAccessible(currentAccessibility);
+		}
+		catch (final SecurityException e)
+		{
+			Assert.fail(e.getMessage());
+			e.printStackTrace();
+		}
+		catch (final NoSuchFieldException e)
+		{
+			Assert.fail(e.getMessage());
+			e.printStackTrace();
+		}
+		catch (final IllegalArgumentException e)
+		{
+			Assert.fail(e.getMessage());
+			e.printStackTrace();
+		}
+		catch (final IllegalAccessException e)
+		{
+			Assert.fail(e.getMessage());
+			e.printStackTrace();
+		}
+		
 	}
 	
 	@Test
@@ -200,7 +232,12 @@ public class ExecutionNodeRunnerTest {
         descriptionMap.put(Long.valueOf(node.getId()), d);
         notifier.setDescriptionMap(descriptionMap);
 
-        runner.run(node, notifier, setupAndTearDown);
+        
+        setPrivateField(runner, "rootNode", node);
+        setPrivateField(runner, "notifier", notifier);
+        setPrivateField(runner, "setupAndTearDown", setupAndTearDown);
+        
+        runner.run();
 
         verify(notifier, times(1)).notifyTestFailed(argThat(is(d)),
                 argThat(any(IllegalStateException.class)));
@@ -247,7 +284,11 @@ public class ExecutionNodeRunnerTest {
 
         notifier.setDescriptionMap(descriptionMap);
 
-        runner.run(rootNode, notifier, setupAndTearDown);
+        setPrivateField(runner, "rootNode", rootNode);
+        setPrivateField(runner, "notifier", notifier);
+        setPrivateField(runner, "setupAndTearDown", setupAndTearDown);
+
+        runner.run();
 
         // the failure is called on the root twice, once for the child not
         // having tests, the other for
@@ -332,7 +373,11 @@ public class ExecutionNodeRunnerTest {
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
-        runner.run(rootNode, notifier, setupAndTearDown);
+        setPrivateField(runner, "rootNode", rootNode);
+        setPrivateField(runner, "notifier", notifier);
+        setPrivateField(runner, "setupAndTearDown", setupAndTearDown);
+
+        runner.run();
 
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
         Assert.assertThat(featureNode.getResult().getResult(), is(ExecutionResult.FAILED));
