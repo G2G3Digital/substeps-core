@@ -28,7 +28,7 @@ import java.util.Map;
  * @author imoore
  * 
  */
-public class ExecutionContext {
+public final class ExecutionContext {
 
 	private static final ThreadLocal<ExecutionContext> executionContextThreadLocal = new ThreadLocal<ExecutionContext>() {
 		@Override

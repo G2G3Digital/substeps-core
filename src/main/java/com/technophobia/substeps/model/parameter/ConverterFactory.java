@@ -35,7 +35,7 @@ package com.technophobia.substeps.model.parameter;
  *
  * @author irawson
  */
-public class ConverterFactory {
+public final class ConverterFactory {
 
 	// TODO Need a better way to inject/configure this list (annotations? config file?)
 	private static final Converter<?>[] CONVERTER_LIST = {

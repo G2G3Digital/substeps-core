@@ -39,36 +39,31 @@ import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodState;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2;
-import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeMultipleObject;
-import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorFakeObject;
-import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterAnnotationProcessorHierarchicalFakeObject;
+import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterHierarchicalMethodsClass;
+import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterMethodsClass;
 
 
 public class BeforeAndAfterProcessorMethodExecutorTest {
 
     @Test
     public void canLocateBeforeAndAfterAnnotatedMethods() throws Throwable {
-        final MethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
+        final BeforeAndAfterProcessorMethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor(new Class<?>[]{BeforeAndAfterMethodsClass.class});
 
-        executor.locate(BeforeAndAfterAnnotationProcessorFakeObject.class);
         checkNotSet(isBeforeAllFeaturesExecuted, isBeforeEveryFeatureExecuted, isBeforeEveryScenarioExecuted, isAfterEveryScenarioExecuted,
                 isAfterEveryFeatureExecuted, isAfterAllFeaturesExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorFakeObject.class, MethodState.BEFORE_ALL);
+        executor.executeMethods( MethodState.BEFORE_ALL);
         assertThat(isBeforeAllFeaturesExecuted, is(true));
         checkNotSet(isBeforeEveryFeatureExecuted, isBeforeEveryScenarioExecuted, isAfterEveryScenarioExecuted, isAfterEveryFeatureExecuted,
                 isAfterAllFeaturesExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorFakeObject.class, MethodState.BEFORE_FEATURES);
+        executor.executeMethods(MethodState.BEFORE_FEATURES);
         assertThat(isBeforeEveryFeatureExecuted, is(true));
         checkNotSet(isBeforeEveryScenarioExecuted, isAfterEveryScenarioExecuted, isAfterEveryFeatureExecuted, isAfterAllFeaturesExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorFakeObject.class, MethodState.BEFORE_SCENARIOS);
+        executor.executeMethods(MethodState.BEFORE_SCENARIOS);
         assertThat(isBeforeEveryScenarioExecuted, is(true));
         checkNotSet(isAfterEveryScenarioExecuted, isAfterEveryFeatureExecuted, isAfterAllFeaturesExecuted);
     }
@@ -77,48 +72,47 @@ public class BeforeAndAfterProcessorMethodExecutorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void canLocateBeforeAndAfterAnnotatedMethodsInClassHierarchy() throws Throwable {
-        final MethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
+        final BeforeAndAfterProcessorMethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor(new Class<?>[]{BeforeAndAfterHierarchicalMethodsClass.class});
 
-        executor.locate(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class);
         checkNotSet(isBeforeAllFeaturesHierarchyExecuted, isBeforeEveryFeatureHierarchyExecuted, isBeforeEveryScenarioHierarchyExecuted,
                 isAfterEveryScenarioHierarchyExecuted, isAfterEveryFeatureHierarchyExecuted, isAfterAllFeaturesHierarchyExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class, MethodState.BEFORE_ALL);
+        executor.executeMethods( MethodState.BEFORE_ALL);
         checkOrderOfExecution(isBeforeAllFeaturesHierarchyExecuted, "Parent", "Child");
         checkNotSet(isBeforeEveryFeatureHierarchyExecuted, isBeforeEveryScenarioHierarchyExecuted, isAfterEveryScenarioHierarchyExecuted,
                 isAfterEveryFeatureHierarchyExecuted, isAfterAllFeaturesHierarchyExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class, MethodState.BEFORE_FEATURES);
+        executor.executeMethods( MethodState.BEFORE_FEATURES);
         checkOrderOfExecution(isBeforeEveryFeatureHierarchyExecuted, "Parent", "Child");
         checkNotSet(isBeforeEveryScenarioHierarchyExecuted, isAfterEveryScenarioHierarchyExecuted, isAfterEveryFeatureHierarchyExecuted,
                 isAfterAllFeaturesHierarchyExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class, MethodState.BEFORE_SCENARIOS);
+        executor.executeMethods( MethodState.BEFORE_SCENARIOS);
         checkOrderOfExecution(isBeforeEveryScenarioHierarchyExecuted, "Parent", "Child");
         checkNotSet(isAfterEveryScenarioHierarchyExecuted, isAfterEveryFeatureHierarchyExecuted, isAfterAllFeaturesHierarchyExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class, MethodState.AFTER_SCENARIOS);
+        executor.executeMethods( MethodState.AFTER_SCENARIOS);
         checkOrderOfExecution(isAfterEveryScenarioHierarchyExecuted, "Child", "Parent");
         checkNotSet(isAfterEveryFeatureHierarchyExecuted, isAfterAllFeaturesHierarchyExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class, MethodState.AFTER_FEATURES);
+        executor.executeMethods( MethodState.AFTER_FEATURES);
         checkOrderOfExecution(isAfterEveryFeatureHierarchyExecuted, "Child", "Parent");
         checkNotSet(isAfterAllFeaturesHierarchyExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorHierarchicalFakeObject.class, MethodState.AFTER_ALL);
+        executor.executeMethods( MethodState.AFTER_ALL);
         checkOrderOfExecution(isAfterAllFeaturesHierarchyExecuted, "Child", "Parent");
     }
 
 
     @Test
     public void canLocateBeforeAndAfterAnnotatedMethodsForMultipleAnnotationProcessors() throws Throwable {
-        final MethodExecutor executor = new BeforeAndAfterProcessorMethodExecutor();
+        final BeforeAndAfterProcessorMethodExecutor executor = 
+        		new BeforeAndAfterProcessorMethodExecutor(new Class<?>[]{ BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.class, BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.class });
 
-        executor.locate(BeforeAndAfterAnnotationProcessorFakeMultipleObject.class);
         checkNotSet(BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.isBeforeAllFeaturesExecuted,
                 BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.isBeforeAllFeaturesExecuted);
 
-        executor.executeMethods(BeforeAndAfterAnnotationProcessorFakeMultipleObject.class, MethodState.BEFORE_ALL);
+        executor.executeMethods( MethodState.BEFORE_ALL);
         assertThat(BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.isBeforeAllFeaturesExecuted, is(true));
         assertThat(BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.isBeforeAllFeaturesExecuted, is(true));
     }

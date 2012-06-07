@@ -53,11 +53,9 @@ public class ExecutionNodeTreeBuilder {
 
     private final TestParameters parameters;
 
-
     public ExecutionNodeTreeBuilder(final TestParameters parameters) {
         this.parameters = parameters;
     }
-
 
     public ExecutionNode buildExecutionNodeTree() {
 
@@ -98,7 +96,7 @@ public class ExecutionNodeTreeBuilder {
         }
     }
 
-
+    // TODO - to turn off - @SuppressWarnings("PMD.AvoidCatchingThrowable")
     private void buildExectionNodeForScenario(final Scenario scenario,
             final ExecutionNode featureNode) {
         if (scenario != null) {
@@ -204,8 +202,6 @@ public class ExecutionNodeTreeBuilder {
 
                 // these are the child steps we want to execute
 
-                // log.trace("running a parent step");
-
                 substepsParent.initialiseParamValues(step.getParameterLine());
 
                 final Map<String, String> parametersForSubSteps = substepsParent.getParamValueMap();
@@ -253,7 +249,6 @@ public class ExecutionNodeTreeBuilder {
             final Step step) {
         ParentStep substepsParent = subStepsMapLocal.get(step.getLine(), 0);
 
-        // TODO WIP
         // if we're not strict then we can look for other step defs that fit
         if (!parameters.getSyntax().isStrict() && substepsParent == null) {
             final String originalKeyword = step.getKeyword();
@@ -271,22 +266,8 @@ public class ExecutionNodeTreeBuilder {
 
                         break;
                     }
-
-                    // final List<StepImplementation> altStepImplementations =
-                    // getStrictStepimplementation(altKeyword,
-                    // parameterLine.replaceFirst(keyword, altKeyword),
-                    // okNotTofindAnything);
-                    // if (!altStepImplementations.isEmpty()) {
-                    // // found an alternative, bail immediately
-                    // list = new
-                    // ArrayList<StepImplementation>(Collections2.transform(altStepImplementations,
-                    // new
-                    // CloneStepImplementationsWithNewKeywordFunction(keyword)));
-                    // break;
-                    // }
                 }
             }
-
         }
 
         return substepsParent;
@@ -299,7 +280,6 @@ public class ExecutionNodeTreeBuilder {
         // level before passing down the chain
         if (parametersForSteps != null && !parametersForSteps.isEmpty()) {
 
-            // log.trace("substituting placeholders");
             // replace any tokens in this step
             step.setParameterLine(substitutePlaceholders(step.getLine(), parametersForSteps));
 
@@ -405,8 +385,6 @@ public class ExecutionNodeTreeBuilder {
             final ParentStep parent, final List<Map<String, String>> inlineTable,
             final ExecutionNode stepNode) throws IllegalArgumentException {
 
-        // log.debug("executeStepImplementation");
-
         final Method stepImplementationMethod = execImpl.getMethod();
 
         final Class<?>[] stepImplementationMethodParameterTypes = stepImplementationMethod
@@ -430,12 +408,7 @@ public class ExecutionNodeTreeBuilder {
                 throw new IllegalArgumentException(
                         "Argument mismatch between what expected for step impl and what found in feature");
             }
-
         }
-        // else {
-        // log.debug("executing: " + execImpl.getClass().getSimpleName() + "."
-        // + stepImplementationMethod.getName() + " with no args");
-        // }
     }
 
 

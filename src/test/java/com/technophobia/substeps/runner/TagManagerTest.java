@@ -18,15 +18,23 @@
  */
 package com.technophobia.substeps.runner;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.technophobia.substeps.runner.TagManager;
+import com.technophobia.substeps.model.FeatureFile;
+import com.technophobia.substeps.model.Scenario;
+import com.technophobia.substeps.steps.TestStepImplementations;
 
 /**
  * 
@@ -147,5 +155,65 @@ public class TagManagerTest {
         }
 
     }
+
+	@Test
+	public void testTagAnnotations() {
+
+
+		final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
+		stepImplsList.add(TestStepImplementations.class);
+
+		// pass in the stuff that would normally be placed in the annotation
+
+		final TagManager tagManager = new TagManager(null);
+		final TestParameters testParams = new TestParameters(tagManager, null, "./target/test-classes/features/tagged.feature");
+		testParams.init();
+		
+		List<FeatureFile> featureFileList = testParams.getFeatureFileList();
+
+		List<Scenario> scenarios = featureFileList.get(0).getScenarios();
+		Assert.assertThat(scenarios.size(), is(4));
+
+		for (final Scenario sc : scenarios) {
+			if (! tagManager.acceptTaggedScenario(sc.getTags())) {
+				Assert.fail("all scenarios should be runnable");
+			}
+		}
+
+
+		final TagManager tagManager2 = new TagManager("@runme");
+		final TestParameters testParams2 = new TestParameters(tagManager2, null, "./target/test-classes/features/tagged.feature");
+		testParams2.init();
+		
+		featureFileList = testParams2.getFeatureFileList();
+
+		scenarios = featureFileList.get(0).getScenarios();
+		Assert.assertThat(scenarios.size(), is(4));
+
+		final Set<String> excludedTaggedScenarios = new HashSet<String>();
+
+		excludedTaggedScenarios.add("An excluded tagged scenario");
+		excludedTaggedScenarios.add("An untagged scenario");
+		excludedTaggedScenarios.add("multilined tagged scenario");
+
+		for (final Scenario sc : scenarios) {
+			
+			if (tagManager2.acceptTaggedScenario(sc.getTags())) {
+//			if (runner.isRunnable(sc)) {
+				Assert.assertThat(sc.getDescription(), is("A tagged scenario"));
+			} else {
+				if (!excludedTaggedScenarios.contains(sc.getDescription())) {
+					Assert.fail("expecting some excluded tags: " + sc.getDescription());
+				}
+			}
+		}
+
+		// check that the multiline tagged scenario works ok
+		final Scenario scenario = featureFileList.get(0).getScenarios().get(3);
+
+		Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@all"));
+		Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@searchcontracts"));
+		Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@searchcontracts_30"));
+	}
 
 }

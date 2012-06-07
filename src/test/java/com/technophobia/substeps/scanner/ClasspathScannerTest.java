@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.technophobia.substeps.model.SubSteps;
-import com.technophobia.substeps.stepimplementations.BDDRunnerStepImplementations;
+import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 
 /**
  * 
@@ -47,7 +47,7 @@ public class ClasspathScannerTest {
 
         Assert.assertNotNull(classesWithAnnotation);
 
-        Assert.assertThat(classesWithAnnotation.contains(BDDRunnerStepImplementations.class),
+        Assert.assertThat(classesWithAnnotation.contains(MockStepImplementations.class),
                 is(true));
 
         // if elem is a jar, open up and take a look - lengthy?

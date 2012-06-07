@@ -30,9 +30,8 @@ import com.technophobia.substeps.model.ParentStep;
 import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.StepImplementation;
 import com.technophobia.substeps.model.Syntax;
-import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
-import com.technophobia.substeps.stepimplementations.BDDRunnerStepImplementations;
-import com.technophobia.substeps.stepimplementations.BDDRunnerStepImplementationsContainer;
+import com.technophobia.substeps.stepimplementations.MockStepImplementations;
+import com.technophobia.substeps.stepimplementations.MockStepImplementationsContainer;
 import com.technophobia.substeps.stepimplementations.DuplicateStepImplementations;
 import com.technophobia.substeps.steps.TestStepImplementations;
 
@@ -51,9 +50,9 @@ public class SyntaxBuilderTest {
         stepImplsList.add(TestStepImplementations.class);
 
         final List<Class<?>> stepImpls = new ArrayList<Class<?>>();
-        stepImpls.add(BDDRunnerStepImplementations.class);
+        stepImpls.add(MockStepImplementations.class);
 
-        SyntaxBuilder.buildSyntax(Thread.currentThread().getContextClassLoader(), stepImpls,
+        SyntaxBuilder.buildSyntax(stepImpls,
                 new File("./target/test-classes/substeps/duplicates.substeps"));
     }
 
@@ -66,7 +65,7 @@ public class SyntaxBuilderTest {
         final List<Class<?>> stepImpls = new ArrayList<Class<?>>();
         stepImpls.add(DuplicateStepImplementations.class);
 
-        SyntaxBuilder.buildSyntax(Thread.currentThread().getContextClassLoader(), stepImpls,
+        SyntaxBuilder.buildSyntax( stepImpls,
                 new File("./target/test-classes/substeps/simple.substeps"));
     }
 
@@ -75,7 +74,7 @@ public class SyntaxBuilderTest {
     public void testSyntaxBuilder() {
 
         final List<Class<?>> stepImpls = new ArrayList<Class<?>>();
-        stepImpls.add(BDDRunnerStepImplementations.class);
+        stepImpls.add(MockStepImplementations.class);
 
         checkSyntaxBuilderWithStepImpls(stepImpls);
     }
@@ -85,15 +84,14 @@ public class SyntaxBuilderTest {
     public void testSyntaxBuilderWithDeferringStepImplementations() {
 
         final List<Class<?>> stepImpls = new ArrayList<Class<?>>();
-        stepImpls.add(BDDRunnerStepImplementationsContainer.class);
+        stepImpls.add(MockStepImplementationsContainer.class);
 
         checkSyntaxBuilderWithStepImpls(stepImpls);
     }
 
 
     private void checkSyntaxBuilderWithStepImpls(final List<Class<?>> stepImpls) {
-        final Syntax syntax = SyntaxBuilder.buildSyntax(Thread.currentThread()
-                .getContextClassLoader(), stepImpls, new File(
+        final Syntax syntax = SyntaxBuilder.buildSyntax(stepImpls, new File(
                 "./target/test-classes/substeps/allFeatures.substeps"));
 
         final List<StepImplementation> stepImplementations = syntax.getStepImplementations();

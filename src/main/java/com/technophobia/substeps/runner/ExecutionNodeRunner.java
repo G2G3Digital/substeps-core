@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.model.Syntax;
-import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor2;
+import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
 
@@ -63,12 +63,12 @@ public class ExecutionNodeRunner {
         config = theConfig;
         config.initProperties();
 
-        final BeforeAndAfterProcessorMethodExecutor2 methExecutor = new BeforeAndAfterProcessorMethodExecutor2();
+        final BeforeAndAfterProcessorMethodExecutor methExecutor = 
+        		new BeforeAndAfterProcessorMethodExecutor(config.getInitialisationClasses());
 
-        methExecutor.setInitialisationClasses(config.getInitialisationClasses());
 
         setupAndTearDown = new SetupAndTearDown(methExecutor);
-        setupAndTearDown.initialise(null);
+        
 
         final String loggingConfigName = config.getDescription() != null ? config.getDescription()
                 : "SubStepsMojo";
@@ -77,16 +77,13 @@ public class ExecutionNodeRunner {
 
         final TagManager tagmanager = new TagManager(config.getTags());
 
-        tagmanager.insertCommandLineTags();
-
         File subStepsFile = null;
 
         if (config.getSubStepsFileName() != null) {
             subStepsFile = new File(config.getSubStepsFileName());
         }
 
-        final Syntax syntax = SyntaxBuilder.buildSyntax(Thread.currentThread()
-                .getContextClassLoader(), config.getStepImplementationClasses(), subStepsFile,
+        final Syntax syntax = SyntaxBuilder.buildSyntax( config.getStepImplementationClasses(), subStepsFile,
                 config.isStrict(), config.getNonStrictKeywordPrecedence());
 
         final TestParameters parameters = new TestParameters(tagmanager, syntax,
@@ -116,19 +113,13 @@ public class ExecutionNodeRunner {
 
 
     public void run() {
-        run(rootNode, notifier, setupAndTearDown);
-    }
-
-
-    public void run(final ExecutionNode rootNode, final INotifier notifier,
-            final SetupAndTearDown setupAndTearDown) {
         log.debug("run root node");
         noTestsRun = true;
 
         ExecutionContext.put(Scope.SUITE, JunitNotifier.NOTIFIER_EXECUTION_KEY, notifier);
 
         try {
-            runExecutionNodeHierarchy(Scope.SUITE, rootNode, notifier, setupAndTearDown);
+            runExecutionNodeHierarchy(Scope.SUITE, rootNode);
         } catch (final Throwable e) {
             log.error("root node exception", e);
 
@@ -145,8 +136,8 @@ public class ExecutionNodeRunner {
     }
 
 
-    private boolean runExecutionNodeHierarchy(final Scope scope, final ExecutionNode node,
-            final INotifier notifier, final SetupAndTearDown setupAndTearDown) throws Throwable {
+    private boolean runExecutionNodeHierarchy(final Scope scope, final ExecutionNode node)
+    		throws Throwable {
 
         log.info("run Node Hierarchy @ " + scope.name() + ":" + node.getDebugStringForThisNode());
 
@@ -190,7 +181,7 @@ public class ExecutionNodeRunner {
                 try {
 
                     final boolean thisExecutionSuccess = runExecutionNodeHierarchy(
-                            Scope.SCENARIO_BACKGROUND, backgroundNode, notifier, setupAndTearDown);
+                            Scope.SCENARIO_BACKGROUND, backgroundNode);
                     if (success && !thisExecutionSuccess) {
                         success = thisExecutionSuccess;
                     }
@@ -263,7 +254,7 @@ public class ExecutionNodeRunner {
                 try {
 
                     final boolean thisExecutionSuccess = runExecutionNodeHierarchy(childScope,
-                            child, notifier, setupAndTearDown);
+                            child);
 
                     if (success && !thisExecutionSuccess) {
                         success = thisExecutionSuccess;
@@ -400,21 +391,11 @@ public class ExecutionNodeRunner {
     }
 
 
-    /**
-     * @param b
-     */
-    /**
-     * @param b
-     */
     public void setDryRun(final boolean dryRun) {
         this.dryRun = dryRun;
-
     }
 
 
-    /**
-     * @param notifier2
-     */
     public void setNotifier(final INotifier notifier) {
         this.notifier = notifier;
     }

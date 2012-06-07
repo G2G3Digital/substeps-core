@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.technophobia.substeps.runner.SubStepConfigurationException;
@@ -78,11 +77,6 @@ public class Syntax {
 	 * @return
 	 */
 	private PatternMap<StepImplementation> getPatternMapForAnnotation(final String keyWord) {
-		// if (!stepImplementationMap.keySet().contains(keyWord))
-		// {
-		// Assert.fail(keyWord + " is not a recognised keyword");
-		// }
-
 		return stepImplementationMap.get(keyWord);
 	}
 
@@ -156,7 +150,7 @@ public class Syntax {
 	 * @return
 	 */
 	private List<StepImplementation> getStepImplementationsInternal(final String keyword, 
-			final String parameterLine, boolean okNotTofindAnything)
+			final String parameterLine, final boolean okNotTofindAnything)
 	{
 		List<StepImplementation> list = getStrictStepimplementation(keyword, parameterLine, okNotTofindAnything);
 

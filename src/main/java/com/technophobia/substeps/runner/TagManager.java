@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class TagManager {
-    private final Logger LOG = LoggerFactory.getLogger(TagManager.class);
+    private final Logger log = LoggerFactory.getLogger(TagManager.class);
 
     private static final String IGNORE_TAG_PREFIX = "--";
 
@@ -47,20 +47,21 @@ public class TagManager {
         excludedTags = new HashSet<String>();
 
         if (tagList != null && tagList.length() > 0) {
-            LOG.debug("running with tags: " + tagList);
+            log.debug("running with tags: " + tagList);
 
             // got some tag values
             acceptAll = false;
 
-            LOG.debug("Creating tagManager with tags " + tagList);
+            log.debug("Creating tagManager with tags " + tagList);
             // parse, process and store
             parseTextValue(tagList);
         }
+        insertCommandLineTags();
     }
 
 
     public void insertTagOverlay(final String textValue) {
-        LOG.debug("Inserting tag overlays " + textValue);
+        log.debug("Inserting tag overlays " + textValue);
         final String[] split = toArray(textValue);
 
         for (final String s : split) {
@@ -170,10 +171,7 @@ public class TagManager {
     }
 
 
-	/**
-	 * 
-	 */
-	public void insertCommandLineTags()
+	private void insertCommandLineTags()
 	{
 		final String tagParams = System.getProperty("tags");
         if (tagParams != null) {
