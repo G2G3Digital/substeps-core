@@ -42,7 +42,7 @@ import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.model.StepImplementation;
 import com.technophobia.substeps.runner.JunitFeatureRunner;
 import com.technophobia.substeps.runner.SubStepConfigurationException;
-import com.technophobia.substeps.stepimplementations.BDDRunnerStepImplementations;
+import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import com.technophobia.substeps.steps.TestStepImplementations;
 
 
@@ -50,7 +50,7 @@ import com.technophobia.substeps.steps.TestStepImplementations;
  * @author imoore
  * 
  */
-public class BDDRunnerTest extends BaseBDDRunnerTest {
+public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
     @Test(expected = SubStepConfigurationException.class)
     public void testMissingSubStepCausesFailure() {
@@ -178,21 +178,21 @@ public class BDDRunnerTest extends BaseBDDRunnerTest {
         final JunitFeatureRunner runner = new JunitFeatureRunner();
 
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-        stepImplsList.add(BDDRunnerStepImplementations.class);
+        stepImplsList.add(MockStepImplementations.class);
 
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList,
                 "./target/test-classes/features/allFeatures.feature", null,
                 "./target/test-classes/substeps/allFeatures.substeps");
 
-        final BDDRunnerStepImplementations stepImpls = new BDDRunnerStepImplementations();
-        final BDDRunnerStepImplementations spy = spy(stepImpls);
+        final MockStepImplementations stepImpls = new MockStepImplementations();
+        final MockStepImplementations spy = spy(stepImpls);
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
         final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
 
-        implsCache.put(BDDRunnerStepImplementations.class, spy);
+        implsCache.put(MockStepImplementations.class, spy);
 
         final RunNotifier notifier = mock(RunNotifier.class);
 
@@ -259,21 +259,21 @@ public class BDDRunnerTest extends BaseBDDRunnerTest {
         final JunitFeatureRunner runner = new JunitFeatureRunner();
 
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-        stepImplsList.add(BDDRunnerStepImplementations.class);
+        stepImplsList.add(MockStepImplementations.class);
 
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList,
                 "./target/test-classes/features/notifications.feature", null,
                 "./target/test-classes/substeps/allFeatures.substeps");
 
-        final BDDRunnerStepImplementations stepImpls = new BDDRunnerStepImplementations();
-        final BDDRunnerStepImplementations spy = spy(stepImpls);
+        final MockStepImplementations stepImpls = new MockStepImplementations();
+        final MockStepImplementations spy = spy(stepImpls);
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
         final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
 
-        implsCache.put(BDDRunnerStepImplementations.class, spy);
+        implsCache.put(MockStepImplementations.class, spy);
 
         final RunNotifier notifier = mock(RunNotifier.class);
 
@@ -338,21 +338,21 @@ public class BDDRunnerTest extends BaseBDDRunnerTest {
         final JunitFeatureRunner runner = new JunitFeatureRunner();
 
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-        stepImplsList.add(BDDRunnerStepImplementations.class);
+        stepImplsList.add(MockStepImplementations.class);
 
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList,
                 "./target/test-classes/features/stepWithInlineTable.feature", null,
                 "./target/test-classes/substeps/allFeatures.substeps");
 
-        final BDDRunnerStepImplementations stepImpls = new BDDRunnerStepImplementations();
-        final BDDRunnerStepImplementations spy = spy(stepImpls);
+        final MockStepImplementations stepImpls = new MockStepImplementations();
+        final MockStepImplementations spy = spy(stepImpls);
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
         final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
 
-        implsCache.put(BDDRunnerStepImplementations.class, spy);
+        implsCache.put(MockStepImplementations.class, spy);
 
         final RunNotifier notifier = mock(RunNotifier.class);
 
@@ -459,20 +459,20 @@ public class BDDRunnerTest extends BaseBDDRunnerTest {
         final JunitFeatureRunner runner = new JunitFeatureRunner();
 
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-        stepImplsList.add(BDDRunnerStepImplementations.class);
+        stepImplsList.add(MockStepImplementations.class);
 
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList, "./target/test-classes/features/bugs.feature",
                 "@bug1", "./target/test-classes/substeps/bugs.substeps");
 
-        final BDDRunnerStepImplementations stepImpls = new BDDRunnerStepImplementations();
-        final BDDRunnerStepImplementations spy = spy(stepImpls);
+        final MockStepImplementations stepImpls = new MockStepImplementations();
+        final MockStepImplementations spy = spy(stepImpls);
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
         final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
 
-        implsCache.put(BDDRunnerStepImplementations.class, spy);
+        implsCache.put(MockStepImplementations.class, spy);
 
         final RunNotifier notifier = mock(RunNotifier.class);
 

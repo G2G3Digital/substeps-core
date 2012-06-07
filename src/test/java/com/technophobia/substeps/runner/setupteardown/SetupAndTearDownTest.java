@@ -28,11 +28,7 @@ import org.junit.Test;
 
 import com.technophobia.substeps.runner.BeforeAndAftersStaticTest;
 import com.technophobia.substeps.runner.BeforeAndAftersTestParent;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
-import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodExecutor;
-import com.technophobia.substeps.runner.setupteardown.MethodState;
-import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfterProcessors;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing1;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing2;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing3;
@@ -74,18 +70,22 @@ public class SetupAndTearDownTest {
 	@Test
 	public void testOrderingOfSetupAndTearDown(){
 		
-		MethodExecutor executor = 
-		 new BeforeAndAfterProcessorMethodExecutor() ;
+		final BeforeAndAfterProcessorMethodExecutor executor = 
+		 new BeforeAndAfterProcessorMethodExecutor(new Class<?>[]{ BeforeAndAfterSequencing3.class, 
+			    	BeforeAndAfterSequencing2.class,
+			    	BeforeAndAfterSequencing1.class }) ;
 		
-		SetupAndTearDown setupAndTearDown = new SetupAndTearDown( executor);
 		
-		setupAndTearDown.initialise(ClassWithBeforesAndAfters.class);
+		final SetupAndTearDown setupAndTearDown = new SetupAndTearDown( executor);
+		
+		
+		
 		
 		try {
 			setupAndTearDown.runBeforeAll();
 			setupAndTearDown.runAfterAll();
 		}
-		catch (Throwable e) {
+		catch (final Throwable e) {
 			
 			e.printStackTrace();
 			Assert.fail("befores and afters shouldn't fail for this test");
@@ -117,17 +117,6 @@ public class SetupAndTearDownTest {
 	}
     
 
-    @Test
-    public void initialisingSetupAndTearDownNotifiesAllMethodExecutors() {
-        final MethodExecutor methodExecutor1 = mock(MethodExecutor.class, "methodExecutor1");
-//        final MethodExecutor methodExecutor2 = mock(MethodExecutor.class, "methodExecutor2");
-
-        final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(methodExecutor1);//, methodExecutor2);
-        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
-
-        verify(methodExecutor1, times(1)).locate(BeforeAndAftersStaticTest.class);
-//        verify(methodExecutor2, times(1)).locate(BeforeAndAftersStaticTest.class);
-    }
 
 
     @Test
@@ -136,11 +125,12 @@ public class SetupAndTearDownTest {
 //        final MethodExecutor methodExecutor2 = mock(MethodExecutor.class, "methodExecutor2");
 
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(methodExecutor1);//, methodExecutor2);
-        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
+//        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
         setupAndTearDown.runBeforeAll();
 
-        verify(methodExecutor1, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.BEFORE_ALL);
-//        verify(methodExecutor2, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.BEFORE_ALL);
+        verify(methodExecutor1, times(1)).executeMethods(MethodState.BEFORE_ALL);
+
+        //        verify(methodExecutor2, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.BEFORE_ALL);
     }
 
 
@@ -150,10 +140,10 @@ public class SetupAndTearDownTest {
   //      final MethodExecutor methodExecutor2 = mock(MethodExecutor.class, "methodExecutor2");
 
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(methodExecutor1);//, methodExecutor2);
-        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
+//        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
         setupAndTearDown.runAfterAll();
 
-        verify(methodExecutor1, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.AFTER_ALL);
+        verify(methodExecutor1, times(1)).executeMethods(MethodState.AFTER_ALL);
   //      verify(methodExecutor2, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.AFTER_ALL);
     }
 
@@ -164,10 +154,10 @@ public class SetupAndTearDownTest {
 //        final MethodExecutor methodExecutor2 = mock(MethodExecutor.class, "methodExecutor2");
 
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(methodExecutor1);//, methodExecutor2);
-        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
+//        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
         setupAndTearDown.runBeforeFeatures();
 
-        verify(methodExecutor1, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.BEFORE_FEATURES);
+        verify(methodExecutor1, times(1)).executeMethods(MethodState.BEFORE_FEATURES);
 //        verify(methodExecutor2, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.BEFORE_FEATURES);
     }
 
@@ -178,10 +168,10 @@ public class SetupAndTearDownTest {
 //        final MethodExecutor methodExecutor2 = mock(MethodExecutor.class, "methodExecutor2");
 
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(methodExecutor1);//, methodExecutor2);
-        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
+//        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
         setupAndTearDown.runAfterFeatures();
 
-        verify(methodExecutor1, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.AFTER_FEATURES);
+        verify(methodExecutor1, times(1)).executeMethods(MethodState.AFTER_FEATURES);
 //        verify(methodExecutor2, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.AFTER_FEATURES);
     }
 
@@ -192,10 +182,10 @@ public class SetupAndTearDownTest {
 //        final MethodExecutor methodExecutor2 = mock(MethodExecutor.class, "methodExecutor2");
 
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(methodExecutor1);//, methodExecutor2);
-        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
+//        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
         setupAndTearDown.runBeforeScenarios();
 
-        verify(methodExecutor1, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.BEFORE_SCENARIOS);
+        verify(methodExecutor1, times(1)).executeMethods(MethodState.BEFORE_SCENARIOS);
 //        verify(methodExecutor2, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.BEFORE_SCENARIOS);
     }
 
@@ -206,10 +196,10 @@ public class SetupAndTearDownTest {
 //        final MethodExecutor methodExecutor2 = mock(MethodExecutor.class, "methodExecutor2");
 
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(methodExecutor1);//, methodExecutor2);
-        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
+//        setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
         setupAndTearDown.runAfterScenarios();
 
-        verify(methodExecutor1, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.AFTER_SCENARIOS);
+        verify(methodExecutor1, times(1)).executeMethods(MethodState.AFTER_SCENARIOS);
 //        verify(methodExecutor2, times(1)).executeMethods(BeforeAndAftersStaticTest.class, MethodState.AFTER_SCENARIOS);
     }
 

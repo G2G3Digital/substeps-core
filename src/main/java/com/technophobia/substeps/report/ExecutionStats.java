@@ -18,6 +18,7 @@
  */
 package com.technophobia.substeps.report;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -167,12 +168,14 @@ public class ExecutionStats {
 
 
 	
-	private static class TestStatSetComparator implements Comparator<TestCounterSet>
+	private static class TestStatSetComparator implements Comparator<TestCounterSet>, Serializable 
 	{
+		private static final long serialVersionUID = -1736428075471005357L;
+
 		/* (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
-		public int compare(TestCounterSet t1, TestCounterSet t2)
+		public int compare(final TestCounterSet t1, final TestCounterSet t2)
 		{
 			// not sure which way around this is!!
 			return t1.getScenarioStepStats().getFailed() - t2.getScenarioStepStats().getFailed();

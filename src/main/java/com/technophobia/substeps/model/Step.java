@@ -49,8 +49,6 @@ public class Step {
 	// a string that can be manipulated for variable substituion
 	private String parameterLine;
 
-//	private List<Description> junitDescriptionList;
-
 	private List<Map<String, String>> inlineTable = null;
 
 	private String[] tableHeadings = null;
@@ -59,28 +57,6 @@ public class Step {
 
 	private File source;
 	
-//	/**
-//	 * @return the junitDescription
-//	 */
-//	public Description getJunitDescription(final int i) {
-//		return junitDescriptionList != null ? junitDescriptionList.get(i) : null;
-//	}
-
-//	public Description getJunitDescription() {
-//		return junitDescriptionList != null ? junitDescriptionList.get(0) : null;
-//	}
-
-	/**
-	 * @param junitDescription
-	 *            the junitDescription to set
-//	 */
-//	public void addJunitDescription(final Description junitDescription) {
-//		if (junitDescriptionList == null) {
-//			junitDescriptionList = new ArrayList<Description>();
-//		}
-//		junitDescriptionList.add(junitDescription);
-//	}
-
 	/**
 	 * @return the line
 	 */
@@ -91,7 +67,6 @@ public class Step {
 	public Step(final String line) {
 		this(line, false, null);
 	}
-
 	
 	public Step(final String line, final File source) {
 		this(line, false, source);
@@ -117,7 +92,6 @@ public class Step {
 		if (last > 0) {
 
 			keyword = line.substring(0, last);
-			// param = line.substring(last + 1);
 
 			// TODO no need to to do if no parameter to the annotation..?
 			if (isSubStep) {
@@ -127,15 +101,13 @@ public class Step {
 		} else if (line.length() > 0) {
 			// we've got just an annotation with no parameter
 			keyword = line;
-			// param = "";
 		} 
 	}
 
 	// only used in tests
-	public Step(final String keyword, /* final String param, */final String line, final boolean isSubStep) {
+	public Step(final String keyword, final String line, final boolean isSubStep) {
 		this.keyword = keyword;
 		this.line = line;
-		// this.param = param;
 
 		if (isSubStep) {
 			setParamAndParamNames();
@@ -148,7 +120,6 @@ public class Step {
 
 		// look for params
 		final Pattern p = Pattern.compile("(<([^>]*)>)");
-		// final Matcher matcher = p.matcher(param);
 		final Matcher matcher = p.matcher(line);
 
 		int findIdx = 0;
@@ -163,7 +134,6 @@ public class Step {
 
 		// replace the params with a reg ex, a quoted and non quoted variant
 
-		// pattern = param.replaceAll("(<[^>]*>)", "\"?([^\"]*)\"?");
 		pattern = line.replaceAll("(<[^>]*>)", "\"?([^\"]*)\"?");
 	}
 
@@ -194,11 +164,6 @@ public class Step {
 		return pattern;
 	}
 
-	// public String getParam()
-	// {
-	// return param;
-	// }
-
 	public List<String> getParamNames() {
 		return paramNames;
 	}
@@ -227,7 +192,6 @@ public class Step {
 	}
 
 	public String getParameterLine() {
-		// return parameterLine != null ? parameterLine : param;
 		return parameterLine != null ? parameterLine : line;
 
 	}
@@ -277,7 +241,6 @@ public class Step {
 		step.substitutedInlineTable = this.substitutedInlineTable;
 
 		step.source= this.source ;
-		
 		
 		return step;
 	}

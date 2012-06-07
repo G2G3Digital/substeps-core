@@ -18,12 +18,16 @@
  */
 package com.technophobia.substeps.runner.setupteardown;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.List;
 
-public class MethodComparator implements Comparator<Method> {
-    private final List<Class<?>> classHierarchy;
+public class MethodComparator implements Comparator<Method>, Serializable {
+	
+	private static final long serialVersionUID = -2554981241880066335L;
+
+	private final List<Class<?>> classHierarchy;
 
 
     public MethodComparator(final List<Class<?>> classHierarchy) {

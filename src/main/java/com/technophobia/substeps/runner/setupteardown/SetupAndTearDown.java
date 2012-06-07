@@ -18,8 +18,6 @@
  */
 package com.technophobia.substeps.runner.setupteardown;
 
-import junit.framework.Assert;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -38,8 +36,10 @@ public class SetupAndTearDown {
 
     private final Logger log = LoggerFactory.getLogger(SetupAndTearDown.class);
 
-    private Class<?> classContainingTheTests;
     private String loggingConfigName = null;
+
+    private final MethodExecutor methodExecutor;
+    private boolean dryRun = false;
 
 
     public String getLoggingConfigName() {
@@ -51,8 +51,6 @@ public class SetupAndTearDown {
         this.loggingConfigName = loggingConfigName;
     }
 
-    private final MethodExecutor methodExecutor;
-    private boolean dryRun = false;
 
 
     public SetupAndTearDown(final MethodExecutor methodExecutor) {
@@ -60,16 +58,8 @@ public class SetupAndTearDown {
     }
 
 
-    public void initialise(final Class<?> classContainingTheTests) {
-        this.classContainingTheTests = classContainingTheTests;
-
-        methodExecutor.locate(classContainingTheTests);
-    }
 
 
-    /**
-	 * 
-	 */
     public void runBeforeAll() throws Throwable {
 
         prepareLoggingConfig();
@@ -109,7 +99,6 @@ public class SetupAndTearDown {
 	 */
     public void runBeforeScenarios() throws Throwable {
         runAllMethods(MethodState.BEFORE_SCENARIOS);
-        // runBeforeAfterMethodExplosively(scenarioBefore);
     }
 
 
@@ -124,25 +113,22 @@ public class SetupAndTearDown {
 
     private void runAllMethods(final MethodState methodState) throws Throwable {
 
-        // TODO - perhaps pass this down into the executor to actually print
-        // what we're going to do
         if (!dryRun) {
-            // for (final MethodExecutor methodExecutor : methodExecutor) {
-            methodExecutor.executeMethods(classContainingTheTests, methodState);
-            // }
+            methodExecutor.executeMethods( methodState);
         }
     }
 
 
     private void prepareLoggingConfig() {
 
-        if (classContainingTheTests != null) {
-            MDC.put("className", classContainingTheTests.getName());
-        } else {
-            Assert.assertNotNull("please set loggingConfigName", loggingConfigName);
-            MDC.put("className", loggingConfigName);
-        }
-
+    	if (loggingConfigName == null){
+    		
+    		MDC.put("className", "SubSteps");
+    		log.info("no logging config name supplied, defaulting to Substeps");
+    	}
+    	else {
+    		MDC.put("className", loggingConfigName);
+    	}
     }
 
 

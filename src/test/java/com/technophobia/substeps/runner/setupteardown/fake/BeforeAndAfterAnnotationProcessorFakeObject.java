@@ -18,7 +18,8 @@
  */
 package com.technophobia.substeps.runner.setupteardown.fake;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfterProcessors;
+
 
 @BeforeAndAfterProcessors(BeforeAndAfterMethodsClass.class)
 public class BeforeAndAfterAnnotationProcessorFakeObject {

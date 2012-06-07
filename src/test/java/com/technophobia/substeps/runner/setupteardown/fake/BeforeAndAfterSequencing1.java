@@ -18,8 +18,9 @@
  */
 package com.technophobia.substeps.runner.setupteardown.fake;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.AfterAllFeatures;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
+
 
 /**
  * @author ian
