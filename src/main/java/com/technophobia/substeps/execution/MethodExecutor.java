@@ -1,3 +1,9 @@
+package com.technophobia.substeps.execution;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+
 /*
  *	Copyright Technophobia Ltd 2012
  *
@@ -16,26 +22,23 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner.setupteardown;
-
-/**
- * Locates and executes methods for a target class
- * 
- * @author sforbes
- * 
- */
 public interface MethodExecutor {
 
+    /**
+     * @param setupAndTearDownMethods
+     */
+    void executeMethods(List<Method> setupAndTearDownMethods) throws Exception;
+
+
+    void addImplementationClasses(final Class<?>[] implementationClasses);
 
 
     /**
-     * Finds all methods with the current method state and invokes them
-     * 
      * @param targetClass
-     *            The class referencing the methdods
-     * @param currentState
-     *            A flag signifying which methods to be executed
-     * @throws Throwable
+     * @param targetMethod
+     * @param methodArgs
      */
-    void executeMethods(MethodState currentState) throws Throwable;
+    void executeMethod(final Class<?> targetClass, final Method targetMethod,
+            final Object[] methodArgs) throws IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException;
 }

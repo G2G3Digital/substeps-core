@@ -297,30 +297,32 @@ public class ExecutionNode {
         return buf.toString();
     }
 
+
     @Override
-    public String toString(){
-    	return this.id + ":" + getDescription() + " children size: " + getChildrenSize();
+    public String toString() {
+        return id + ":" + getDescription() + " children size: " + getChildrenSize();
     }
-    
-    public String treeToString(){
+
+
+    public String treeToString() {
         final StringBuilder buf = new StringBuilder();
 
-        buf.append(this.toString());
+        buf.append(toString());
         buf.append("\n");
-        if (this.hasChildren()){
-        	
-        	for (final ExecutionNode child : this.getChildren()){
-        		
-                buf.append(Strings.repeat("\t", this.depth));
+        if (hasChildren()) {
+
+            for (final ExecutionNode child : getChildren()) {
+
+                buf.append(Strings.repeat("\t", depth));
                 buf.append(child.treeToString());
                 buf.append("\n");
-        	}
+            }
         }
-        
-        
+
         return buf.toString();
     }
-    
+
+
     public String getDebugStringForThisNode() {
         final StringBuilder buf = new StringBuilder();
 
@@ -371,9 +373,9 @@ public class ExecutionNode {
             if (feature != null) {
                 buf.append(feature.getName()).append("\n");
             } else if (scenarioName != null) {
-                    buf.append(scenarioName).append("\n");
+                buf.append(scenarioName).append("\n");
             }
- 
+
             if (rowNumber > -1) {
                 buf.append(" outline #: ").append(rowNumber).append("\n");
             }
@@ -412,38 +414,37 @@ public class ExecutionNode {
     }
 
 
-	/**
-	 * @param buf
-	 */
-	public void appendMethodInfo(final StringBuilder buf)
-	{
-		if (targetClass != null && targetMethod != null) {
-		    buf.append("  -  ").append(targetClass.getSimpleName()).append(".")
-		            .append(targetMethod.getName()).append("(");
+    /**
+     * @param buf
+     */
+    public void appendMethodInfo(final StringBuilder buf) {
+        if (targetClass != null && targetMethod != null) {
+            buf.append("  -  ").append(targetClass.getSimpleName()).append(".")
+                    .append(targetMethod.getName()).append("(");
 
-		    if (methodArgs != null) {
-		        boolean commaRequired = false;
-		        for (final Object arg : methodArgs) {
-		            if (commaRequired) {
-		                buf.append(", ");
-		            }
+            if (methodArgs != null) {
+                boolean commaRequired = false;
+                for (final Object arg : methodArgs) {
+                    if (commaRequired) {
+                        buf.append(", ");
+                    }
 
-		            boolean quotes = false;
-		            if (arg instanceof String) {
-		                quotes = true;
-		                buf.append("\"");
-		            }
-		            buf.append(arg.toString());
-		            if (quotes) {
-		                buf.append("\"");
-		            }
-		            commaRequired = true;
-		        }
-		    }
+                    boolean quotes = false;
+                    if (arg instanceof String) {
+                        quotes = true;
+                        buf.append("\"");
+                    }
+                    buf.append(arg.toString());
+                    if (quotes) {
+                        buf.append("\"");
+                    }
+                    commaRequired = true;
+                }
+            }
 
-		    buf.append(")");
-		}
-	}
+            buf.append(")");
+        }
+    }
 
 
     /**
@@ -550,9 +551,6 @@ public class ExecutionNode {
     public boolean isStep() {
 
         return depth == 3 && !isOutlineScenario() || depth == 4 && parent.isOutlineScenario();
-
-        // return parent != null && (parent.isScenario() ||
-        // parent.isOutlineScenario());
     }
 
 
@@ -577,23 +575,19 @@ public class ExecutionNode {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (this == obj)
-		{
-			return true;
-		}
-        if (obj == null)
-		{
-			return false;
-		}
-        if (getClass() != obj.getClass())
-		{
-			return false;
-		}
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         final ExecutionNode other = (ExecutionNode) obj;
-        if (id != other.id)
-		{
-			return false;
-		}
+        if (id != other.id) {
+            return false;
+        }
         return true;
     }
 
@@ -610,8 +604,8 @@ public class ExecutionNode {
         } else if (parent != null) {
             filename = parent.getFilename();
             return filename;
-        } else  {
-        	filename = "unknown";
+        } else {
+            filename = "unknown";
         }
 
         return filename;
@@ -660,7 +654,7 @@ public class ExecutionNode {
             } else if (isScenario()) {
 
                 rtn = scenarioName;
-            } else if (parent!= null && parent.isOutlineScenario()) {
+            } else if (parent != null && parent.isOutlineScenario()) {
                 rtn = parent.scenarioName + " [" + rowNumber + "]";
             }
         }
@@ -780,18 +774,17 @@ public class ExecutionNode {
     }
 
 
-	/**
-	 * @return
-	 */
-	public int getChildrenSize()
-	{
-		int rtn = 0;
-		
-		if (children != null){
-			rtn = children.size();
-		}
-		
-		return rtn;
-	}
-	
+    /**
+     * @return
+     */
+    public int getChildrenSize() {
+        int rtn = 0;
+
+        if (children != null) {
+            rtn = children.size();
+        }
+
+        return rtn;
+    }
+
 }

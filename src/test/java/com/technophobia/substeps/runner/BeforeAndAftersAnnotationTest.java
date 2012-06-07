@@ -22,8 +22,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -41,7 +41,6 @@ import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfter
 import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryFeature;
 import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
-
 
 /**
  * 
@@ -188,7 +187,7 @@ class BeforeAndAftersAnnotationMethods extends BeforeAndAftersTestParent {
 
         final MockStepImplementations stepImpls = new MockStepImplementations(this);
 
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, stepImpls);
 

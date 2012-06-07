@@ -40,11 +40,8 @@ import org.junit.runner.notification.RunNotifier;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.model.StepImplementation;
-import com.technophobia.substeps.runner.JunitFeatureRunner;
-import com.technophobia.substeps.runner.SubStepConfigurationException;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import com.technophobia.substeps.steps.TestStepImplementations;
-
 
 /**
  * @author imoore
@@ -84,7 +81,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final TestStepImplementations stepImpls = new TestStepImplementations();
         final TestStepImplementations spy = spy(stepImpls);
 
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(TestStepImplementations.class, spy);
 
@@ -123,7 +120,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final TestStepImplementations stepImpls = new TestStepImplementations();
         final TestStepImplementations spy = spy(stepImpls);
 
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(TestStepImplementations.class, spy);
 
@@ -157,7 +154,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(TestStepImplementations.class, spy);
 
@@ -190,7 +187,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
 
@@ -271,7 +268,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
 
@@ -350,7 +347,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
 
@@ -470,7 +467,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // get hold of the step runner
         // implsCache.put(execImpl.implementedIn, target);
-        final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
 
