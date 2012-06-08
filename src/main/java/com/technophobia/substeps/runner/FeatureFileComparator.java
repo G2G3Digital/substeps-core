@@ -24,11 +24,8 @@ import java.util.Comparator;
 import com.technophobia.substeps.model.FeatureFile;
 
 
-// TODO - still need ? move this class elsewhere ?
 public class FeatureFileComparator implements Comparator<FeatureFile>, Serializable {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -8032832302837878628L;
 
 	/*

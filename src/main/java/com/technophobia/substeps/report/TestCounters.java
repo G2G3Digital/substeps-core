@@ -117,7 +117,6 @@ public class TestCounters {
      * @param node
      */
     public void apply(final ExecutionNode node) {
-        // TODO Auto-generated method stub
 
         final ExecutionNodeResult result = node.getResult();
 

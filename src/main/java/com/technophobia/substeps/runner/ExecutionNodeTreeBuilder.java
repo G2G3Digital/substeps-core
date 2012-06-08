@@ -40,6 +40,7 @@ import com.technophobia.substeps.model.PatternMap;
 import com.technophobia.substeps.model.Scenario;
 import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.StepImplementation;
+import com.technophobia.substeps.model.SubStepConfigurationException;
 import com.technophobia.substeps.model.SubSteps.StepParameter;
 import com.technophobia.substeps.model.Util;
 import com.technophobia.substeps.model.parameter.Converter;

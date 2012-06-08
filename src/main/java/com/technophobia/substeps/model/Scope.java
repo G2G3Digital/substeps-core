@@ -16,26 +16,14 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner.setupteardown;
+package com.technophobia.substeps.model;
 
 /**
- * Locates and executes methods for a target class
+ * An enum that represents the scope of variables / current execution
  * 
- * @author sforbes
+ * @author imoore
  * 
  */
-public interface MethodExecutor {
-
-
-
-    /**
-     * Finds all methods with the current method state and invokes them
-     * 
-     * @param targetClass
-     *            The class referencing the methdods
-     * @param currentState
-     *            A flag signifying which methods to be executed
-     * @throws Throwable
-     */
-    void executeMethods(MethodState currentState) throws Throwable;
+public enum Scope {
+	SUITE, FEATURE, SCENARIO, SCENARIO_BACKGROUND, SCENARIO_OUTLINE_ROW, STEP;
 }

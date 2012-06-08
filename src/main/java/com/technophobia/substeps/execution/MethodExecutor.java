@@ -1,3 +1,9 @@
+package com.technophobia.substeps.execution;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+
 /*
  *	Copyright Technophobia Ltd 2012
  *
@@ -16,13 +22,23 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner.setupteardown.fake;
+public interface MethodExecutor {
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
+    /**
+     * @param setupAndTearDownMethods
+     */
+    void executeMethods(List<Method> setupAndTearDownMethods) throws Exception;
 
 
+    void addImplementationClasses(final Class<?>[] implementationClasses);
 
-@BeforeAndAfterProcessors({ BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.class, BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.class })
-public class BeforeAndAfterAnnotationProcessorFakeMultipleObject {
 
+    /**
+     * @param targetClass
+     * @param targetMethod
+     * @param methodArgs
+     */
+    void executeMethod(final Class<?> targetClass, final Method targetMethod,
+            final Object[] methodArgs) throws IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException;
 }

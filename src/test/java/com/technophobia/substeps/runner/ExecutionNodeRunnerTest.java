@@ -43,6 +43,7 @@ import org.junit.runner.Description;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.execution.Feature;
+import com.technophobia.substeps.model.SubStepConfigurationException;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.steps.TestStepImplementations;
 

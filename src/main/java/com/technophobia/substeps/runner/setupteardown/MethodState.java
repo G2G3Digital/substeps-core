@@ -18,23 +18,39 @@
  */
 package com.technophobia.substeps.runner.setupteardown;
 
+import java.lang.annotation.Annotation;
+
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryFeature;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
+
 public enum MethodState {
-    BEFORE_ALL(true), //
-    BEFORE_FEATURES(true), //
-    BEFORE_SCENARIOS(true), //
-    AFTER_SCENARIOS(false), //
-    AFTER_FEATURES(false), //
-    AFTER_ALL(false); //
+    BEFORE_ALL(true, BeforeAllFeatures.class), //
+    BEFORE_FEATURES(true, BeforeEveryFeature.class), //
+    BEFORE_SCENARIOS(true, BeforeEveryScenario.class), //
+    AFTER_SCENARIOS(false, AfterEveryScenario.class), //
+    AFTER_FEATURES(false, AfterEveryFeature.class), //
+    AFTER_ALL(false, AfterAllFeatures.class); //
 
     private final boolean beforeTest;
+    private final Class<? extends Annotation> annotationClass;
 
 
-    private MethodState(final boolean beforeTest) {
+    private MethodState(final boolean beforeTest, final Class<? extends Annotation> annotationClass) {
         this.beforeTest = beforeTest;
+        this.annotationClass = annotationClass;
     }
 
 
     public boolean isBeforeTest() {
         return beforeTest;
+    }
+
+
+    public Class<? extends Annotation> getAnnotationClass() {
+        return annotationClass;
     }
 }
