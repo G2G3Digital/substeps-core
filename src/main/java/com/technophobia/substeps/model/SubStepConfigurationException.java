@@ -16,14 +16,22 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner;
+package com.technophobia.substeps.model;
 
 /**
- * An enum that represents the scope of variables / current execution
- * 
- * @author imoore
+ * @author ian
  * 
  */
-public enum Scope {
-	SUITE, FEATURE, SCENARIO, SCENARIO_BACKGROUND, SCENARIO_OUTLINE_ROW, STEP;
+public class SubStepConfigurationException extends RuntimeException {
+    private static final long serialVersionUID = -7081029538420278487L;
+
+
+    public SubStepConfigurationException(final Throwable cause) {
+        super(cause);
+    }
+
+
+    public SubStepConfigurationException(final String msg) {
+        super(msg);
+    }
 }

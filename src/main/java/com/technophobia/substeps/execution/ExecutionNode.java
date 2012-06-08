@@ -672,24 +672,6 @@ public class ExecutionNode {
         return result.getResult() == ExecutionResult.PASSED;
     }
 
-
-    // TODO move off somewhere else
-    public String getStyle() {
-        String style = null;
-
-        if (result.getResult() == ExecutionResult.FAILED) {
-            style = "background : #f80003; font-color: white";
-        } else if (result.getResult() == ExecutionResult.PASSED) {
-            style = "background : #04f700; font-color: black";
-
-        } else {
-            style = "background : none; color: white";
-        }
-        return style;
-
-    }
-
-
     public Set<String> getTagsFromHierarchy() {
         Set<String> allTags = null;
 

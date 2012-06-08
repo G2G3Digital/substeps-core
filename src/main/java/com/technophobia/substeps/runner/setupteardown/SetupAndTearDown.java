@@ -26,8 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.technophobia.substeps.execution.MethodExecutor;
-import com.technophobia.substeps.runner.ExecutionContext;
-import com.technophobia.substeps.runner.Scope;
+import com.technophobia.substeps.model.Scope;
 
 /**
  * Class to encapsulate setup and tear down methods and the ordering of them
@@ -77,7 +76,7 @@ public class SetupAndTearDown {
 	 */
     public void runAfterAll() throws Throwable {
         runAllMethods(MethodState.AFTER_ALL);
-        ExecutionContext.clear(Scope.SUITE);
+//        ExecutionContext.clear(Scope.SUITE);
 
         removeLoggingConfig();
     }
@@ -95,7 +94,7 @@ public class SetupAndTearDown {
 	 */
     public void runAfterFeatures() throws Throwable {
         runAllMethods(MethodState.AFTER_FEATURES);
-        ExecutionContext.clear(Scope.FEATURE);
+//        ExecutionContext.clear(Scope.FEATURE);
     }
 
 
@@ -112,7 +111,7 @@ public class SetupAndTearDown {
     public void runAfterScenarios() throws Throwable {
         runAllMethods(MethodState.AFTER_SCENARIOS);
 
-        ExecutionContext.clear(Scope.SCENARIO);
+//        ExecutionContext.clear(Scope.SCENARIO);
     }
 
 
@@ -184,15 +183,18 @@ public class SetupAndTearDown {
         switch (currentScope) {
         case SUITE: {
             runAfterAll();
+
             break;
         }
         case FEATURE: {
             runAfterFeatures();
+
             break;
         }
         case SCENARIO:
         case SCENARIO_OUTLINE_ROW: {
             runAfterScenarios();
+            
 
             // TODO for outline scenarios this might mean setup and tear down
             // gets run an extra time each...

@@ -94,12 +94,6 @@ public final class Util {
     }
 
 
-    /**
-     * @param stepImplementationPattern
-     * @param substitutedStepParam
-     * @param parameterTypes
-     * @return
-     */
     public static List<Object> getArgs(final String patternString, final String sourceString,
             final Class<?>[] parameterTypes, final Class<? extends Converter<?>>[] converterTypes) {
 
@@ -137,11 +131,6 @@ public final class Util {
     }
 
 
-    /**
-     * @param arg
-     * @param class1
-     * @return
-     */
     private static Object getObjectArg(final String stringArgument, final Class<?> desiredType,
             final Class<? extends Converter<?>> converter) {
         return ConverterFactory.convert(stringArgument, desiredType, converter);

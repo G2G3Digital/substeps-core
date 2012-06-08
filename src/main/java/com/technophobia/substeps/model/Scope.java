@@ -16,13 +16,14 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner.setupteardown.fake;
+package com.technophobia.substeps.model;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
-
-
-
-@BeforeAndAfterProcessors({ BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.class, BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.class })
-public class BeforeAndAfterAnnotationProcessorFakeMultipleObject {
-
+/**
+ * An enum that represents the scope of variables / current execution
+ * 
+ * @author imoore
+ * 
+ */
+public enum Scope {
+	SUITE, FEATURE, SCENARIO, SCENARIO_BACKGROUND, SCENARIO_OUTLINE_ROW, STEP;
 }

@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.runner.BeforeAndAftersStaticTest;
 import com.technophobia.substeps.runner.BeforeAndAftersTestParent;
-import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfterProcessors;
+import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing1;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing2;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing3;
