@@ -20,19 +20,17 @@ package com.technophobia.substeps.runner;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.ImplementationCache;
+import com.technophobia.substeps.execution.MethodExecutor;
+import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.model.Syntax;
-import com.technophobia.substeps.runner.setupteardown.BeforeAndAfterProcessorMethodExecutor;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
-
 
 /**
  * Takes a tree of execution nodes and executes them, all variables, args,
@@ -46,8 +44,6 @@ public class ExecutionNodeRunner {
 
     private boolean noTestsRun = true;
 
-    private final Map<Class<?>, Object> implsCache = new HashMap<Class<?>, Object>();
-
     private boolean dryRun;
 
     private ExecutionNode rootNode;
@@ -55,20 +51,17 @@ public class ExecutionNodeRunner {
     private SetupAndTearDown setupAndTearDown;
     private ExecutionConfig config;
 
+    private final MethodExecutor methodExecutor = new ImplementationCache();
+
 
     public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig,
             final INotifier notifierParam) {
 
-        this.notifier = notifierParam;
+        notifier = notifierParam;
         config = theConfig;
         config.initProperties();
 
-        final BeforeAndAfterProcessorMethodExecutor methExecutor = 
-        		new BeforeAndAfterProcessorMethodExecutor(config.getInitialisationClasses());
-
-
-        setupAndTearDown = new SetupAndTearDown(methExecutor);
-        
+        setupAndTearDown = new SetupAndTearDown(config.getInitialisationClasses(), methodExecutor);
 
         final String loggingConfigName = config.getDescription() != null ? config.getDescription()
                 : "SubStepsMojo";
@@ -83,8 +76,8 @@ public class ExecutionNodeRunner {
             subStepsFile = new File(config.getSubStepsFileName());
         }
 
-        final Syntax syntax = SyntaxBuilder.buildSyntax( config.getStepImplementationClasses(), subStepsFile,
-                config.isStrict(), config.getNonStrictKeywordPrecedence());
+        final Syntax syntax = SyntaxBuilder.buildSyntax(config.getStepImplementationClasses(),
+                subStepsFile, config.isStrict(), config.getNonStrictKeywordPrecedence());
 
         final TestParameters parameters = new TestParameters(tagmanager, syntax,
                 config.getFeatureFile());
@@ -137,7 +130,7 @@ public class ExecutionNodeRunner {
 
 
     private boolean runExecutionNodeHierarchy(final Scope scope, final ExecutionNode node)
-    		throws Throwable {
+            throws Throwable {
 
         log.info("run Node Hierarchy @ " + scope.name() + ":" + node.getDebugStringForThisNode());
 
@@ -203,36 +196,22 @@ public class ExecutionNodeRunner {
             // if executable invoke
             try {
 
-                final Object stepImplementation = getImplementationTarget(node);
-
-                if (node.getMethodArgs() != null) {
-
-                    if (!dryRun) {
-                        node.getTargetMethod().invoke(stepImplementation, node.getMethodArgs());
-                    }
-                    noTestsRun = false;
-                } else {
-                    if (!dryRun) {
-                        node.getTargetMethod().invoke(stepImplementation);
-                    }
-                    noTestsRun = false;
+                if (!dryRun) {
+                    methodExecutor.executeMethod(node.getTargetClass(), node.getTargetMethod(),
+                            node.getMethodArgs());
                 }
+                noTestsRun = false;
 
             } catch (final InvocationTargetException e) {
-
-                // log.debug("method invocation failed", e);
 
                 theException = e.getTargetException();
                 success = false;
 
             } catch (final Throwable e) {
 
-                // log.debug("method invocation failed", e);
-
                 theException = e;
                 success = false;
             }
-
         }
 
         // if children, run children
@@ -281,6 +260,8 @@ public class ExecutionNodeRunner {
             // run tear down if necessary for this depth and step
             if (!node.isOutlineScenario()) {
                 setupAndTearDown.runTearDown(scope);
+                ExecutionContext.clear(scope);
+
             }
         } catch (final Throwable t) {
             log.debug("tear down failed", t);
@@ -315,11 +296,6 @@ public class ExecutionNodeRunner {
     }
 
 
-    /**
-     * @param node
-     * @param scope
-     * @return
-     */
     private Scope getChildScope(final ExecutionNode node, final Scope currentScope) {
         Scope rtn = null;
 
@@ -343,10 +319,9 @@ public class ExecutionNodeRunner {
             }
             break;
         }
-        case SCENARIO_BACKGROUND: 
+        case SCENARIO_BACKGROUND:
         case SCENARIO_OUTLINE_ROW:
-        case STEP:
-        {
+        case STEP: {
             rtn = Scope.STEP;
             break;
         }
@@ -359,35 +334,6 @@ public class ExecutionNodeRunner {
         log.debug("child scope: " + rtn.name() + " for: " + currentScope.name());
 
         return rtn;
-    }
-
-
-    /**
-     * @param node
-     * @return
-     */
-    private Object getImplementationTarget(final ExecutionNode node) {
-        final Class<?> targetClass = node.getTargetClass();
-        Object target = implsCache.get(targetClass);
-
-        if (target == null) {
-
-            // construct
-            try {
-                target = targetClass.newInstance();
-
-                implsCache.put(targetClass, target);
-
-            } catch (final InstantiationException e) {
-                // couldn't create for some reason
-                Assert.fail("unable to create StepImplementations class: " + targetClass);
-            } catch (final Exception e) {
-                log.error(e.getMessage(), e);
-
-            }
-        }
-        return target;
-
     }
 
 

@@ -22,8 +22,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -41,7 +41,6 @@ import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryFea
 import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 
-
 /**
  * 
  * 
@@ -49,148 +48,158 @@ import com.technophobia.substeps.stepimplementations.MockStepImplementations;
  * 
  */
 public class BeforeAndAftersStaticTest extends BeforeAndAftersTestParent {
-	private static final Logger log = LoggerFactory.getLogger(BeforeAndAftersStaticTest.class);
+    private static final Logger log = LoggerFactory.getLogger(BeforeAndAftersStaticTest.class);
 
-	public static int beforeAllFeaturesCounter = 0;
-	public static int afterAllFeaturesCounter = 0;
-	public static int beforeFeatureCounter = 0;
-	public static int afterFeatureCounter = 0;
-	public static int beforeScenarioCounter = 0;
-	public static int afterScenarioCounter = 0;
+    public static int beforeAllFeaturesCounter = 0;
+    public static int afterAllFeaturesCounter = 0;
+    public static int beforeFeatureCounter = 0;
+    public static int afterFeatureCounter = 0;
+    public static int beforeScenarioCounter = 0;
+    public static int afterScenarioCounter = 0;
 
-	@BeforeAllFeatures
-	public static void beforeAllFeatures() {
-		log.debug("beforeAllFeatures");
-		Assert.assertTrue(parentBeforeAllFeaturesCounter > beforeAllFeaturesCounter);
 
-		beforeAllFeaturesCounter++;
-	}
+    @BeforeAllFeatures
+    public static void beforeAllFeatures() {
+        log.debug("beforeAllFeatures");
+        Assert.assertTrue(parentBeforeAllFeaturesCounter > beforeAllFeaturesCounter);
 
-	@AfterAllFeatures
-	public static void afterAllFeatures() {
-		log.debug("afterAllFeatures");
+        beforeAllFeaturesCounter++;
+    }
 
-		afterAllFeaturesCounter++;
 
-		Assert.assertTrue(parentAfterAllFeaturesCounter < afterAllFeaturesCounter);
-	}
+    @AfterAllFeatures
+    public static void afterAllFeatures() {
+        log.debug("afterAllFeatures");
 
-	@BeforeEveryFeature
-	public static void beforeFeature() {
-		log.debug("beforeFeature beforeFeatureCounter is " + beforeFeatureCounter + " parent is: "
-				+ parentBeforeFeatureCounter);
+        afterAllFeaturesCounter++;
 
-		// Assert.assertTrue("parentBeforeFeatureCounter is " +
-		// parentBeforeFeatureCounter + " beforeFeatureCounter is: "
-		// + beforeFeatureCounter, parentBeforeFeatureCounter >
-		// beforeFeatureCounter);
+        Assert.assertTrue(parentAfterAllFeaturesCounter < afterAllFeaturesCounter);
+    }
 
-		beforeFeatureCounter++;
-	}
 
-	@BeforeEveryFeature
-	public static void beforeFeature2() {
-		log.debug("beforeFeature2");
-		// this will get called second so the parent assertion isn't valid
-		beforeFeatureCounter++;
-	}
+    @BeforeEveryFeature
+    public static void beforeFeature() {
+        log.debug("beforeFeature beforeFeatureCounter is " + beforeFeatureCounter + " parent is: "
+                + parentBeforeFeatureCounter);
 
-	@AfterEveryFeature
-	public static void afterFeature() {
-		log.debug("afterFeature");
+        // Assert.assertTrue("parentBeforeFeatureCounter is " +
+        // parentBeforeFeatureCounter + " beforeFeatureCounter is: "
+        // + beforeFeatureCounter, parentBeforeFeatureCounter >
+        // beforeFeatureCounter);
 
-		afterFeatureCounter++;
+        beforeFeatureCounter++;
+    }
 
-		// Assert.assertTrue("parentBeforeFeatureCounter is " +
-		// parentBeforeFeatureCounter + " beforeFeatureCounter is: "
-		// + beforeFeatureCounter, parentAfterFeatureCounter <
-		// afterFeatureCounter);
 
-	}
+    @BeforeEveryFeature
+    public static void beforeFeature2() {
+        log.debug("beforeFeature2");
+        // this will get called second so the parent assertion isn't valid
+        beforeFeatureCounter++;
+    }
 
-	@AfterEveryFeature
-	public static void afterFeature2() {
-		log.debug("afterFeature2");
-		afterFeatureCounter++;
-	}
 
-	@BeforeEveryScenario
-	public static void beforeScenario() {
-		log.debug("beforeScenario");
+    @AfterEveryFeature
+    public static void afterFeature() {
+        log.debug("afterFeature");
 
-		Assert.assertTrue(parentBeforeScenarioCounter > beforeScenarioCounter);
+        afterFeatureCounter++;
 
-		beforeScenarioCounter++;
-	}
+        // Assert.assertTrue("parentBeforeFeatureCounter is " +
+        // parentBeforeFeatureCounter + " beforeFeatureCounter is: "
+        // + beforeFeatureCounter, parentAfterFeatureCounter <
+        // afterFeatureCounter);
 
-	@AfterEveryScenario
-	public static void afterScenario() {
-		log.debug("afterScenario");
+    }
 
-		afterScenarioCounter++;
 
-		Assert.assertTrue(parentAfterScenarioCounter < afterScenarioCounter);
-	}
+    @AfterEveryFeature
+    public static void afterFeature2() {
+        log.debug("afterFeature2");
+        afterFeatureCounter++;
+    }
 
-	@BeforeClass
-	public static void resetCounters() {
-		beforeAllFeaturesCounter = 0;
-		afterAllFeaturesCounter = 0;
-		beforeFeatureCounter = 0;
-		afterFeatureCounter = 0;
-		beforeScenarioCounter = 0;
-		afterScenarioCounter = 0;
 
-		// reset parent counters too
+    @BeforeEveryScenario
+    public static void beforeScenario() {
+        log.debug("beforeScenario");
 
-		parentBeforeAllFeaturesCounter = 0;
-		parentAfterAllFeaturesCounter = 0;
-		parentBeforeFeatureCounter = 0;
-		parentAfterFeatureCounter = 0;
-		parentBeforeScenarioCounter = 0;
-		parentAfterScenarioCounter = 0;
-	}
+        Assert.assertTrue(parentBeforeScenarioCounter > beforeScenarioCounter);
 
-	// this test will run a set of features and the before / after methods in
-	// this class
-	@Ignore("static setup methods no longer supported")
-	@Test
-	public void testRunBeforesAndAfters() {
-		final JunitFeatureRunner runner = new JunitFeatureRunner(testNotifier);
+        beforeScenarioCounter++;
+    }
 
-		final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-		stepImplsList.add(MockStepImplementations.class);
 
-		// @FeatureFiles(featureFile = "./target/test-classes/features",
-		// subStepsFile = "./target/test-classes/substeps", stepImplementations
-		// =
-		// { BDDRunnerStepImplementations.class }, tagList =
-		// "@beforesAndAfters")
+    @AfterEveryScenario
+    public static void afterScenario() {
+        log.debug("afterScenario");
 
-		runner.init(this.getClass(), stepImplsList, "./target/test-classes/features", "@beforesAndAfters",
-				"./target/test-classes/substeps/simple.substeps");
+        afterScenarioCounter++;
 
-		final MockStepImplementations stepImpls = new MockStepImplementations(this);
+        Assert.assertTrue(parentAfterScenarioCounter < afterScenarioCounter);
+    }
 
-		final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
 
-		implsCache.put(MockStepImplementations.class, stepImpls);
+    @BeforeClass
+    public static void resetCounters() {
+        beforeAllFeaturesCounter = 0;
+        afterAllFeaturesCounter = 0;
+        beforeFeatureCounter = 0;
+        afterFeatureCounter = 0;
+        beforeScenarioCounter = 0;
+        afterScenarioCounter = 0;
 
-		final RunNotifier notifier = mock(RunNotifier.class);
+        // reset parent counters too
 
-		runner.run(notifier);
+        parentBeforeAllFeaturesCounter = 0;
+        parentAfterAllFeaturesCounter = 0;
+        parentBeforeFeatureCounter = 0;
+        parentAfterFeatureCounter = 0;
+        parentBeforeScenarioCounter = 0;
+        parentAfterScenarioCounter = 0;
+    }
 
-		// now verify that what was run was indeed run
 
-		// should run 2 features, 3 scenarios
+    // this test will run a set of features and the before / after methods in
+    // this class
+    @Ignore("static setup methods no longer supported")
+    @Test
+    public void testRunBeforesAndAfters() {
+        final JunitFeatureRunner runner = new JunitFeatureRunner(testNotifier);
 
-		Assert.assertThat(beforeAllFeaturesCounter, is(1));
-		Assert.assertThat(beforeFeatureCounter, is(4)); // two before setup
-														// methods per feature
-		Assert.assertThat(beforeScenarioCounter, is(3));
-		Assert.assertThat(afterScenarioCounter, is(3));
-		Assert.assertThat(afterFeatureCounter, is(4));
-		Assert.assertThat(afterAllFeaturesCounter, is(1));
+        final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
+        stepImplsList.add(MockStepImplementations.class);
 
-	}
+        // @FeatureFiles(featureFile = "./target/test-classes/features",
+        // subStepsFile = "./target/test-classes/substeps", stepImplementations
+        // =
+        // { BDDRunnerStepImplementations.class }, tagList =
+        // "@beforesAndAfters")
+
+        runner.init(this.getClass(), stepImplsList, "./target/test-classes/features",
+                "@beforesAndAfters", "./target/test-classes/substeps/simple.substeps");
+
+        final MockStepImplementations stepImpls = new MockStepImplementations(this);
+
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
+
+        implsCache.put(MockStepImplementations.class, stepImpls);
+
+        final RunNotifier notifier = mock(RunNotifier.class);
+
+        runner.run(notifier);
+
+        // now verify that what was run was indeed run
+
+        // should run 2 features, 3 scenarios
+
+        Assert.assertThat(beforeAllFeaturesCounter, is(1));
+        Assert.assertThat(beforeFeatureCounter, is(4)); // two before setup
+                                                        // methods per feature
+        Assert.assertThat(beforeScenarioCounter, is(3));
+        Assert.assertThat(afterScenarioCounter, is(3));
+        Assert.assertThat(afterFeatureCounter, is(4));
+        Assert.assertThat(afterAllFeaturesCounter, is(1));
+
+    }
 }

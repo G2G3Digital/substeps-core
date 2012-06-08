@@ -18,13 +18,15 @@
  */
 package com.technophobia.substeps.runner.setupteardown;
 
+import java.lang.reflect.Method;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.technophobia.substeps.runner.ExecutionContext;
-import com.technophobia.substeps.runner.Scope;
-
+import com.technophobia.substeps.execution.MethodExecutor;
+import com.technophobia.substeps.model.Scope;
 
 /**
  * Class to encapsulate setup and tear down methods and the ordering of them
@@ -41,6 +43,8 @@ public class SetupAndTearDown {
     private final MethodExecutor methodExecutor;
     private boolean dryRun = false;
 
+    private final BeforeAndAfterMethods beforeAndAfterMethods;
+
 
     public String getLoggingConfigName() {
         return loggingConfigName;
@@ -52,12 +56,12 @@ public class SetupAndTearDown {
     }
 
 
+    public SetupAndTearDown(final Class<?>[] classes, final MethodExecutor methodExecutor) {
 
-    public SetupAndTearDown(final MethodExecutor methodExecutor) {
+        beforeAndAfterMethods = new BeforeAndAfterMethods(classes);
         this.methodExecutor = methodExecutor;
+        this.methodExecutor.addImplementationClasses(classes);
     }
-
-
 
 
     public void runBeforeAll() throws Throwable {
@@ -72,7 +76,7 @@ public class SetupAndTearDown {
 	 */
     public void runAfterAll() throws Throwable {
         runAllMethods(MethodState.AFTER_ALL);
-        ExecutionContext.clear(Scope.SUITE);
+//        ExecutionContext.clear(Scope.SUITE);
 
         removeLoggingConfig();
     }
@@ -90,7 +94,7 @@ public class SetupAndTearDown {
 	 */
     public void runAfterFeatures() throws Throwable {
         runAllMethods(MethodState.AFTER_FEATURES);
-        ExecutionContext.clear(Scope.FEATURE);
+//        ExecutionContext.clear(Scope.FEATURE);
     }
 
 
@@ -107,28 +111,31 @@ public class SetupAndTearDown {
     public void runAfterScenarios() throws Throwable {
         runAllMethods(MethodState.AFTER_SCENARIOS);
 
-        ExecutionContext.clear(Scope.SCENARIO);
+//        ExecutionContext.clear(Scope.SCENARIO);
     }
 
 
     private void runAllMethods(final MethodState methodState) throws Throwable {
 
         if (!dryRun) {
-            methodExecutor.executeMethods( methodState);
+
+            final List<Method> setupAndTearDownMethods = beforeAndAfterMethods
+                    .getSetupAndTearDownMethods(methodState);
+
+            methodExecutor.executeMethods(setupAndTearDownMethods);
         }
     }
 
 
     private void prepareLoggingConfig() {
 
-    	if (loggingConfigName == null){
-    		
-    		MDC.put("className", "SubSteps");
-    		log.info("no logging config name supplied, defaulting to Substeps");
-    	}
-    	else {
-    		MDC.put("className", loggingConfigName);
-    	}
+        if (loggingConfigName == null) {
+
+            MDC.put("className", "SubSteps");
+            log.info("no logging config name supplied, defaulting to Substeps");
+        } else {
+            MDC.put("className", loggingConfigName);
+        }
     }
 
 
@@ -153,8 +160,8 @@ public class SetupAndTearDown {
             runBeforeFeatures();
             break;
         }
-        case SCENARIO: 
-        case SCENARIO_OUTLINE_ROW:{
+        case SCENARIO:
+        case SCENARIO_OUTLINE_ROW: {
             runBeforeScenarios();
             break;
         }
@@ -176,16 +183,19 @@ public class SetupAndTearDown {
         switch (currentScope) {
         case SUITE: {
             runAfterAll();
+
             break;
         }
         case FEATURE: {
             runAfterFeatures();
+
             break;
         }
         case SCENARIO:
-        case SCENARIO_OUTLINE_ROW:{
+        case SCENARIO_OUTLINE_ROW: {
             runAfterScenarios();
             
+
             // TODO for outline scenarios this might mean setup and tear down
             // gets run an extra time each...
             break;
@@ -198,9 +208,6 @@ public class SetupAndTearDown {
     }
 
 
-    /**
-     * @param b
-     */
     public void setDryRun(final boolean dryRun) {
         this.dryRun = dryRun;
 

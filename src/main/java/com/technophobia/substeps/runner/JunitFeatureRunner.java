@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfterProcessors;
+import com.technophobia.substeps.model.Scope;
 
 public class JunitFeatureRunner extends org.junit.runner.Runner  {
     private final Logger log = LoggerFactory.getLogger(JunitFeatureRunner.class);
@@ -51,7 +51,13 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         Class<? extends DescriptionProvider> descriptionProvider() default EclipseDescriptionProvider.class;
     }
 
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public static @interface BeforeAndAfterProcessors {
+        Class<?>[] value();
+    }
 
+    
     private final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
     private ExecutionConfig executionConfig = null;

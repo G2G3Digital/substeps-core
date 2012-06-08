@@ -40,7 +40,6 @@ import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.runner.EclipseDescriptionProvider.DescriptorStatus;
 
 /**
  * @author ian
@@ -51,7 +50,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     private final Properties velocityProperties = new Properties();
 
-    private final DescriptorStatus status = new DescriptorStatus();
     
     /**
      * @parameter default-value = ${project.build.directory}
@@ -278,17 +276,17 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     .append("-details.html\" target=\"detailsFrame\" onclick=\"javascript: d.s(")
 	.append(node.getId())
     .append(");\">")
-    .append(getDescriptionForNode2(node))
+    .append(getDescriptionForNode(node))
     .append("</a>");
 
     }
 
 
-    private String getDescriptionForNode2(final ExecutionNode node) {
+    private String getDescriptionForNode(final ExecutionNode node) {
         final StringBuilder buf = new StringBuilder();
         
         if (node.getParent() == null){
-        	buf.append(0).append(", \"");
+//        	buf.append(0).append(", \"");
         	
         	if (node.getLine() != null){
         		buf.append(node.getLine());
@@ -300,20 +298,19 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         else
         {
         
-        buildDescriptionString(status, node, buf);
+        buildDescriptionString(null, node, buf);
 
 		}
         return StringEscapeUtils.escapeHtml(buf.toString());
     }
 
 
-	/**
-	 * @param node
-	 * @param buf
-	 */
-	public static void buildDescriptionString(final DescriptorStatus descriptorStatus, final ExecutionNode node, final StringBuilder buf)
+
+	public static void buildDescriptionString(final String prefix,  final ExecutionNode node, final StringBuilder buf)
 	{
-		buf.append(descriptorStatus.getIndexStringForNode(node)).append(": ");
+		if (prefix != null){
+			buf.append(prefix);
+		}
 
         if (node.getFeature() != null) {
 
@@ -322,9 +319,9 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         } else if (node.getScenarioName() != null) {
 
             if (node.isOutlineScenario()) {
-                buf.append("ScnO: ");
+                buf.append("Scenario #: ");
             } else {
-                buf.append("Scn: ");
+                buf.append("Scenario: ");
             }
             buf.append(node.getScenarioName());
         }
@@ -371,8 +368,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     
     		display = getDisplay(node.getDepth()+1);
     		parentDivStart(node.getId(), buf, display);
-    		
-    		// todo - no <div id="dd3" class="clip" style="display: block;"> IF NO CHILDREN
     		
     		for (final ExecutionNode child: node.getChildren()){
     			buf.append("<!-- child id " + child.getId() + " -->");

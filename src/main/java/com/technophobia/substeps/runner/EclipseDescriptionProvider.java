@@ -183,7 +183,8 @@ public class EclipseDescriptionProvider implements DescriptionProvider {
     private String getDescriptionForNode(final ExecutionNode node, final DescriptorStatus status) {
         final StringBuilder buf = new StringBuilder();
 
-        DefaultExecutionReportBuilder.buildDescriptionString(status, node, buf);
+        DefaultExecutionReportBuilder.buildDescriptionString(status.getIndexStringForNode(node) +  ": "
+        		, node, buf);
         
         // TODO - think on Jenkins the report looks like the dot is being
         // interpreted as package delimiter

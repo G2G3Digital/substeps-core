@@ -16,22 +16,43 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner;
+
+package com.technophobia.substeps.runner.syntax;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * @author ian
- * 
+ *
  */
-public class SubStepConfigurationException extends RuntimeException {
-    private static final long serialVersionUID = -7081029538420278487L;
+public class FileUtils
+{
+	public static List<File> getFiles(final File fFile, final String extension) {
 
+        final List<File> files = new ArrayList<File>();
+		if (fFile.exists()) {
+			if (fFile.isDirectory()) {
+				final File[] children = fFile.listFiles(new FileFilter() {
+					public boolean accept(final File dir) {
+						return dir.isDirectory()
+								|| (dir.isFile() && dir.getName().endsWith(
+										extension));
+					}
 
-    public SubStepConfigurationException(final Throwable cause) {
-        super(cause);
-    }
-
-
-    public SubStepConfigurationException(final String msg) {
-        super(msg);
+				});
+				if (children != null && children.length > 0) {
+					for (final File f : children) {
+						files.addAll(getFiles(f, extension));
+					}
+				}
+			} else {
+				files.add(fFile);
+			}
+		}
+		return files;
     }
 }

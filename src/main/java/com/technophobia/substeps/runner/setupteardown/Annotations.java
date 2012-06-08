@@ -31,11 +31,6 @@ import java.lang.annotation.Target;
 public interface Annotations
 {
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    public static @interface BeforeAndAfterProcessors {
-        Class<?>[] value();
-    }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)

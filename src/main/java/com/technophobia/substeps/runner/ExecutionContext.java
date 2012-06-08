@@ -21,6 +21,8 @@ package com.technophobia.substeps.runner;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.technophobia.substeps.model.Scope;
+
 /**
  * Singleton class holding state a various scopes for the duration of execution,
  * state will be cleared at appropriate points through execution
