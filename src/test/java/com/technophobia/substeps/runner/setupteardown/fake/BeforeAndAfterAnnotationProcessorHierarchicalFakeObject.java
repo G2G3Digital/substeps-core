@@ -18,10 +18,6 @@
  */
 package com.technophobia.substeps.runner.setupteardown.fake;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
-
-
-
-@BeforeAndAfterProcessors(BeforeAndAfterHierarchicalMethodsClass.class)
+//@BeforeAndAfterProcessors(BeforeAndAfterHierarchicalMethodsClass.class)
 public class BeforeAndAfterAnnotationProcessorHierarchicalFakeObject {
 }

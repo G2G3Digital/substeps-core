@@ -36,32 +36,40 @@ import com.google.common.base.Strings;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.model.Scope;
 
-public class JunitFeatureRunner extends org.junit.runner.Runner  {
+public class JunitFeatureRunner extends org.junit.runner.Runner {
     private final Logger log = LoggerFactory.getLogger(JunitFeatureRunner.class);
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
-    public static @interface FeatureFiles {
+    public static @interface SubStepsConfiguration {
         String featureFile();
+
+
         String subStepsFile() default "";
+
+
         Class<?>[] stepImplementations();
+
+
         String tagList() default "";
+
+
         boolean strict() default true;
+
+
         String[] nonStrictKeywordPrecedence() default {};
+
+
         Class<? extends DescriptionProvider> descriptionProvider() default EclipseDescriptionProvider.class;
+
+
+        Class<?>[] beforeAndAfterImplementations() default {};
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    public static @interface BeforeAndAfterProcessors {
-        Class<?>[] value();
-    }
-
-    
     private final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
     private ExecutionConfig executionConfig = null;
-    
+
     private DescriptionProvider descriptionProvider = null;
 
     private Class<?> classContainingTheTests;
@@ -71,8 +79,8 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
     private IJunitNotifier notifier;
 
     private ExecutionNode rootNode;
-    
-    
+
+
     // Used by tests only
     public JunitFeatureRunner() {
         notifier = new JunitNotifier();
@@ -91,10 +99,10 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         // where classContainingTheTests is the class annotated with
         // @RunWith....
 
-
         log.debug("JunitFeatureRunner ctor with class: " + classContainingTheTests.getSimpleName());
 
-        final FeatureFiles annotation = classContainingTheTests.getAnnotation(FeatureFiles.class);
+        final SubStepsConfiguration annotation = classContainingTheTests
+                .getAnnotation(SubStepsConfiguration.class);
         Assert.assertNotNull("no Feature file annotation specified on the test class", annotation);
 
         List<Class<?>> stepImpls = null;
@@ -108,12 +116,13 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
 
         init(classContainingTheTests, stepImpls, annotation.featureFile(), annotation.tagList(),
                 annotation.subStepsFile(), annotation.strict(),
-                annotation.nonStrictKeywordPrecedence(), annotation.descriptionProvider());
+                annotation.nonStrictKeywordPrecedence(), annotation.descriptionProvider(),
+                annotation.beforeAndAfterImplementations());
     }
 
 
     /**
-     * init method used by tests
+     * init method used by tests TODO check usage - init classes
      * 
      * @param reportedClass
      * @param stepImplementationClasses
@@ -123,9 +132,10 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
      */
     public final void init(final Class<?> reportedClass,
             final List<Class<?>> stepImplementationClasses, final String featureFile,
-            final String tags, final String subStepsFile) {
+            final String tags, final String subStepsFile,
+            final Class<?>[] beforeAndAfterImplementations) {
         init(reportedClass, stepImplementationClasses, featureFile, tags, subStepsFile, true, null,
-                EclipseDescriptionProvider.class);
+                EclipseDescriptionProvider.class, beforeAndAfterImplementations);
     }
 
 
@@ -133,7 +143,8 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
             final List<Class<?>> stepImplementationClasses, final String featureFile,
             final String tags, final String subStepsFileName, final boolean strict,
             final String[] nonStrictKeywordPrecedence,
-            final Class<? extends DescriptionProvider> descriptionProviderClass) {
+            final Class<? extends DescriptionProvider> descriptionProviderClass,
+            final Class<?>[] beforeAndAfterImplementations) {
 
         try {
             descriptionProvider = descriptionProviderClass.newInstance();
@@ -158,27 +169,24 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         executionConfig.setStrict(strict);
         executionConfig.setNonStrictKeywordPrecedence(nonStrictKeywordPrecedence);
         executionConfig.setStepImplementationClasses(stepImplementationClasses);
-        
+
+        executionConfig.setInitialisationClasses(beforeAndAfterImplementations);
+
         if (classContainingTheTests != null) {
-	        executionConfig.setDescription(classContainingTheTests.getSimpleName());
-	        
-	        final BeforeAndAfterProcessors annotation = classContainingTheTests.getAnnotation(BeforeAndAfterProcessors.class);
-	        if (annotation != null){
-	        	executionConfig.setInitialisationClasses(annotation.value());	
-	        }
-	        
-        }        
+            executionConfig.setDescription(classContainingTheTests.getSimpleName());
+        }
 
         rootNode = runner.prepareExecutionConfig(executionConfig, notifier);
-        
+
         log.debug("rootNode.toDebugString():\n" + rootNode.toDebugString());
 
-        final Map<Long, Description> descriptionMap = descriptionProvider.buildDescriptionMap(rootNode, classContainingTheTests);
+        final Map<Long, Description> descriptionMap = descriptionProvider.buildDescriptionMap(
+                rootNode, classContainingTheTests);
         thisDescription = descriptionMap.get(Long.valueOf(rootNode.getId()));
         notifier = new JunitNotifier();
 
         notifier.setDescriptionMap(descriptionMap);
-        
+
     }
 
 
@@ -196,7 +204,6 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         return thisDescription;
 
     }
-
 
 
     /*
@@ -227,6 +234,7 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
         runner.run();
     }
 
+
     private String printDescription(final Description desc, final int depth) {
         final StringBuilder buf = new StringBuilder();
 
@@ -242,6 +250,7 @@ public class JunitFeatureRunner extends org.junit.runner.Runner  {
 
         return buf.toString();
     }
+
 
     /**
      * @return
