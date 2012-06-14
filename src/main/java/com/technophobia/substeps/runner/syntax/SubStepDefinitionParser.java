@@ -16,10 +16,9 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner;
+package com.technophobia.substeps.runner.syntax;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -46,51 +45,41 @@ public class SubStepDefinitionParser {
 
     private final PatternMap<ParentStep> parentMap = new PatternMap<ParentStep>();
 
+    private void parseSubStepFile(final File substepFile){
+        currentFile = substepFile;
+        try {
+            final List<String> lines = Files.readLines(substepFile,
+                    Charset.forName("UTF-8"));
+
+            for (final String line : lines) {
+                log.trace("substep line[" + substepFile.getName() + "]: " + line);
+                processLine(line, substepFile);
+            }
+
+            if (currentParentStep != null) {
+                // add the last scenario in
+                parentMap.put(currentParentStep.getParent().getPattern(), currentParentStep);
+
+                // we're moving on to another file, so set this to null.
+                // TODO - pass this around rather than stash the state
+                currentParentStep = null;
+            }
+        } catch (final FileNotFoundException e) {
+            log.error(e.getMessage(), e);
+        } catch (final IOException e) {
+
+            log.error(e.getMessage(), e);
+        }
+    }
 
     public PatternMap<ParentStep> loadSubSteps(final File definitions) {
-        if (definitions.exists()) {
-            // TODO very similar to JUnitFeatureRunner line 157
-            if (definitions.isDirectory()) {
-                final File[] children = definitions.listFiles(new FileFilter() {
-                    public boolean accept(final File dir) {
-                        return dir.isDirectory()
-                                || (dir.isFile() && dir.getName().endsWith(".substeps"));
-                    }
-                });
-
-                if (children != null && children.length > 0) {
-                    for (final File f : children) {
-                        loadSubSteps(f);
-                    }
-                }
-            } else {
-                currentFile = definitions;
-                try {
-                    final List<String> lines = Files.readLines(definitions,
-                            Charset.forName("UTF-8"));
-
-                    for (final String line : lines) {
-                        log.trace("substep line[" + definitions.getName() + "]: " + line);
-                        processLine(line, definitions);
-                    }
-
-                    if (currentParentStep != null) {
-                        // add the last scenario in
-                        parentMap
-                                .put(currentParentStep.getParent().getPattern(), currentParentStep);
-
-                        // we're moving on to another file, so set this to null.
-                        // TODO - pass this around rather than stash the state
-                        currentParentStep = null;
-                    }
-                } catch (final FileNotFoundException e) {
-                    log.error(e.getMessage(), e);
-                } catch (final IOException e) {
-
-                    log.error(e.getMessage(), e);
-                }
-            }
-        }
+        
+    	final List<File> substepsFiles = FileUtils.getFiles(definitions, ".substeps");
+    	
+    	for (final File f : substepsFiles){
+    		parseSubStepFile(f);
+    	}
+    	
         return parentMap;
     }
 

@@ -22,7 +22,7 @@ import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import com.technophobia.substeps.runner.JunitFeatureRunner;
-import com.technophobia.substeps.runner.JunitFeatureRunner.FeatureFiles;
+import com.technophobia.substeps.runner.JunitFeatureRunner.SubStepsConfiguration;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 
 
@@ -33,7 +33,7 @@ import com.technophobia.substeps.stepimplementations.MockStepImplementations;
  */
 
  @Ignore("this is only for local dev, not to actually run as a test!")
-@FeatureFiles(featureFile = "./target/test-classes/features/allFeatures.feature", subStepsFile = "./target/test-classes/substeps/allFeatures.substeps", stepImplementations = { MockStepImplementations.class })
+@SubStepsConfiguration(featureFile = "./target/test-classes/features/allFeatures.feature", subStepsFile = "./target/test-classes/substeps/allFeatures.substeps", stepImplementations = { MockStepImplementations.class })
 @RunWith(JunitFeatureRunner.class)
 public class AllFeaturesJunit {
 

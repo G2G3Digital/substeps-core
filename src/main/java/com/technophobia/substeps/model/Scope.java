@@ -16,29 +16,14 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner;
+package com.technophobia.substeps.model;
 
-import java.io.Serializable;
-import java.util.Comparator;
-
-import com.technophobia.substeps.model.FeatureFile;
-
-
-public class FeatureFileComparator implements Comparator<FeatureFile>, Serializable {
-
-	private static final long serialVersionUID = -8032832302837878628L;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-	 */
-	
-	public int compare(final FeatureFile ff1, final FeatureFile ff2) {
-		if (ff1 != null && ff2 != null) {
-			return ff1.getName().compareTo(ff2.getName());
-		} else {
-			return -1;
-		}
-	}
+/**
+ * An enum that represents the scope of variables / current execution
+ * 
+ * @author imoore
+ * 
+ */
+public enum Scope {
+	SUITE, FEATURE, SCENARIO, SCENARIO_BACKGROUND, SCENARIO_OUTLINE_ROW, STEP;
 }

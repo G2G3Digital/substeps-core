@@ -40,6 +40,7 @@ import org.junit.runner.notification.RunNotifier;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.model.StepImplementation;
+import com.technophobia.substeps.model.SubStepConfigurationException;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import com.technophobia.substeps.steps.TestStepImplementations;
 
@@ -60,7 +61,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
 
-        runner.init(this.getClass(), stepImplsList, feature, tag, substeps);
+        runner.init(this.getClass(), stepImplsList, feature, tag, substeps, null);
     }
 
 
@@ -76,7 +77,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
 
-        runner.init(this.getClass(), stepImplsList, feature, tag, substeps);
+        runner.init(this.getClass(), stepImplsList, feature, tag, substeps, null);
 
         final TestStepImplementations stepImpls = new TestStepImplementations();
         final TestStepImplementations spy = spy(stepImpls);
@@ -115,7 +116,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         runner.init(this.getClass(), stepImplsList,
                 "./target/test-classes/features/paramsToSubSteps.feature", "nested_params_bug",
-                "./target/test-classes/substeps/nested_params_substeps");
+                "./target/test-classes/substeps/nested_params_substeps", null);
 
         final TestStepImplementations stepImpls = new TestStepImplementations();
         final TestStepImplementations spy = spy(stepImpls);
@@ -147,7 +148,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         stepImplsList.add(TestStepImplementations.class);
 
         runner.init(this.getClass(), stepImplsList, "./target/test-classes/features_dir", null,
-                "./target/test-classes/substeps_dir");
+                "./target/test-classes/substeps_dir", null);
 
         final TestStepImplementations stepImpls = new TestStepImplementations();
         final TestStepImplementations spy = spy(stepImpls);
@@ -180,7 +181,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList,
                 "./target/test-classes/features/allFeatures.feature", null,
-                "./target/test-classes/substeps/allFeatures.substeps");
+                "./target/test-classes/substeps/allFeatures.substeps", null);
 
         final MockStepImplementations stepImpls = new MockStepImplementations();
         final MockStepImplementations spy = spy(stepImpls);
@@ -261,7 +262,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList,
                 "./target/test-classes/features/notifications.feature", null,
-                "./target/test-classes/substeps/allFeatures.substeps");
+                "./target/test-classes/substeps/allFeatures.substeps", null);
 
         final MockStepImplementations stepImpls = new MockStepImplementations();
         final MockStepImplementations spy = spy(stepImpls);
@@ -340,7 +341,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList,
                 "./target/test-classes/features/stepWithInlineTable.feature", null,
-                "./target/test-classes/substeps/allFeatures.substeps");
+                "./target/test-classes/substeps/allFeatures.substeps", null);
 
         final MockStepImplementations stepImpls = new MockStepImplementations();
         final MockStepImplementations spy = spy(stepImpls);
@@ -460,7 +461,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList, "./target/test-classes/features/bugs.feature",
-                "@bug1", "./target/test-classes/substeps/bugs.substeps");
+                "@bug1", "./target/test-classes/substeps/bugs.substeps", null);
 
         final MockStepImplementations stepImpls = new MockStepImplementations();
         final MockStepImplementations spy = spy(stepImpls);

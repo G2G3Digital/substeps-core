@@ -24,7 +24,6 @@ import java.util.List;
 
 import com.technophobia.substeps.model.SubSteps;
 import com.technophobia.substeps.model.Syntax;
-import com.technophobia.substeps.runner.SubStepDefinitionParser;
 import com.technophobia.substeps.scanner.ClasspathScanner;
 
 /**

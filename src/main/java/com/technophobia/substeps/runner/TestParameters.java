@@ -19,7 +19,6 @@
 package com.technophobia.substeps.runner;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.technophobia.substeps.model.FeatureFile;
 import com.technophobia.substeps.model.Scenario;
 import com.technophobia.substeps.model.Syntax;
+import com.technophobia.substeps.runner.syntax.FileUtils;
 
 /**
  * @author ian
@@ -54,7 +54,7 @@ public class TestParameters {
 
     public void init() {
 
-        final List<File> featureFiles = getFeatureFiles(new File(featureFile));
+        final List<File> featureFiles = FileUtils.getFiles(new File(featureFile), ".feature");
 
         final FeatureFileParser fp2 = new FeatureFileParser();
         for (final File f : featureFiles) {
@@ -79,30 +79,6 @@ public class TestParameters {
      */
     public List<FeatureFile> getFeatureFileList() {
         return featureFileList;
-    }
-
-
-    private List<File> getFeatureFiles(final File fFile) {
-
-        final List<File> features = new ArrayList<File>();
-
-        if (fFile.isDirectory()) {
-            final File[] children = fFile.listFiles(new FileFilter() {
-                public boolean accept(final File dir) {
-                    return dir.isDirectory()
-                            || (dir.isFile() && dir.getName().endsWith(".feature"));
-                }
-
-            });
-            if (children != null && children.length > 0) {
-                for (final File f : children) {
-                    features.addAll(getFeatureFiles(f));
-                }
-            }
-        } else {
-            features.add(fFile);
-        }
-        return features;
     }
 
 

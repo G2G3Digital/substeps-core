@@ -3,6 +3,8 @@
 <!-- Copyright Technophobia Ltd 2012 -->
 <html>
 <head>
+		<link rel="StyleSheet" href="dtree.css" type="text/css" />
+	
 </head>
 <body>
 
@@ -27,7 +29,7 @@ $node.result.getStackTrace()
 	<table width="100%">
 
 	#foreach( $child in $node.children )
-		<tr><td  style="$child.getStyle() ">
+		<tr><td  class="$child.getResult().getResult() ">
 			$child.getDescription()
 		</td></tr>		
 	#end

@@ -18,10 +18,7 @@
  */
 package com.technophobia.substeps.runner.setupteardown.fake;
 
-import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAndAfterProcessors;
-
-
-@BeforeAndAfterProcessors({ BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.class, BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.class })
+//@BeforeAndAfterProcessors({ BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass1.class, BeforeAndAfterAnnotationProcessorFakeMultipleMethodsClass2.class })
 public class BeforeAndAfterAnnotationProcessorFakeMultipleObject {
 
 }

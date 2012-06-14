@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.execution.MethodExecutor;
+import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.model.Syntax;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
@@ -259,6 +260,8 @@ public class ExecutionNodeRunner {
             // run tear down if necessary for this depth and step
             if (!node.isOutlineScenario()) {
                 setupAndTearDown.runTearDown(scope);
+                ExecutionContext.clear(scope);
+
             }
         } catch (final Throwable t) {
             log.debug("tear down failed", t);
