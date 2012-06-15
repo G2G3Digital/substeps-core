@@ -24,6 +24,6 @@ public class DefinableFeatureRunner extends JunitFeatureRunner {
 				new StepClassFilter(), new ClassLoadingFunction(path));
 
 		init(clazz, Lists.newArrayList(classLocator.fromPath(path)),
-				System.getProperty("substepsFeatureFile"), "", "");
+				System.getProperty("substepsFeatureFile"), "", "", new Class<?>[0]);
 	}
 }
