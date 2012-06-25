@@ -19,13 +19,9 @@
 package com.technophobia.substeps.runner.setupteardown;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.technophobia.substeps.execution.ImplementationCache;
-import com.technophobia.substeps.runner.BeforeAndAftersStaticTest;
-import com.technophobia.substeps.runner.BeforeAndAftersTestParent;
-import com.technophobia.substeps.runner.JunitFeatureRunner.BeforeAndAfterProcessors;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing1;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing2;
 import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequencing3;
@@ -37,31 +33,6 @@ import com.technophobia.substeps.runner.setupteardown.fake.BeforeAndAfterSequenc
  * 
  */
 public class SetupAndTearDownTest {
-    @BeforeClass
-    public static void resetCounters() {
-        BeforeAndAftersStaticTest.beforeAllFeaturesCounter = 0;
-        BeforeAndAftersStaticTest.afterAllFeaturesCounter = 0;
-        BeforeAndAftersStaticTest.beforeFeatureCounter = 0;
-        BeforeAndAftersStaticTest.afterFeatureCounter = 0;
-        BeforeAndAftersStaticTest.beforeScenarioCounter = 0;
-        BeforeAndAftersStaticTest.afterScenarioCounter = 0;
-
-        // reset parent counters too
-
-        BeforeAndAftersTestParent.parentBeforeAllFeaturesCounter = 0;
-        BeforeAndAftersTestParent.parentAfterAllFeaturesCounter = 0;
-        BeforeAndAftersTestParent.parentBeforeFeatureCounter = 0;
-        BeforeAndAftersTestParent.parentAfterFeatureCounter = 0;
-        BeforeAndAftersTestParent.parentBeforeScenarioCounter = 0;
-        BeforeAndAftersTestParent.parentAfterScenarioCounter = 0;
-    }
-
-    @BeforeAndAfterProcessors({ BeforeAndAfterSequencing3.class, BeforeAndAfterSequencing2.class,
-            BeforeAndAfterSequencing1.class })
-    public static class ClassWithBeforesAndAfters {
-        // no op
-    }
-
 
     @Test
     public void testOrderingOfSetupAndTearDown() {
@@ -109,137 +80,5 @@ public class SetupAndTearDownTest {
                 BeforeAndAfterSequencing2.afterAllFeaturesExecTime < BeforeAndAfterSequencing3.afterAllFeaturesExecTime);
 
     }
-
-    // TODO - refactoring - are these tests worth it any more?
-
-    // @Test
-    // public void runningBeforeAllFeaturesExecutesAppropriateMethods() throws
-    // Throwable {
-    // final MethodExecutor methodExecutor1 = mock(MethodExecutor.class,
-    // "methodExecutor1");
-    // // final MethodExecutor methodExecutor2 = mock(MethodExecutor.class,
-    // // "methodExecutor2");
-    //
-    // final SetupAndTearDown setupAndTearDown = new
-    // SetupAndTearDown(methodExecutor1);// ,
-    // // methodExecutor2);
-    // // setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
-    // setupAndTearDown.runBeforeAll();
-    //
-    // verify(methodExecutor1, times(1)).executeMethods(MethodState.BEFORE_ALL);
-    //
-    // // verify(methodExecutor2,
-    // // times(1)).executeMethods(BeforeAndAftersStaticTest.class,
-    // // MethodState.BEFORE_ALL);
-    // }
-    //
-    //
-    // @Test
-    // public void runningAfterAllFeaturesExecutesAppropriateMethods() throws
-    // Throwable {
-    // final MethodExecutor methodExecutor1 = mock(MethodExecutor.class,
-    // "methodExecutor1");
-    // // final MethodExecutor methodExecutor2 = mock(MethodExecutor.class,
-    // // "methodExecutor2");
-    //
-    // final SetupAndTearDown setupAndTearDown = new
-    // SetupAndTearDown(methodExecutor1);// ,
-    // // methodExecutor2);
-    // // setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
-    // setupAndTearDown.runAfterAll();
-    //
-    // verify(methodExecutor1, times(1)).executeMethods(MethodState.AFTER_ALL);
-    // // verify(methodExecutor2,
-    // // times(1)).executeMethods(BeforeAndAftersStaticTest.class,
-    // // MethodState.AFTER_ALL);
-    // }
-    //
-    //
-    // @Test
-    // public void runningBeforeEveryFeatureExecutesAppropriateMethods() throws
-    // Throwable {
-    // final MethodExecutor methodExecutor1 = mock(MethodExecutor.class,
-    // "methodExecutor1");
-    // // final MethodExecutor methodExecutor2 = mock(MethodExecutor.class,
-    // // "methodExecutor2");
-    //
-    // final SetupAndTearDown setupAndTearDown = new
-    // SetupAndTearDown(methodExecutor1);// ,
-    // // methodExecutor2);
-    // // setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
-    // setupAndTearDown.runBeforeFeatures();
-    //
-    // verify(methodExecutor1,
-    // times(1)).executeMethods(MethodState.BEFORE_FEATURES);
-    // // verify(methodExecutor2,
-    // // times(1)).executeMethods(BeforeAndAftersStaticTest.class,
-    // // MethodState.BEFORE_FEATURES);
-    // }
-    //
-    //
-    // @Test
-    // public void runningAfterEveryFeaturesExecutesAppropriateMethods() throws
-    // Throwable {
-    // final MethodExecutor methodExecutor1 = mock(MethodExecutor.class,
-    // "methodExecutor1");
-    // // final MethodExecutor methodExecutor2 = mock(MethodExecutor.class,
-    // // "methodExecutor2");
-    //
-    // final SetupAndTearDown setupAndTearDown = new
-    // SetupAndTearDown(methodExecutor1);// ,
-    // // methodExecutor2);
-    // // setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
-    // setupAndTearDown.runAfterFeatures();
-    //
-    // verify(methodExecutor1,
-    // times(1)).executeMethods(MethodState.AFTER_FEATURES);
-    // // verify(methodExecutor2,
-    // // times(1)).executeMethods(BeforeAndAftersStaticTest.class,
-    // // MethodState.AFTER_FEATURES);
-    // }
-    //
-    //
-    // @Test
-    // public void runningBeforeEveryScenarioExecutesAppropriateMethods() throws
-    // Throwable {
-    // final MethodExecutor methodExecutor1 = mock(MethodExecutor.class,
-    // "methodExecutor1");
-    // // final MethodExecutor methodExecutor2 = mock(MethodExecutor.class,
-    // // "methodExecutor2");
-    //
-    // final SetupAndTearDown setupAndTearDown = new
-    // SetupAndTearDown(methodExecutor1);// ,
-    // // methodExecutor2);
-    // // setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
-    // setupAndTearDown.runBeforeScenarios();
-    //
-    // verify(methodExecutor1,
-    // times(1)).executeMethods(MethodState.BEFORE_SCENARIOS);
-    // // verify(methodExecutor2,
-    // // times(1)).executeMethods(BeforeAndAftersStaticTest.class,
-    // // MethodState.BEFORE_SCENARIOS);
-    // }
-    //
-    //
-    // @Test
-    // public void runningAfterEveryScenarioExecutesAppropriateMethods() throws
-    // Throwable {
-    // final MethodExecutor methodExecutor1 = mock(MethodExecutor.class,
-    // "methodExecutor1");
-    // // final MethodExecutor methodExecutor2 = mock(MethodExecutor.class,
-    // // "methodExecutor2");
-    //
-    // final SetupAndTearDown setupAndTearDown = new
-    // SetupAndTearDown(methodExecutor1);// ,
-    // // methodExecutor2);
-    // // setupAndTearDown.initialise(BeforeAndAftersStaticTest.class);
-    // setupAndTearDown.runAfterScenarios();
-    //
-    // verify(methodExecutor1,
-    // times(1)).executeMethods(MethodState.AFTER_SCENARIOS);
-    // // verify(methodExecutor2,
-    // // times(1)).executeMethods(BeforeAndAftersStaticTest.class,
-    // // MethodState.AFTER_SCENARIOS);
-    // }
 
 }
