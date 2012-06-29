@@ -256,10 +256,7 @@
         <!-- A profile used by default for internal dev, using the repos set up in proeprties defined above, rather than the OSS nexus repos -->    
         <profile>
             <id>internalDev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            
+             
             <distributionManagement>
                 <snapshotRepository>
                     <id>${nexus.snapshot.artifacts}</id>
