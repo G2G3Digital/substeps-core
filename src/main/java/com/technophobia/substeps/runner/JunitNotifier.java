@@ -62,12 +62,13 @@ public class JunitNotifier implements IJunitNotifier {
      */
     public void notifyTestStarted(final Description junitDescription) {
 
-        if (junitRunNotifier != null && junitDescription != null) {
+        if (junitRunNotifier != null && junitDescription != null  && junitDescription.isTest()) {
             log.debug(junitDescription.getDisplayName() + " notifyTestStarted");
 
             junitRunNotifier.fireTestStarted(junitDescription);
         }
-        notifyListenersTestStarted(junitDescription);
+        
+       	notifyListenersTestStarted(junitDescription);
     }
 
 
@@ -88,11 +89,12 @@ public class JunitNotifier implements IJunitNotifier {
      * {@inheritDoc}
      */
     public void notifyTestFinished(final Description junitDescription) {
-        if (junitRunNotifier != null && junitDescription != null) {
+        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
             log.debug(junitDescription.getDisplayName() + " notifyTestFinished");
 
             junitRunNotifier.fireTestFinished(junitDescription);
         }
+        
         notifyListenersTestFinished(junitDescription);
     }
 
@@ -114,7 +116,7 @@ public class JunitNotifier implements IJunitNotifier {
      * {@inheritDoc}
      */
     public void notifyTestIgnored(final Description junitDescription) {
-        if (junitRunNotifier != null && junitDescription != null) {
+        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
             junitRunNotifier.fireTestIgnored(junitDescription);
         }
         notifyListenersTestIgnored(junitDescription);
@@ -138,7 +140,7 @@ public class JunitNotifier implements IJunitNotifier {
      * {@inheritDoc}
      */
     public void notifyTestFailed(final Description junitDescription, final Throwable cause) {
-        if (junitRunNotifier != null && junitDescription != null) {
+        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
             log.debug(junitDescription.getDisplayName() + " notify running TestFailed");
 
             log.debug(junitDescription.getDisplayName() + " notify TestFailed");
