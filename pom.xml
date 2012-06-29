@@ -6,6 +6,12 @@
     <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <!-- for OSS hosting -->
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
 
     <name>SubSteps</name>
     
@@ -72,6 +78,7 @@
 			</roles>
 		</contributor>
 	</contributors>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hamcrest.version>1.3.RC2</hamcrest.version>
@@ -99,21 +106,8 @@
     </properties>
 
 
-    <distributionManagement>
-        
     
-        <snapshotRepository>
-            <id>${nexus.snapshot.artifacts}</id>
-            <name>${nexus.snapshot.artifacts}</name>
-            <url>${nexus.snapshot.url}</url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-        <repository>
-            <id>${nexus.release.artifacts}</id>
-            <name>${nexus.release.artifacts}</name>
-            <url>${nexus.releases.url}</url>
-        </repository>
-    </distributionManagement>
+
     <dependencies>
 
         <dependency>
@@ -257,7 +251,30 @@
     </reporting>
 
     <profiles>
-
+        
+        <!-- A profile used by default for internal dev, using the repos set up in proeprties defined above, rather than the OSS nexus repos -->    
+        <profile>
+            <id>internalDev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>${nexus.snapshot.artifacts}</id>
+                    <name>${nexus.snapshot.artifacts}</name>
+                    <url>${nexus.snapshot.url}</url>
+                    <uniqueVersion>false</uniqueVersion>
+                </snapshotRepository>
+                <repository>
+                    <id>${nexus.release.artifacts}</id>
+                    <name>${nexus.release.artifacts}</name>
+                    <url>${nexus.releases.url}</url>
+                </repository>
+            </distributionManagement>
+            
+        </profile>
+        
         <profile>
             <id>ccProfile</id>
 
@@ -303,7 +320,34 @@
             </build>
         </profile>
 
-
+       <!-- 
+       see parent pom - this will get included anyway
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                  <name>performRelease</name>
+                  <value>true</value>
+                </property>
+            </activation>        
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile> -->
 
     </profiles>
 
