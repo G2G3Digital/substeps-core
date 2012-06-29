@@ -100,6 +100,7 @@
         <nexus.snapshot.url>http://someserver.com/${nexus.snapshot.artifacts}/</nexus.snapshot.url>
         <nexus.releases.url>http://someserver.com/${nexus.release.artifacts}/</nexus.releases.url>
 		<substeps-core.scm>scm:git:git://github.com/${your username}/substeps-core.git</substeps-core.scm>
+        <substeps-core.scm.url></substeps-core.scm.url>
 		-->
 		
 
@@ -353,6 +354,8 @@
 
     <scm>
         <connection>${substeps-core.scm}</connection>
+        <developerConnection>${substeps-core.scm}</developerConnection>
+        <url>${substeps-core.scm.url}</url>
     </scm>
 
 </project>
