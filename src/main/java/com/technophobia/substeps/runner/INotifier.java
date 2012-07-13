@@ -18,11 +18,7 @@
  */
 package com.technophobia.substeps.runner;
 
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunNotifier;
-
 import com.technophobia.substeps.execution.ExecutionNode;
-
 
 /**
  * 
@@ -32,66 +28,27 @@ import com.technophobia.substeps.execution.ExecutionNode;
 public interface INotifier {
 
     /**
-     * @param notifier
-     * @param junitDescription
-     */
-    void notifyTestStarted(final Description junitDescription);
-
-
-    /**
-     * @param notifier
-     * @param junitDescription
-     */
-    void notifyTestFinished(final Description junitDescription);
-
-
-    /**
-     * @param notifier
-     * @param junitDescription
-     * @param cause
-     */
-    void notifyTestFailed(final Description junitDescription, final Throwable cause);
-
-
-    void addListener(final INotifier listener);
-
-
-    /**
-	 * 
-	 */
-    void pleaseStop();
-
-
-    /**
-     * @param junitNotifier
-     */
-    void setJunitRunNotifier(RunNotifier junitNotifier);
-
-
-    /**
-     * @param junitDescription
-     */
-    void notifyTestIgnored(Description junitDescription);
-
-
-    // WIP
-
-    /**
      * @param rootNode
      * @param cause
      */
-    void notifyTestFailed(ExecutionNode rootNode, Throwable cause);
+    void notifyNodeFailed(ExecutionNode rootNode, Throwable cause);
 
 
     /**
      * @param node
      */
-    void notifyTestStarted(ExecutionNode node);
+    void notifyNodeStarted(ExecutionNode node);
 
 
     /**
      * @param node
      */
-    void notifyTestFinished(ExecutionNode node);
+    void notifyNodeFinished(ExecutionNode node);
+
+
+    /**
+     * @param node
+     */
+    void notifyNodeIgnored(ExecutionNode node);
 
 }

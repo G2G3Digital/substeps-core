@@ -21,16 +21,41 @@ package com.technophobia.substeps.runner;
 import java.util.Map;
 
 import org.junit.runner.Description;
+import org.junit.runner.notification.RunNotifier;
 
 /**
  * @author ian
  * 
  */
 public interface IJunitNotifier extends INotifier {
+    //
+    // void notifyTestStarted(final Description junitDescription);
+    //
+    //
+    // void notifyTestFinished(final Description junitDescription);
+    //
+    //
+    // void notifyTestFailed(final Description junitDescription, final Throwable
+    // cause);
+    //
+    //
+    // void notifyTestIgnored(Description junitDescription);
+    //
+
+    /**
+     * @param junitNotifier
+     */
+    void setJunitRunNotifier(RunNotifier junitNotifier);
+
 
     /**
      * @param descriptionMap
      */
     void setDescriptionMap(Map<Long, Description> descriptionMap);
 
+
+    /**
+     * 
+     */
+    void pleaseStop();
 }

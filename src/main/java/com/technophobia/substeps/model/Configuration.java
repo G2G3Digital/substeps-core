@@ -20,6 +20,8 @@
 package com.technophobia.substeps.model;
 
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.configuration.CombinedConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -28,81 +30,119 @@ import org.apache.commons.configuration.tree.OverrideCombiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 /**
  * @author ian
- *
+ * 
  */
 public enum Configuration {
-	
 
-	INSTANCE;
+    INSTANCE;
 
-	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+    private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
-	private final CombinedConfiguration combinedConfig = new CombinedConfiguration(new OverrideCombiner());
+    private final CombinedConfiguration combinedConfig = new CombinedConfiguration(
+            new OverrideCombiner());
 
-	private Configuration(){
-		
-		initialise();
-		
-		
-	}
-	
-    private void initialise() {
-    	
-        final String resourceBundleName = resourceBundleName();
-		
-		final URL customPropsUrl = Configuration.class.getResource(resourceBundleName);
 
-		if (customPropsUrl != null){
+    private Configuration() {
 
-			try {
-				final PropertiesConfiguration  customProps = new PropertiesConfiguration(customPropsUrl);
-				combinedConfig.addConfiguration(customProps, "customProps");
+        initialise();
 
-			} catch (final ConfigurationException e) {
-				logger.error("error loading custom properties", e);
-
-			}
-		}
     }
+
+
+    private void initialise() {
+
+        final String resourceBundleName = resourceBundleName();
+
+        final URL customPropsUrl = Configuration.class.getResource(resourceBundleName);
+
+        if (customPropsUrl != null) {
+
+            try {
+                final PropertiesConfiguration customProps = new PropertiesConfiguration(
+                        customPropsUrl);
+                combinedConfig.addConfiguration(customProps, "customProps");
+
+            } catch (final ConfigurationException e) {
+                logger.error("error loading custom properties", e);
+
+            }
+        }
+    }
+
 
     /**
-     * Implementors of substep libraries should call this with default properties for their library
-     * @param url to a properties file containing default values
+     * Implementors of substep libraries should call this with default
+     * properties for their library
+     * 
+     * @param url
+     *            to a properties file containing default values
      */
-    public void addDefaultProperties(final URL url, final String name){
-    	
-    	if (url != null){
-			try {
+    public void addDefaultProperties(final URL url, final String name) {
 
-			final PropertiesConfiguration  defaultProps = new PropertiesConfiguration(url);
-			combinedConfig.addConfiguration(defaultProps, name);
-			} catch (final ConfigurationException e) {
-				logger.error("error loading default properties", e);
-				throw new SubStepConfigurationException(e);
-			}
-    	}
+        if (url != null) {
+            try {
+
+                final PropertiesConfiguration defaultProps = new PropertiesConfiguration(url);
+                combinedConfig.addConfiguration(defaultProps, name);
+            } catch (final ConfigurationException e) {
+                logger.error("error loading default properties", e);
+                throw new SubStepConfigurationException(e);
+            }
+        }
     }
+
+
+    public String getConfigurationInfo() {
+
+        final List<String> configurationNameList = combinedConfig.getConfigurationNameList();
+
+        final StringBuilder buf = new StringBuilder();
+
+        for (final String configurationName : configurationNameList) {
+
+            buf.append("In config: ").append(configurationName).append("\n");
+
+            final org.apache.commons.configuration.Configuration cfg = combinedConfig
+                    .getConfiguration(configurationName);
+
+            final Iterator<String> keys = cfg.getKeys();
+
+            while (keys.hasNext()) {
+                final String key = keys.next();
+
+                final String val = cfg.getString(key);
+
+                buf.append("key: ").append(key).append("\tval: [").append(val).append("]\n");
+            }
+
+            buf.append("\n");
+        }
+        return buf.toString();
+    }
+
 
     private static String resourceBundleName() {
         return "/" + System.getProperty("environment", "localhost") + ".properties";
     }
-    
+
+
     public String getString(final String key) {
         return combinedConfig.getString(key);
     }
-    
+
+
     public int getInt(final String key) {
         return combinedConfig.getInt(key);
     }
-    
+
+
     public long getLong(final String key) {
         return combinedConfig.getLong(key);
     }
-    
+
+
     public boolean getBoolean(final String key) {
         return combinedConfig.getBoolean(key);
     }
