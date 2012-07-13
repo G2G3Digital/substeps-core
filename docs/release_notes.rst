@@ -7,3 +7,4 @@ Substeps Core - Release Notes
 -----
 - Changes to Notifications, single distributor with a set of listeners.
 - Changes to support the eclipse plugin.
+- DefaultExecutionReportBuilder will now delete the report directory if it's already there.
