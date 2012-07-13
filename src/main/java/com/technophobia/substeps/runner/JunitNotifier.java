@@ -104,41 +104,6 @@ public class JunitNotifier implements IJunitNotifier {
     }
 
 
-    // /**
-    // * @param notifier
-    // * @param junitDescription
-    // */
-    // public static void notifyTestStarted(final INotifier notifier,
-    // final Description junitDescription) {
-    // if (notifier != null) {
-    // notifier.notifyTestStarted(junitDescription);
-    // }
-    // }
-
-    // /**
-    // * @param notifier
-    // * @param junitDescription
-    // */
-    // public static void notifyTestFinished(final INotifier notifier,
-    // final Description junitDescription) {
-    // if (notifier != null) {
-    // notifier.notifyTestFinished(junitDescription);
-    // }
-    // }
-    //
-    //
-    // /**
-    // * @param notifier
-    // * @param junitDescription
-    // * @param cause
-    // */
-    // public static void notifyTestFailed(final INotifier notifier,
-    // final Description junitDescription, final Throwable cause) {
-    // if (notifier != null) {
-    // notifier.notifyTestFailed(junitDescription, cause);
-    // }
-    // }
-
     /**
      * {@inheritDoc}
      */

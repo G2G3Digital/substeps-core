@@ -76,7 +76,6 @@ public class SetupAndTearDown {
 	 */
     public void runAfterAll() throws Throwable {
         runAllMethods(MethodState.AFTER_ALL);
-//        ExecutionContext.clear(Scope.SUITE);
 
         removeLoggingConfig();
     }
@@ -94,7 +93,6 @@ public class SetupAndTearDown {
 	 */
     public void runAfterFeatures() throws Throwable {
         runAllMethods(MethodState.AFTER_FEATURES);
-//        ExecutionContext.clear(Scope.FEATURE);
     }
 
 
@@ -111,7 +109,6 @@ public class SetupAndTearDown {
     public void runAfterScenarios() throws Throwable {
         runAllMethods(MethodState.AFTER_SCENARIOS);
 
-//        ExecutionContext.clear(Scope.SCENARIO);
     }
 
 
@@ -194,7 +191,6 @@ public class SetupAndTearDown {
         case SCENARIO:
         case SCENARIO_OUTLINE_ROW: {
             runAfterScenarios();
-            
 
             // TODO for outline scenarios this might mean setup and tear down
             // gets run an extra time each...
