@@ -29,9 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.runner.IJunitNotifier;
-import com.technophobia.substeps.runner.INotifier;
-
 
 /**
  * test to get to the bottom of sequencing test started notifications etc
@@ -192,6 +189,70 @@ public class TestNotifier implements IJunitNotifier {
      * .runner.INotifier)
      */
     public void addListener(final INotifier listener) {
+        // TODO Auto-generated method stub
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.INotifier#notifyTestIgnored(com.technophobia
+     * .substeps.execution.ExecutionNode)
+     */
+    public void notifyTestIgnored(final ExecutionNode node) {
+        // TODO Auto-generated method stub
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
+     * .substeps.execution.ExecutionNode, java.lang.Throwable)
+     */
+    public void notifyNodeFailed(final ExecutionNode rootNode, final Throwable cause) {
+        // TODO Auto-generated method stub
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
+     * .substeps.execution.ExecutionNode)
+     */
+    public void notifyNodeStarted(final ExecutionNode node) {
+        // TODO Auto-generated method stub
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
+     * technophobia.substeps.execution.ExecutionNode)
+     */
+    public void notifyNodeFinished(final ExecutionNode node) {
+        // TODO Auto-generated method stub
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
+     * .substeps.execution.ExecutionNode)
+     */
+    public void notifyNodeIgnored(final ExecutionNode node) {
         // TODO Auto-generated method stub
 
     }
