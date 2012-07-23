@@ -93,6 +93,8 @@
         <sonar.jacoco.jar>${basedir}/jacoco/jacocoagent.jar</sonar.jacoco.jar>
         <sonar.jacoco.reportPath>${basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
 	
+        <xstream.version>1.4.2</xstream.version>
+
 		<!-- THESE PROPERTIES NEED TO BE DEFINED IN AN ACTIVE PROFILE IN SETTINGS.XML 
 		EG.
         <nexus.snapshot.artifacts>snapshots</nexus.snapshot.artifacts>
@@ -199,6 +201,12 @@
 		    <artifactId>commons-configuration</artifactId>
 		    <version>1.8</version>
 		</dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>${xstream.version}</version>
+        </dependency>
 
     </dependencies>
 
