@@ -35,27 +35,32 @@ public final class SyntaxBuilder {
     private SyntaxBuilder() {
     }
 
-    public static List<Class<?>> getStepImplementationClasses(final ClassLoader classLoader,
-            final String[] classpath) {
+
+    public static List<Class<?>> getStepImplementationClasses(final ClassLoader classLoader, final String[] classpath) {
         final ClasspathScanner cpScanner = new ClasspathScanner();
 
-        final List<Class<?>> implClassList = cpScanner.getClassesWithAnnotation(
-                SubSteps.StepImplementations.class, classLoader, classpath);
+        final List<Class<?>> implClassList = cpScanner.getClassesWithAnnotation(SubSteps.StepImplementations.class,
+                classLoader, classpath);
 
         return implClassList;
     }
 
 
-    public static Syntax buildSyntax(
-            final List<Class<?>> stepImplementationClasses, final File subStepsFile) {
-        return buildSyntax( stepImplementationClasses, subStepsFile, true, null);
+    public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile) {
+        return buildSyntax(stepImplementationClasses, subStepsFile, true, null);
     }
 
 
-    public static Syntax buildSyntax(
-            final List<Class<?>> stepImplementationClasses, final File subStepsFile,
+    public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile,
             final boolean strict, final String[] nonStrictKeywordPrecedence) {
-        final Syntax syntax = buildBaseSyntax( stepImplementationClasses);
+        return buildSyntax(stepImplementationClasses, subStepsFile, strict, nonStrictKeywordPrecedence,
+                new ClassAnalyser());
+    }
+
+
+    public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile,
+            final boolean strict, final String[] nonStrictKeywordPrecedence, final ClassAnalyser classAnalyser) {
+        final Syntax syntax = buildBaseSyntax(stepImplementationClasses, classAnalyser);
 
         syntax.setStrict(strict, nonStrictKeywordPrecedence);
 
@@ -68,8 +73,8 @@ public final class SyntaxBuilder {
     }
 
 
-    private static Syntax buildBaseSyntax(
-            final List<Class<?>> stepImplementationClasses) {
+    private static Syntax buildBaseSyntax(final List<Class<?>> stepImplementationClasses,
+            final ClassAnalyser classAnalyser) {
         // step implementations (arranged by StepDefinition, ie the annotation)
         // +
         // sub step definitions
@@ -84,9 +89,8 @@ public final class SyntaxBuilder {
             implClassList = Collections.emptyList();
         }
 
-        final ClassAnalyser analyser = new ClassAnalyser();
         for (final Class<?> implClass : implClassList) {
-            analyser.analyseClass(implClass, syntax);
+            classAnalyser.analyseClass(implClass, syntax);
         }
 
         return syntax;
