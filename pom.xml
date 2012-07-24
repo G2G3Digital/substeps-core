@@ -93,6 +93,8 @@
         <sonar.jacoco.jar>${basedir}/jacoco/jacocoagent.jar</sonar.jacoco.jar>
         <sonar.jacoco.reportPath>${basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
 	
+        <xstream.version>1.4.2</xstream.version>
+
 		<!-- THESE PROPERTIES NEED TO BE DEFINED IN AN ACTIVE PROFILE IN SETTINGS.XML 
 		EG.
         <nexus.snapshot.artifacts>snapshots</nexus.snapshot.artifacts>
@@ -200,6 +202,12 @@
 		    <version>1.8</version>
 		</dependency>
 
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>${xstream.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -228,7 +236,21 @@
                 </configuration>
 
             </plugin>
-
+            
+            <!-- need to exclude this test as it is just used for manual testing, the actual tests are covered by the maven plugin above -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/AllFeaturesJunit.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>            
         </plugins>
     </build>
 

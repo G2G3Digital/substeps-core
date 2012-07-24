@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -50,12 +51,12 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     private final Properties velocityProperties = new Properties();
 
-    
     /**
      * @parameter default-value = ${project.build.directory}
      */
     private File outputDirectory;
-    
+
+
     public DefaultExecutionReportBuilder() {
         velocityProperties.setProperty("resource.loader", "class");
         velocityProperties.setProperty("class.resource.loader.class",
@@ -63,9 +64,13 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     }
 
 
-    /* (non-Javadoc)
-	 * @see com.technophobia.substeps.report.ExecutionReportBuilder#buildReport(com.technophobia.substeps.report.ReportData, java.io.File)
-	 */
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.report.ExecutionReportBuilder#buildReport(com
+     * .technophobia.substeps.report.ReportData, java.io.File)
+     */
     public void buildReport(final ReportData data) {
 
         log.debug("Build report in: " + outputDirectory.getAbsolutePath());
@@ -75,6 +80,11 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         try {
 
             log.debug("trying to create: " + reportDir.getAbsolutePath());
+
+            if (reportDir.exists()) {
+                FileUtils.deleteDirectory(reportDir);
+            }
+
             Assert.assertTrue("failed to create directory: " + reportDir, reportDir.mkdir());
 
             copyStaticResources(reportDir);
@@ -93,8 +103,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             buildSummaryData(stats, reportDir);
 
         } catch (final IOException e) {
-        	
-        	log.error("IOException: ", e);
+
+            log.error("IOException: ", e);
         }
 
         // go through the flattened list and write out any exception stack
@@ -141,7 +151,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         final File imgDir = new File(reportDir + File.separator + "img");
         Assert.assertTrue("failed to create directory: " + imgDir, imgDir.mkdir());
 
-
         for (final String img : STATIC_IMAGES) {
             copyStaticResource(imgDir, img, "img/");
         }
@@ -178,6 +187,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     private static class FileInputSupplier implements InputSupplier<InputStream> {
         private final InputStream is;
 
+
         public FileInputSupplier(final InputStream is) {
             this.is = is;
         }
@@ -206,111 +216,91 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         renderAndWriteToFile(reportDir, vCtx, vml, node.getId() + "-details.html");
     }
 
-
-    
     private static final String EMPTY_IMAGE = "<img src=\"img/empty.gif\" alt=\"\"/>";
-    
+
     private static final String EXPANDED = "img/minusbottom.gif";
     private static final String LAST_CHILD = "img/joinbottom.gif";
     private static final String CHILD = "img/join.gif";
     private static final String COLLAPSED = "img/plus.gif";
 
+
     /**
-	 * @param node
-	 * @return
-	 */
-	private String getTreeNodeImage(final ExecutionNode node)
-	{
-		String img;
-		if (node.hasChildren()){
-			
-			// return + or - depending on depth
-			if (node.getDepth() >=3){
-				img = COLLAPSED;
-			}
-			else{
-				img = EXPANDED;
-			}
-		}
-		else{
-			
-			// are we last ?
-			final List<ExecutionNode> siblings = node.getParent().getChildren();
-			
-			if (siblings.indexOf(node) == siblings.size()-1){
-				img = LAST_CHILD;
-			}
-			else{
-				img = CHILD;
-			}
-		}
-		return img;
-	}
+     * @param node
+     * @return
+     */
+    private String getTreeNodeImage(final ExecutionNode node) {
+        String img;
+        if (node.hasChildren()) {
+
+            // return + or - depending on depth
+            if (node.getDepth() >= 3) {
+                img = COLLAPSED;
+            } else {
+                img = EXPANDED;
+            }
+        } else {
+
+            // are we last ?
+            final List<ExecutionNode> siblings = node.getParent().getChildren();
+
+            if (siblings.indexOf(node) == siblings.size() - 1) {
+                img = LAST_CHILD;
+            } else {
+                img = CHILD;
+            }
+        }
+        return img;
+    }
 
 
     private String getNodeImage(final ExecutionNode node) {
         return "img/" + node.getResult().getResult() + ".png";
     }
 
-    
-    private void appendMainData(final StringBuilder buf, final ExecutionNode node){
-    	
-    	final String image = getNodeImage(node);
-    	
-    	final String treeImage = getTreeNodeImage(node);
-    	
-    	buf.append("<a href=\"javascript: o(")
-    	.append(node.getId())
-    	.append(");\"><img id=\"jd")
-    	.append(node.getId())
-    	.append("\" src=\"")
-    	.append(treeImage)
-    	.append("\" alt=\"\"/></a>\n<img id=\"id")
-    	.append(node.getId())
-    	.append("\" src=\"")
-    	.append(image)
-	.append("\" alt=\"\"/>\n<a id=\"sd")
-	.append(node.getId())
-    .append("\" class=\"node\" href=\"")
-    .append(node.getId())
-    .append("-details.html\" target=\"detailsFrame\" onclick=\"javascript: d.s(")
-	.append(node.getId())
-    .append(");\">")
-    .append(getDescriptionForNode(node))
-    .append("</a>");
+
+    private void appendMainData(final StringBuilder buf, final ExecutionNode node) {
+
+        final String image = getNodeImage(node);
+
+        final String treeImage = getTreeNodeImage(node);
+
+        buf.append("<a href=\"javascript: o(").append(node.getId()).append(");\"><img id=\"jd")
+                .append(node.getId()).append("\" src=\"").append(treeImage)
+                .append("\" alt=\"\"/></a>\n<img id=\"id").append(node.getId()).append("\" src=\"")
+                .append(image).append("\" alt=\"\"/>\n<a id=\"sd").append(node.getId())
+                .append("\" class=\"node\" href=\"").append(node.getId())
+                .append("-details.html\" target=\"detailsFrame\" onclick=\"javascript: d.s(")
+                .append(node.getId()).append(");\">").append(getDescriptionForNode(node))
+                .append("</a>");
 
     }
 
 
     private String getDescriptionForNode(final ExecutionNode node) {
         final StringBuilder buf = new StringBuilder();
-        
-        if (node.getParent() == null){
-//        	buf.append(0).append(", \"");
-        	
-        	if (node.getLine() != null){
-        		buf.append(node.getLine());
-        	}
-        	else {
-        		buf.append("executionNodeRoot\"");
-        	}
-        }
-        else
-        {
-        
-        buildDescriptionString(null, node, buf);
 
-		}
+        if (node.getParent() == null) {
+            // buf.append(0).append(", \"");
+
+            if (node.getLine() != null) {
+                buf.append(node.getLine());
+            } else {
+                buf.append("executionNodeRoot\"");
+            }
+        } else {
+
+            buildDescriptionString(null, node, buf);
+
+        }
         return StringEscapeUtils.escapeHtml(buf.toString());
     }
 
 
-
-	public static void buildDescriptionString(final String prefix,  final ExecutionNode node, final StringBuilder buf)
-	{
-		if (prefix != null){
-			buf.append(prefix);
-		}
+    public static void buildDescriptionString(final String prefix, final ExecutionNode node,
+            final StringBuilder buf) {
+        if (prefix != null) {
+            buf.append(prefix);
+        }
 
         if (node.getFeature() != null) {
 
@@ -335,80 +325,85 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         if (node.getLine() != null) {
             buf.append(node.getLine());
         }
-	}
-
-    
-
-	private void appendTreeNode(final StringBuilder buf, final ExecutionNode node){
-
-    	buf.append("<div class=\"dTreeNode\">");
-    	
-    	buf.append(Strings.repeat(EMPTY_IMAGE, node.getDepth()));
-
-    	appendMainData(buf, node);
-		
-    	buf.append("</div>");
-    }
-    
-    /* (non-Javadoc)
-	 * @see com.technophobia.substeps.report.ExecutionReportBuilder#buildTreeString(java.lang.StringBuilder, com.technophobia.substeps.execution.ExecutionNode, com.technophobia.substeps.report.ReportData)
-	 */
-    public void buildTreeString(final StringBuilder buf, final ExecutionNode node, 
-    		final ReportData data){
-    	
-    	String display = getDisplay(node.getDepth());
-    	
-    	if (node.getParent() == null && node.hasChildren()){
-	    	parentDivStart(node.getId() -1, buf, display);
-    	}
-    	
-    	appendTreeNode(buf, node);
-    	
-    	if (node.hasChildren()){
-    
-    		display = getDisplay(node.getDepth()+1);
-    		parentDivStart(node.getId(), buf, display);
-    		
-    		for (final ExecutionNode child: node.getChildren()){
-    			buf.append("<!-- child id " + child.getId() + " -->");
-    		
-    			buildTreeString(buf, child, data);
-    			
-    			buf.append("<!-- end child id " + child.getId() + " -->");
-    		}
-    		
-    		buf.append("</div>");
-    	}
     }
 
 
-	/**
-	 * @param depth
-	 * @return
-	 */
-	private String getDisplay(final int depth)
-	{
-		String display = "block";
-    	// TODO make this a parameter
-    	if (depth >=4 ){
-    		display = "none";
-    	}
-    	return display;
-	}
+    private void appendTreeNode(final StringBuilder buf, final ExecutionNode node) {
+
+        buf.append("<div class=\"dTreeNode\">");
+
+        buf.append(Strings.repeat(EMPTY_IMAGE, node.getDepth()));
+
+        appendMainData(buf, node);
+
+        buf.append("</div>");
+    }
 
 
-	/* (non-Javadoc)
-	 * @see com.technophobia.substeps.report.ExecutionReportBuilder#parentDivStart(long, java.lang.StringBuilder, java.lang.String)
-	 */
-	public void parentDivStart(final long id, final StringBuilder buf, final String display)
-	{
-		buf.append("<div id=\"dd")
-		.append(id)
-		.append("\" class=\"clip\" style=\"display: ")
-		.append(display)
-		.append(";\">");
-	}
-    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.report.ExecutionReportBuilder#buildTreeString
+     * (java.lang.StringBuilder,
+     * com.technophobia.substeps.execution.ExecutionNode,
+     * com.technophobia.substeps.report.ReportData)
+     */
+    public void buildTreeString(final StringBuilder buf, final ExecutionNode node,
+            final ReportData data) {
+
+        String display = getDisplay(node.getDepth());
+
+        if (node.getParent() == null && node.hasChildren()) {
+            parentDivStart(node.getId() - 1, buf, display);
+        }
+
+        appendTreeNode(buf, node);
+
+        if (node.hasChildren()) {
+
+            display = getDisplay(node.getDepth() + 1);
+            parentDivStart(node.getId(), buf, display);
+
+            for (final ExecutionNode child : node.getChildren()) {
+                buf.append("<!-- child id " + child.getId() + " -->");
+
+                buildTreeString(buf, child, data);
+
+                buf.append("<!-- end child id " + child.getId() + " -->");
+            }
+
+            buf.append("</div>");
+        }
+    }
+
+
+    /**
+     * @param depth
+     * @return
+     */
+    private String getDisplay(final int depth) {
+        String display = "block";
+        // TODO make this a parameter
+        if (depth >= 4) {
+            display = "none";
+        }
+        return display;
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.report.ExecutionReportBuilder#parentDivStart
+     * (long, java.lang.StringBuilder, java.lang.String)
+     */
+    public void parentDivStart(final long id, final StringBuilder buf, final String display) {
+        buf.append("<div id=\"dd").append(id).append("\" class=\"clip\" style=\"display: ")
+                .append(display).append(";\">");
+    }
+
 
     private void buildMainReport(final ReportData data, final File reportDir) throws IOException {
 
@@ -416,22 +411,22 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
         final String vml = "report2.vm";
 
-        final StringBuilder buf  = new StringBuilder();
-        
-        for (final ExecutionNode rootNode : data.getRootNodes()){
-        	
-        	buildTreeString(buf, rootNode, data);
+        final StringBuilder buf = new StringBuilder();
+
+        for (final ExecutionNode rootNode : data.getRootNodes()) {
+
+            buildTreeString(buf, rootNode, data);
         }
-        
+
         vCtx.put("tree", buf.toString());
-        
+
         final String targetFilename = "tree.html";
-        
+
         renderAndWriteToFile(reportDir, vCtx, vml, targetFilename);
 
     }
 
-    
+
     /**
      * @param reportDir
      * @param vCtx
@@ -447,24 +442,20 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     }
 
 
-	/**
-	 * @param reportDir
-	 * @param targetFilename
-	 * @param rendered
-	 * @throws IOException
-	 */
-	private void writeToFile(final File reportDir, final String targetFilename, final String rendered)
-			throws IOException
-	{
-		final File mainreport = new File(reportDir, targetFilename);
+    /**
+     * @param reportDir
+     * @param targetFilename
+     * @param rendered
+     * @throws IOException
+     */
+    private void writeToFile(final File reportDir, final String targetFilename,
+            final String rendered) throws IOException {
+        final File mainreport = new File(reportDir, targetFilename);
 
-		Assert.assertTrue("failed to create new file", mainreport.createNewFile());
+        Assert.assertTrue("failed to create new file", mainreport.createNewFile());
 
         Files.write(rendered, mainreport, Charset.defaultCharset());
-	}
-
-
-
+    }
 
 
     private String renderText(final String vm, final VelocityContext vCtx) {
@@ -498,7 +489,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 }
             } catch (final IOException e) {
 
-            	log.error("IOException: ", e);
+                log.error("IOException: ", e);
             }
         }
         return rendered;
