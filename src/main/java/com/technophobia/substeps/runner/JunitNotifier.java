@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 
-
 /**
  * A wrapper around the Junit notifier and any other registered test listeners
  * 
@@ -62,13 +61,13 @@ public class JunitNotifier implements IJunitNotifier {
      */
     public void notifyTestStarted(final Description junitDescription) {
 
-        if (junitRunNotifier != null && junitDescription != null  && junitDescription.isTest()) {
+        if (junitRunNotifier != null && junitDescription != null) {
             log.debug(junitDescription.getDisplayName() + " notifyTestStarted");
 
             junitRunNotifier.fireTestStarted(junitDescription);
         }
-        
-       	notifyListenersTestStarted(junitDescription);
+
+        notifyListenersTestStarted(junitDescription);
     }
 
 
@@ -89,12 +88,12 @@ public class JunitNotifier implements IJunitNotifier {
      * {@inheritDoc}
      */
     public void notifyTestFinished(final Description junitDescription) {
-        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
+        if (junitRunNotifier != null && junitDescription != null) {
             log.debug(junitDescription.getDisplayName() + " notifyTestFinished");
 
             junitRunNotifier.fireTestFinished(junitDescription);
         }
-        
+
         notifyListenersTestFinished(junitDescription);
     }
 
@@ -116,7 +115,7 @@ public class JunitNotifier implements IJunitNotifier {
      * {@inheritDoc}
      */
     public void notifyTestIgnored(final Description junitDescription) {
-        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
+        if (junitRunNotifier != null && junitDescription != null) {
             junitRunNotifier.fireTestIgnored(junitDescription);
         }
         notifyListenersTestIgnored(junitDescription);
@@ -140,7 +139,7 @@ public class JunitNotifier implements IJunitNotifier {
      * {@inheritDoc}
      */
     public void notifyTestFailed(final Description junitDescription, final Throwable cause) {
-        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
+        if (junitRunNotifier != null && junitDescription != null) {
             log.debug(junitDescription.getDisplayName() + " notify running TestFailed");
 
             log.debug(junitDescription.getDisplayName() + " notify TestFailed");
@@ -177,8 +176,7 @@ public class JunitNotifier implements IJunitNotifier {
      * @param notifier
      * @param junitDescription
      */
-    public static void notifyTestStarted(final INotifier notifier,
-            final Description junitDescription) {
+    public static void notifyTestStarted(final INotifier notifier, final Description junitDescription) {
         if (notifier != null) {
             notifier.notifyTestStarted(junitDescription);
         }
@@ -189,8 +187,7 @@ public class JunitNotifier implements IJunitNotifier {
      * @param notifier
      * @param junitDescription
      */
-    public static void notifyTestFinished(final INotifier notifier,
-            final Description junitDescription) {
+    public static void notifyTestFinished(final INotifier notifier, final Description junitDescription) {
         if (notifier != null) {
             notifier.notifyTestFinished(junitDescription);
         }
@@ -202,8 +199,8 @@ public class JunitNotifier implements IJunitNotifier {
      * @param junitDescription
      * @param cause
      */
-    public static void notifyTestFailed(final INotifier notifier,
-            final Description junitDescription, final Throwable cause) {
+    public static void notifyTestFailed(final INotifier notifier, final Description junitDescription,
+            final Throwable cause) {
         if (notifier != null) {
             notifier.notifyTestFailed(junitDescription, cause);
         }
