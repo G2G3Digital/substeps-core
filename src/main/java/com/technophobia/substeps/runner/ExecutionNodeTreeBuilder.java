@@ -54,9 +54,11 @@ public class ExecutionNodeTreeBuilder {
 
     private final TestParameters parameters;
 
+
     public ExecutionNodeTreeBuilder(final TestParameters parameters) {
         this.parameters = parameters;
     }
+
 
     public ExecutionNode buildExecutionNodeTree() {
 
@@ -96,6 +98,7 @@ public class ExecutionNodeTreeBuilder {
             log.debug("feature not runnable: " + ff.toString());
         }
     }
+
 
     // TODO - to turn off - @SuppressWarnings("PMD.AvoidCatchingThrowable")
     private void buildExectionNodeForScenario(final Scenario scenario,
@@ -208,6 +211,7 @@ public class ExecutionNodeTreeBuilder {
                 final Map<String, String> parametersForSubSteps = substepsParent.getParamValueMap();
 
                 stepNode.setLine(substepsParent.getParent().getParameterLine());
+                stepNode.setFilename(substepsParent.getSubStepFile());
 
                 final List<StepImplementation> list = parameters.getSyntax()
                         .checkForStepImplementations(step.getKeyword(), step.getParameterLine());

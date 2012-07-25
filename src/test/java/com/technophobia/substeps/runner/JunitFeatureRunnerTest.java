@@ -129,14 +129,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         runner.run(notifier);
 
-        verify(spy, times(2)).sendKeysById("Basic", "firstName"); // "Flow"
-        // is
-        // actually ignored
-        // in this
-        // scenario...
-
-        // Assert.assertThat(stepImpls.passedParameter1, is("Basic"));
-        // Assert.assertThat(stepImpls.passedParameter2, is("firstName"));
+        verify(spy, times(2)).sendKeysById("Basic", "firstName");
     }
 
 
@@ -160,8 +153,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         implsCache.put(TestStepImplementations.class, spy);
 
         final RunNotifier notifier = mock(RunNotifier.class);
-
-        final Description rootDescription = runner.getDescription();
 
         runner.run(notifier);
 
@@ -187,7 +178,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final MockStepImplementations spy = spy(stepImpls);
 
         // get hold of the step runner
-        // implsCache.put(execImpl.implementedIn, target);
         final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
@@ -234,8 +224,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // test the number of times the notifier was called
 
-        // verifyNotifications(notifier, rootDescription);
-
         verify(notifier, times(25)).fireTestStarted(argThat(any(Description.class)));
         // this is now up to 25 as more of a hierarchy with outlines
 
@@ -268,7 +256,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final MockStepImplementations spy = spy(stepImpls);
 
         // get hold of the step runner
-        // implsCache.put(execImpl.implementedIn, target);
         final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
@@ -280,8 +267,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         runner.run(notifier);
 
         // test the number of times the notifier was called
-        // verify(notifier,
-        // times(4)).fireTestStarted(argThat(any(Description.class)));
 
         verifyNotifications(notifier, rootDescription);
 
@@ -331,8 +316,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
     @Test
     public void testStepWithInlineTable() {
 
-        System.out.println("\n\n\n\n\n");
-
         final JunitFeatureRunner runner = new JunitFeatureRunner();
 
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
@@ -346,8 +329,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final MockStepImplementations stepImpls = new MockStepImplementations();
         final MockStepImplementations spy = spy(stepImpls);
 
-        // get hold of the step runner
-        // implsCache.put(execImpl.implementedIn, target);
         final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
@@ -382,76 +363,6 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
     }
 
 
-    // couldn't get this working post execution node re-factor - not convinced
-    // there's anything wrong
-    // haven't grasped as yet how to fix the test...
-    /**
-     * a test to identify and resolve the notification of test success
-     * prematurely
-     */
-    // @Test
-    // public void testNotificationSequence() {
-    // final JunitFeatureRunner runner = new JunitFeatureRunner(testNotifier);
-    //
-    // final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-    // stepImplsList.add(BDDRunnerStepImplementations.class);
-    //
-    // runner.init(this.getClass(), stepImplsList,
-    // "./target/test-classes/features/notifications.feature", null,
-    // "./target/test-classes/substeps/allFeatures.substeps");
-    //
-    // final BDDRunnerStepImplementations stepImpls = new
-    // BDDRunnerStepImplementations(this);
-    //
-    // final HashMap<Class<?>, Object> implsCache = getImplsCache(runner);
-    //
-    // implsCache.put(BDDRunnerStepImplementations.class, stepImpls);
-    //
-    // final RunNotifier notifier = mock(RunNotifier.class);
-    //
-    // final Description description = runner.getDescription();
-    //
-    // // don't want the root
-    // for (final Description child : description.getChildren()) {
-    // buildDescriptionKeys(child);
-    // }
-    //
-    // // need to build up the order of invocations in advance of it actually
-    // // running
-    //
-    // String d1 = "0: Root";
-    // String d2 = "1	A feature to test BDD Runner functionality";
-    // String d3 = "2		Simple top level scenario";
-    // String d4 =
-    // "3			Test_Given something  -  BDDRunnerStepImplementations.meth2()";
-    // String d5 =
-    // "4			Test_Then something with a \"quoted parameter\"  -  BDDRunnerStepImplementations.meth4(\"quoted parameter\")";
-    //
-    //
-    //
-    // descriptionSnapshots.add(new DescriptionSnapshot(new String[] { d2, d3,d4
-    // },
-    // null, null));
-    //
-    // descriptionSnapshots.add(new DescriptionSnapshot(new String[] { d1, d2,
-    // d3 ,
-    // d4 }, new String[] { d3 }, null));
-    //
-    // // invocations.add(new MethodInvocation("meth2", "1.1.1",
-    // // Boolean.TRUE));
-    // // invocations.add(new MethodInvocation("meth4", "1.1.2", Boolean.TRUE,
-    // // "quoted parameter"));
-    //
-    // runner.run(notifier);
-    //
-    // if (!assertions.isEmpty()) {
-    // for (final AssertionError ae : assertions) {
-    // ae.printStackTrace();
-    // Assert.fail(ae.getMessage());
-    // }
-    // }
-    // }
-
     @Test
     public void testSubStepFailureHandledCorrectly() {
         final JunitFeatureRunner runner = new JunitFeatureRunner();
@@ -467,14 +378,12 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final MockStepImplementations spy = spy(stepImpls);
 
         // get hold of the step runner
-        // implsCache.put(execImpl.implementedIn, target);
+
         final Map<Class<?>, Object> implsCache = getImplsCache(runner);
 
         implsCache.put(MockStepImplementations.class, spy);
 
         final RunNotifier notifier = mock(RunNotifier.class);
-
-        final Description rootDescription = runner.getDescription();
 
         runner.run(notifier);
 
@@ -487,11 +396,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         verify(spy, never()).meth9();
         verify(spy, never()).meth6();
 
-        // verifyNotifications(notifier, rootDescription);
-
         verify(notifier, times(6)).fireTestStarted(argThat(any(Description.class)));
-        // verify(notifier,
-        // never()).fireTestFinished(argThat(any(Description.class)));
+
         verify(notifier, times(5)).fireTestFailure(argThat(any(Failure.class)));
 
     }

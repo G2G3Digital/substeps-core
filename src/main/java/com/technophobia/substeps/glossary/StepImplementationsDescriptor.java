@@ -16,22 +16,46 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner;
+package com.technophobia.substeps.glossary;
 
-import org.junit.runner.RunWith;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.SubStepsConfiguration;
-import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 
 /**
- * 
- * @author imoore
- * 
+ * @author ian
+ *
  */
+public class StepImplementationsDescriptor
+{
 
-// @Ignore("this is only for local dev, not to actually run as a test!")
-@SubStepsConfiguration(featureFile = "./target/test-classes/features/allFeatures.feature", subStepsFile = "./target/test-classes/substeps/allFeatures.substeps", stepImplementations = { MockStepImplementations.class })
-@RunWith(JunitFeatureRunner.class)
-public class AllFeaturesJunit {
+	private final List<StepDescriptor> expressions;
+	private final String className;
+	
+	public StepImplementationsDescriptor(final String className){
+		this.className = className;
+		this.expressions = new ArrayList<StepDescriptor>();	
+	}
+	
+	public void addStepTags (final StepDescriptor stepTag){
+		this.expressions.add(stepTag);
+	}
 
+	/**
+	 * @return the expressions
+	 */
+	public List<StepDescriptor> getExpressions()
+	{
+		return expressions;
+	}
+
+	/**
+	 * @return the className
+	 */
+	public String getClassName()
+	{
+		return className;
+	}
+	
+	
 }

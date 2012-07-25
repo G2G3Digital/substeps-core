@@ -367,8 +367,8 @@ public class ExecutionNode {
 
         if (parent != null) {
 
-            buf.append(id).append(Strings.repeat("\t", depth)).append("parent id: file: ")
-                    .append(getFilename()).append(" ").append(parent.getId());
+            buf.append(id).append(Strings.repeat("\t", depth)).append("file: ")
+                    .append(getFilename()).append(" ").append(parent.getId()).append(" ");
 
             if (feature != null) {
                 buf.append(feature.getName()).append("\n");
@@ -671,6 +671,7 @@ public class ExecutionNode {
     public boolean hasPassed() {
         return result.getResult() == ExecutionResult.PASSED;
     }
+
 
     public Set<String> getTagsFromHierarchy() {
         Set<String> allTags = null;
