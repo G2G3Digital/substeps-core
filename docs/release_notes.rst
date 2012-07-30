@@ -10,3 +10,4 @@ Substeps Core - Release Notes
 - DefaultExecutionReportBuilder will now delete the report directory if it's already there.
 - substeps filename now reported in debug
 - changes to support glossary building
+- added missing images from the basic report

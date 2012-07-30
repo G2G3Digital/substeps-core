@@ -161,7 +161,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             "join.gif", "minus.gif", "nolines_plus.gif", "PASSED.png", "question.gif", "cd.gif",
             "folder.gif", "imgfolder.gif", "line.gif", "musicfolder.gif", "NOT_RUN.png",
             "plusbottom.gif", "trash.gif", "empty.gif", "folderopen.gif", "joinbottom.gif",
-            "minusbottom.gif", "nolines_minus.gif", "page.gif", "plus.gif" };
+            "minusbottom.gif", "nolines_minus.gif", "page.gif", "plus.gif",
+            "NON_CRITICAL_FAILURE.png", "PARSE_FAILURE.png" };
 
 
     /**
