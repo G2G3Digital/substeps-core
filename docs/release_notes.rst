@@ -10,4 +10,5 @@ Substeps Core - Release Notes
 - DefaultExecutionReportBuilder will now delete the report directory if it's already there.
 - substeps filename now reported in debug
 - changes to support glossary building
+- SyntaxBuilder now allows a ClassAnalyser to be passed in, rather than instantiated (used in eclipse plugin)
 - added missing images from the basic report

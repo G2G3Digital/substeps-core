@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import org.junit.Assert;
 
 import com.technophobia.substeps.model.StepImplementation;
-import com.technophobia.substeps.model.SubSteps;
 import com.technophobia.substeps.model.SubSteps.AdditionalStepImplementations;
 import com.technophobia.substeps.model.SubSteps.Step;
 import com.technophobia.substeps.model.Syntax;
@@ -39,8 +38,8 @@ public class ClassAnalyser {
             }
         }
 
-        if (hasAdditionalStepImplementations(loadedClass)) {
-            analyseAdditionalStepImplementations(loadedClass, syntax);
+        if (hasAdditionalStepsAnnotation(loadedClass)) {
+            analyseAdditionalStepImplementations(loadedClass, syntax, getAdditionalStepClasses(loadedClass));
         }
     }
 
@@ -52,15 +51,13 @@ public class ClassAnalyser {
      */
     private void analyseMethod(final Class<?> loadedClass, final Syntax syntax, final Method m) {
 
-        final Step stepAnnotation = m.getAnnotation(SubSteps.Step.class);
-
         // TODO - handle ignores ?
-        if (stepAnnotation != null) {
+        if (isStepMethod(m)) {
+            final String stepValue = stepValueFrom(m);
 
-            final StepImplementation impl = StepImplementation.parse(stepAnnotation.value(),
-                    loadedClass, m);
-            Assert.assertNotNull("unable to resolve the keyword / method for: " + stepAnnotation.value()
-                    + " in class: " + loadedClass, impl);
+            final StepImplementation impl = StepImplementation.parse(stepValue, loadedClass, m);
+            Assert.assertNotNull("unable to resolve the keyword / method for: " + stepValue + " in class: "
+                    + loadedClass, impl);
 
             syntax.addStepImplementation(impl);
         }
@@ -73,8 +70,44 @@ public class ClassAnalyser {
      * @param loadedClass
      * @return true if it defers, false otherwise
      */
-    private boolean hasAdditionalStepImplementations(final Class<?> loadedClass) {
+    protected boolean hasAdditionalStepsAnnotation(final Class<?> loadedClass) {
         return loadedClass.isAnnotationPresent(AdditionalStepImplementations.class);
+    }
+
+
+    /**
+     * Returns the Additional Step implementations this class defers to
+     * 
+     * @param loadedClass
+     *            The class containing the annotation
+     * @return The classes this class defers steps to
+     */
+    protected Class<?>[] getAdditionalStepClasses(final Class<?> loadedClass) {
+        return loadedClass.getAnnotation(AdditionalStepImplementations.class).value();
+    }
+
+
+    /**
+     * Determines if this method is a step definition method
+     * 
+     * @param m
+     *            method
+     * @return true if it is a step, otherwise false
+     */
+    protected boolean isStepMethod(final Method m) {
+        return m.isAnnotationPresent(Step.class);
+    }
+
+
+    /**
+     * Returns the step value for this method
+     * 
+     * @param m
+     *            The method containing the step definition
+     * @return The value associated with the step definition
+     */
+    protected String stepValueFrom(final Method m) {
+        return m.getAnnotation(Step.class).value();
     }
 
 
@@ -84,11 +117,9 @@ public class ClassAnalyser {
      * @param loadedClass
      * @param syntax
      */
-    private void analyseAdditionalStepImplementations(final Class<?> loadedClass,
-            final Syntax syntax) {
-        final AdditionalStepImplementations annotation = loadedClass
-                .getAnnotation(AdditionalStepImplementations.class);
-        for (final Class<?> stepImplClass : annotation.value()) {
+    private void analyseAdditionalStepImplementations(final Class<?> loadedClass, final Syntax syntax,
+            final Class<?>[] additionalStepImplementationClasses) {
+        for (final Class<?> stepImplClass : additionalStepImplementationClasses) {
             analyseClass(stepImplClass, syntax);
         }
     }
