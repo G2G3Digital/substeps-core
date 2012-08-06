@@ -35,198 +35,225 @@ import com.google.common.collect.Collections2;
  * 
  */
 public class Syntax {
-	// These two will always be populated
-	private final Map<String, PatternMap<StepImplementation>> stepImplementationMap = new HashMap<String, PatternMap<StepImplementation>>();
+    // These two will always be populated
+    private final Map<String, PatternMap<StepImplementation>> stepImplementationMap = new HashMap<String, PatternMap<StepImplementation>>();
 
-	// this might not be populated
-	private PatternMap<ParentStep> subStepsMap = null;
+    // this might not be populated
+    private PatternMap<ParentStep> subStepsMap = null;
 
-	private boolean strict;
-	private String[] nonStrictKeywordPrecedence;
+    private boolean strict;
+    private boolean failOnDuplicateStepImplementations = true;
+    private String[] nonStrictKeywordPrecedence;
 
-	public Map<String, PatternMap<StepImplementation>> getStepImplementationMap() {
-		return stepImplementationMap;
-	}
 
-	public List<StepImplementation> getStepImplementations() {
-		// build a list of the impls in the order of the annotations
-		final List<StepImplementation> allImpls = new ArrayList<StepImplementation>();
+    public Map<String, PatternMap<StepImplementation>> getStepImplementationMap() {
+        return stepImplementationMap;
+    }
 
-		final List<String> sortedAnnotations = new ArrayList<String>();
-		sortedAnnotations.addAll(stepImplementationMap.keySet());
 
-		Collections.sort(sortedAnnotations);
+    public List<StepImplementation> getStepImplementations() {
+        // build a list of the impls in the order of the annotations
+        final List<StepImplementation> allImpls = new ArrayList<StepImplementation>();
 
-		// get all the PatternMaps for each annotation:
+        final List<String> sortedAnnotations = new ArrayList<String>();
+        sortedAnnotations.addAll(stepImplementationMap.keySet());
 
-		for (final String annotation : sortedAnnotations) {
-			final PatternMap<StepImplementation> patternMap = stepImplementationMap.get(annotation);
+        Collections.sort(sortedAnnotations);
 
-			if (patternMap != null) {
-				for (final StepImplementation impl : patternMap.values()) {
-					allImpls.add(impl);
-				}
-			}
-		}
-		return allImpls;
-	}
+        // get all the PatternMaps for each annotation:
 
-	/**
-	 * @param keyWord
-	 * @return
-	 */
-	private PatternMap<StepImplementation> getPatternMapForAnnotation(final String keyWord) {
-		return stepImplementationMap.get(keyWord);
-	}
+        for (final String annotation : sortedAnnotations) {
+            final PatternMap<StepImplementation> patternMap = stepImplementationMap.get(annotation);
 
-	/**
-	 * @param loadSubSteps
-	 */
-	public void setSubStepsMap(final PatternMap<ParentStep> loadSubSteps) {
-		subStepsMap = loadSubSteps;
-	}
+            if (patternMap != null) {
+                for (final StepImplementation impl : patternMap.values()) {
+                    allImpls.add(impl);
+                }
+            }
+        }
+        return allImpls;
+    }
 
-	public PatternMap<ParentStep> getSubStepsMap() {
-		return subStepsMap;
-	}
 
-	/**
-	 * @return
-	 */
-	public List<ParentStep> getSortedRootSubSteps() {
-		final Collection<ParentStep> rootSubSteps = subStepsMap.values();
+    /**
+     * @param keyWord
+     * @return
+     */
+    private PatternMap<StepImplementation> getPatternMapForAnnotation(final String keyWord) {
+        return stepImplementationMap.get(keyWord);
+    }
 
-		final List<ParentStep> sortedList = new ArrayList<ParentStep>();
-		sortedList.addAll(rootSubSteps);
 
-		Collections.sort(sortedList, ParentStep.PARENT_STEP_COMPARATOR);
+    /**
+     * @param loadSubSteps
+     */
+    public void setSubStepsMap(final PatternMap<ParentStep> loadSubSteps) {
+        subStepsMap = loadSubSteps;
+    }
 
-		return sortedList;
-	}
 
-	/**
-	 * @param impl
-	 */
-	public void addStepImplementation(final StepImplementation impl) {
+    public PatternMap<ParentStep> getSubStepsMap() {
+        return subStepsMap;
+    }
 
-		PatternMap<StepImplementation> patternMap = stepImplementationMap.get(impl.getKeyword());
 
-		if (patternMap == null) {
-			patternMap = new PatternMap<StepImplementation>();
-			stepImplementationMap.put(impl.getKeyword(), patternMap);
-		}
+    /**
+     * @return
+     */
+    public List<ParentStep> getSortedRootSubSteps() {
+        final Collection<ParentStep> rootSubSteps = subStepsMap.values();
 
-		patternMap.put(impl.getValue(), impl);
-	}
+        final List<ParentStep> sortedList = new ArrayList<ParentStep>();
+        sortedList.addAll(rootSubSteps);
 
-	/**
-	 * @param strict
-	 */
-	public void setStrict(final boolean strict, final String[] nonStrictKeywordPrecedence) {
-		this.strict = strict;
-		this.nonStrictKeywordPrecedence = nonStrictKeywordPrecedence;
+        Collections.sort(sortedList, ParentStep.PARENT_STEP_COMPARATOR);
 
-		if (!strict && (this.nonStrictKeywordPrecedence == null || this.nonStrictKeywordPrecedence.length == 0)) {
-			throw new IllegalArgumentException(
-					"Please provide a keyword precedence in parameter nonStrictKeywordPrecedence to use when running in non strict mode");
-		}
-	}
+        return sortedList;
+    }
 
-	/**
-	 * @param parameterLine
-	 * @return
-	 */
-	public List<StepImplementation> getStepImplementations(final String keyword, final String parameterLine) {
-		return getStepImplementationsInternal(keyword, parameterLine, false);
-	}
 
-	public List<StepImplementation> checkForStepImplementations(final String keyword, final String parameterLine) {
-		return getStepImplementationsInternal(keyword, parameterLine, true);
-	}
-	/**
-	 * @param keyword
-	 * @param parameterLine
-	 * @return
-	 */
-	private List<StepImplementation> getStepImplementationsInternal(final String keyword, 
-			final String parameterLine, final boolean okNotTofindAnything)
-	{
-		List<StepImplementation> list = getStrictStepimplementation(keyword, parameterLine, okNotTofindAnything);
+    /**
+     * @param impl
+     */
+    public void addStepImplementation(final StepImplementation impl) {
 
-		if ( !strict && ((list == null && okNotTofindAnything) || (!okNotTofindAnything && list !=null &&
-				list.isEmpty() ))) {
-			// look for an alternative, iterate through the
-			// nonStrictKeywordPrecedence until we get what we want
+        PatternMap<StepImplementation> patternMap = stepImplementationMap.get(impl.getKeyword());
 
-			for (final String altKeyword : nonStrictKeywordPrecedence) {
-				// don't use the same keyword again
-				if (altKeyword.compareToIgnoreCase(keyword) != 0) {
-					final List<StepImplementation> altStepImplementations = getStrictStepimplementation(altKeyword,
-							parameterLine.replaceFirst(keyword, altKeyword), okNotTofindAnything);
-					if (!altStepImplementations.isEmpty()) {
-						// found an alternative, bail immediately
-						list = new ArrayList<StepImplementation>(Collections2.transform(altStepImplementations,
-								new CloneStepImplementationsWithNewKeywordFunction(keyword)));
-						break;
-					}
-				}
-			}
-		}
+        if (patternMap == null) {
+            patternMap = new PatternMap<StepImplementation>();
+            stepImplementationMap.put(impl.getKeyword(), patternMap);
+        }
 
-		return list;
-	}
+        try {
+            patternMap.put(impl.getValue(), impl);
+        } catch (final DuplicatePatternException ex) {
+            if (failOnDuplicateStepImplementations) {
+                throw ex;
+            }
 
-	/**
-	 * @param keyword
-	 * @param parameterLine
-	 * @return
-	 */
-	private List<StepImplementation> getStrictStepimplementation(final String keyword, 
-			final String parameterLine, final boolean okNotTofindAnything) {
-		
-		List<StepImplementation> list = null;
-		
-		final PatternMap<StepImplementation> pMap = getPatternMapForAnnotation(keyword);
+        }
+    }
 
-		if (pMap != null){
-			list = pMap.get(parameterLine);
-		}
-		
-		else if ( !okNotTofindAnything) {
-			throw new SubStepConfigurationException(parameterLine + " is not a recognised substep or step implementation");
-		}
 
-		
-		return list;
-	}
+    /**
+     * @param strict
+     */
+    public void setStrict(final boolean strict, final String[] nonStrictKeywordPrecedence) {
+        this.strict = strict;
+        this.nonStrictKeywordPrecedence = nonStrictKeywordPrecedence;
 
-	private static final class CloneStepImplementationsWithNewKeywordFunction implements
-			Function<StepImplementation, StepImplementation> {
+        if (!strict && (this.nonStrictKeywordPrecedence == null || this.nonStrictKeywordPrecedence.length == 0)) {
+            throw new IllegalArgumentException(
+                    "Please provide a keyword precedence in parameter nonStrictKeywordPrecedence to use when running in non strict mode");
+        }
+    }
 
-		private final String keyword;
 
-		public CloneStepImplementationsWithNewKeywordFunction(final String keyword) {
-			this.keyword = keyword;
-		}
+    public void setFailOnDuplicateStepImplementations(final boolean failOnDuplicateStepImplementations) {
+        this.failOnDuplicateStepImplementations = failOnDuplicateStepImplementations;
+    }
 
-		public StepImplementation apply(final StepImplementation stepImplementation) {
-			return stepImplementation.cloneWithKeyword(keyword);
-		}
-	}
 
-	/**
-	 * @return the strict
-	 */
-	public boolean isStrict()
-	{
-		return strict;
-	}
+    /**
+     * @param parameterLine
+     * @return
+     */
+    public List<StepImplementation> getStepImplementations(final String keyword, final String parameterLine) {
+        return getStepImplementationsInternal(keyword, parameterLine, false);
+    }
 
-	/**
-	 * @return the nonStrictKeywordPrecedence
-	 */
-	public String[] getNonStrictKeywordPrecedence()
-	{
-		return nonStrictKeywordPrecedence;
-	}
+
+    public List<StepImplementation> checkForStepImplementations(final String keyword, final String parameterLine) {
+        return getStepImplementationsInternal(keyword, parameterLine, true);
+    }
+
+
+    /**
+     * @param keyword
+     * @param parameterLine
+     * @return
+     */
+    private List<StepImplementation> getStepImplementationsInternal(final String keyword, final String parameterLine,
+            final boolean okNotTofindAnything) {
+        List<StepImplementation> list = getStrictStepimplementation(keyword, parameterLine, okNotTofindAnything);
+
+        if (!strict
+                && ((list == null && okNotTofindAnything) || (!okNotTofindAnything && list != null && list.isEmpty()))) {
+            // look for an alternative, iterate through the
+            // nonStrictKeywordPrecedence until we get what we want
+
+            for (final String altKeyword : nonStrictKeywordPrecedence) {
+                // don't use the same keyword again
+                if (altKeyword.compareToIgnoreCase(keyword) != 0) {
+                    final List<StepImplementation> altStepImplementations = getStrictStepimplementation(altKeyword,
+                            parameterLine.replaceFirst(keyword, altKeyword), okNotTofindAnything);
+                    if (!altStepImplementations.isEmpty()) {
+                        // found an alternative, bail immediately
+                        list = new ArrayList<StepImplementation>(Collections2.transform(altStepImplementations,
+                                new CloneStepImplementationsWithNewKeywordFunction(keyword)));
+                        break;
+                    }
+                }
+            }
+        }
+
+        return list;
+    }
+
+
+    /**
+     * @param keyword
+     * @param parameterLine
+     * @return
+     */
+    private List<StepImplementation> getStrictStepimplementation(final String keyword, final String parameterLine,
+            final boolean okNotTofindAnything) {
+
+        List<StepImplementation> list = null;
+
+        final PatternMap<StepImplementation> pMap = getPatternMapForAnnotation(keyword);
+
+        if (pMap != null) {
+            list = pMap.get(parameterLine);
+        }
+
+        else if (!okNotTofindAnything) {
+            throw new SubStepConfigurationException(parameterLine
+                    + " is not a recognised substep or step implementation");
+        }
+
+        return list;
+    }
+
+    private static final class CloneStepImplementationsWithNewKeywordFunction implements
+            Function<StepImplementation, StepImplementation> {
+
+        private final String keyword;
+
+
+        public CloneStepImplementationsWithNewKeywordFunction(final String keyword) {
+            this.keyword = keyword;
+        }
+
+
+        public StepImplementation apply(final StepImplementation stepImplementation) {
+            return stepImplementation.cloneWithKeyword(keyword);
+        }
+    }
+
+
+    /**
+     * @return the strict
+     */
+    public boolean isStrict() {
+        return strict;
+    }
+
+
+    /**
+     * @return the nonStrictKeywordPrecedence
+     */
+    public String[] getNonStrictKeywordPrecedence() {
+        return nonStrictKeywordPrecedence;
+    }
 }
