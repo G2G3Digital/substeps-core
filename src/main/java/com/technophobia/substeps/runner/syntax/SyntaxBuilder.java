@@ -60,12 +60,20 @@ public final class SyntaxBuilder {
 
     public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile,
             final boolean strict, final String[] nonStrictKeywordPrecedence, final ClassAnalyser classAnalyser) {
-        final Syntax syntax = buildBaseSyntax(stepImplementationClasses, classAnalyser);
+        return buildSyntax(stepImplementationClasses, subStepsFile, strict, nonStrictKeywordPrecedence, classAnalyser,
+                true);
+    }
+
+
+    public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile,
+            final boolean strict, final String[] nonStrictKeywordPrecedence, final ClassAnalyser classAnalyser,
+            final boolean failOnDuplicateEntries) {
+        final Syntax syntax = buildBaseSyntax(stepImplementationClasses, classAnalyser, failOnDuplicateEntries);
 
         syntax.setStrict(strict, nonStrictKeywordPrecedence);
 
         if (subStepsFile != null) {
-            final SubStepDefinitionParser subStepParser = new SubStepDefinitionParser();
+            final SubStepDefinitionParser subStepParser = new SubStepDefinitionParser(failOnDuplicateEntries);
             syntax.setSubStepsMap(subStepParser.loadSubSteps(subStepsFile));
         }
 
@@ -74,12 +82,13 @@ public final class SyntaxBuilder {
 
 
     private static Syntax buildBaseSyntax(final List<Class<?>> stepImplementationClasses,
-            final ClassAnalyser classAnalyser) {
+            final ClassAnalyser classAnalyser, final boolean failOnDuplicateEntries) {
         // step implementations (arranged by StepDefinition, ie the annotation)
         // +
         // sub step definitions
 
         final Syntax syntax = new Syntax();
+        syntax.setFailOnDuplicateStepImplementations(failOnDuplicateEntries);
 
         final List<Class<?>> implClassList;
 

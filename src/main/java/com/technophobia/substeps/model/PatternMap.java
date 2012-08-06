@@ -38,105 +38,114 @@ import com.google.common.base.Strings;
  */
 public class PatternMap<V> {
 
-	private final Map<Pattern, V> patternMap = new HashMap<Pattern, V>();
-	private final Map<String, V> keys = new HashMap<String, V>();
-	private V nullValue = null;
+    private final Map<Pattern, V> patternMap = new HashMap<Pattern, V>();
+    private final Map<String, V> keys = new HashMap<String, V>();
+    private V nullValue = null;
 
-	public V getNullVale() {
-		return nullValue;
-	}
 
-	public void put(final String pattern, final V value) {
+    public V getNullVale() {
+        return nullValue;
+    }
 
-		if (pattern != null) {
-			if (keys.containsKey(pattern)) {
-				throw new IllegalStateException("duplicate patterns detected: " + pattern);
-			}
-			keys.put(pattern, value);
 
-			final Pattern p = Pattern.compile(pattern);
+    public void put(final String pattern, final V value) {
 
-			patternMap.put(p, value);
-		} else {
-			nullValue = value;
-		}
-	}
+        if (pattern != null) {
+            if (keys.containsKey(pattern)) {
+                throw new DuplicatePatternException("duplicate patterns detected: " + pattern);
+            }
+            keys.put(pattern, value);
 
-	public int size() {
+            final Pattern p = Pattern.compile(pattern);
 
-		return patternMap.size();
-	}
+            patternMap.put(p, value);
+        } else {
+            nullValue = value;
+        }
+    }
 
-	public Set<Pattern> keySet() {
-		return patternMap.keySet();
-	}
 
-	public Collection<V> values() {
-		return patternMap.values();
-	}
+    public int size() {
 
-	public List<V> get(final String string) {
-		List<V> vals = null;
+        return patternMap.size();
+    }
 
-		if (!Strings.isNullOrEmpty(string)) {
-			final Set<Entry<Pattern, V>> entrySet = patternMap.entrySet();
 
-			for (final Entry<Pattern, V> e : entrySet) {
+    public Set<Pattern> keySet() {
+        return patternMap.keySet();
+    }
 
-				if (e.getKey().matcher(string).matches()) {
 
-					if (vals == null) {
-						vals = new ArrayList<V>();
-					}
-					vals.add(e.getValue());
-				}
-			}
-		} else {
-			if (nullValue != null) {
-				vals = new ArrayList<V>();
-				vals.add(nullValue);
-			}
-		}
-		if (vals == null) {
-			vals = Collections.emptyList();
-		}
+    public Collection<V> values() {
+        return patternMap.values();
+    }
 
-		return vals;
-	}
 
-	/**
-	 * @param param
-	 * @param i
-	 * 
-	 * @return
-	 */
-	public V get(final String param, final int idx) {
-		V rtn = null;
-		if (param != null) {
-			final List<V> list = this.get(param);
-			if (list != null && !list.isEmpty() && list.size() > idx) {
-				rtn = list.get(idx);
-			}
-		} else {
-			rtn = nullValue;
-		}
-		return rtn;
-	}
+    public List<V> get(final String string) {
+        List<V> vals = null;
 
-	/**
-	 * @param pattern
-	 * @return
-	 */
-	public boolean containsPattern(final String pattern) {
-		return keys.containsKey(pattern);
-	}
+        if (!Strings.isNullOrEmpty(string)) {
+            final Set<Entry<Pattern, V>> entrySet = patternMap.entrySet();
 
-	/**
-	 * @param newPattern
-	 * @return
-	 */
-	public V getValueForPattern(final String pattern) {
-		return keys.get(pattern);
-	}
+            for (final Entry<Pattern, V> e : entrySet) {
+
+                if (e.getKey().matcher(string).matches()) {
+
+                    if (vals == null) {
+                        vals = new ArrayList<V>();
+                    }
+                    vals.add(e.getValue());
+                }
+            }
+        } else {
+            if (nullValue != null) {
+                vals = new ArrayList<V>();
+                vals.add(nullValue);
+            }
+        }
+        if (vals == null) {
+            vals = Collections.emptyList();
+        }
+
+        return vals;
+    }
+
+
+    /**
+     * @param param
+     * @param i
+     * 
+     * @return
+     */
+    public V get(final String param, final int idx) {
+        V rtn = null;
+        if (param != null) {
+            final List<V> list = this.get(param);
+            if (list != null && !list.isEmpty() && list.size() > idx) {
+                rtn = list.get(idx);
+            }
+        } else {
+            rtn = nullValue;
+        }
+        return rtn;
+    }
+
+
+    /**
+     * @param pattern
+     * @return
+     */
+    public boolean containsPattern(final String pattern) {
+        return keys.containsKey(pattern);
+    }
+
+
+    /**
+     * @param newPattern
+     * @return
+     */
+    public V getValueForPattern(final String pattern) {
+        return keys.get(pattern);
+    }
 
 }

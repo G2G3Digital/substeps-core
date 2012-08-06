@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
+import com.technophobia.substeps.model.DuplicatePatternException;
 import com.technophobia.substeps.model.ParentStep;
 import com.technophobia.substeps.model.PatternMap;
 import com.technophobia.substeps.model.Step;
@@ -45,11 +46,23 @@ public class SubStepDefinitionParser {
 
     private final PatternMap<ParentStep> parentMap = new PatternMap<ParentStep>();
 
-    private void parseSubStepFile(final File substepFile){
+    private final boolean failOnDuplicateSubsteps;
+
+
+    public SubStepDefinitionParser() {
+        this(true);
+    }
+
+
+    public SubStepDefinitionParser(final boolean failOnDuplicateSubsteps) {
+        this.failOnDuplicateSubsteps = failOnDuplicateSubsteps;
+    }
+
+
+    private void parseSubStepFile(final File substepFile) {
         currentFile = substepFile;
         try {
-            final List<String> lines = Files.readLines(substepFile,
-                    Charset.forName("UTF-8"));
+            final List<String> lines = Files.readLines(substepFile, Charset.forName("UTF-8"));
 
             for (final String line : lines) {
                 log.trace("substep line[" + substepFile.getName() + "]: " + line);
@@ -58,7 +71,7 @@ public class SubStepDefinitionParser {
 
             if (currentParentStep != null) {
                 // add the last scenario in
-                parentMap.put(currentParentStep.getParent().getPattern(), currentParentStep);
+                storeParentStepForPattern(currentParentStep.getParent().getPattern(), currentParentStep);
 
                 // we're moving on to another file, so set this to null.
                 // TODO - pass this around rather than stash the state
@@ -72,14 +85,15 @@ public class SubStepDefinitionParser {
         }
     }
 
+
     public PatternMap<ParentStep> loadSubSteps(final File definitions) {
-        
-    	final List<File> substepsFiles = FileUtils.getFiles(definitions, ".substeps");
-    	
-    	for (final File f : substepsFiles){
-    		parseSubStepFile(f);
-    	}
-    	
+
+        final List<File> substepsFiles = FileUtils.getFiles(definitions, ".substeps");
+
+        for (final File f : substepsFiles) {
+            parseSubStepFile(f);
+        }
+
         return parentMap;
     }
 
@@ -148,19 +162,31 @@ public class SubStepDefinitionParser {
                 if (parentMap.containsPattern(newPattern)) {
                     final ParentStep otherValue = parentMap.getValueForPattern(newPattern);
 
-                    log.error("duplicate patterns detected: " + newPattern + " in : "
-                            + otherValue.getSubStepFile() + " and "
-                            + currentParentStep.getSubStepFile());
+                    log.error("duplicate patterns detected: " + newPattern + " in : " + otherValue.getSubStepFile()
+                            + " and " + currentParentStep.getSubStepFile());
 
                 }
 
-                parentMap.put(newPattern, currentParentStep);
+                storeParentStepForPattern(newPattern, currentParentStep);
             }
 
             currentParentStep = new ParentStep(parent, currentFile.getName());
 
             break;
         }
+        }
+    }
+
+
+    private void storeParentStepForPattern(final String newPattern, final ParentStep parentStep) {
+        try {
+            parentMap.put(newPattern, parentStep);
+        } catch (final DuplicatePatternException ex) {
+            if (failOnDuplicateSubsteps) {
+                throw ex;
+            } else {
+                log.warn("Encountered duplicate substep " + newPattern, ex);
+            }
         }
     }
 
