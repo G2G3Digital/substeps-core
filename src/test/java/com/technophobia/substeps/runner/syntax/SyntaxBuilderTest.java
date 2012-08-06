@@ -26,15 +26,15 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.technophobia.substeps.model.DuplicatePatternException;
 import com.technophobia.substeps.model.ParentStep;
 import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.StepImplementation;
 import com.technophobia.substeps.model.Syntax;
+import com.technophobia.substeps.stepimplementations.DuplicateStepImplementations;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import com.technophobia.substeps.stepimplementations.MockStepImplementationsContainer;
-import com.technophobia.substeps.stepimplementations.DuplicateStepImplementations;
 import com.technophobia.substeps.steps.TestStepImplementations;
-
 
 /**
  * 
@@ -44,7 +44,7 @@ import com.technophobia.substeps.steps.TestStepImplementations;
  */
 public class SyntaxBuilderTest {
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = DuplicatePatternException.class)
     public void testDuplicateDefinitionsThrowError() {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
@@ -52,12 +52,11 @@ public class SyntaxBuilderTest {
         final List<Class<?>> stepImpls = new ArrayList<Class<?>>();
         stepImpls.add(MockStepImplementations.class);
 
-        SyntaxBuilder.buildSyntax(stepImpls,
-                new File("./target/test-classes/substeps/duplicates.substeps"));
+        SyntaxBuilder.buildSyntax(stepImpls, new File("./target/test-classes/substeps/duplicates.substeps"));
     }
 
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = DuplicatePatternException.class)
     public void testDuplicateStepImplementaionsThrowError() {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
@@ -65,8 +64,7 @@ public class SyntaxBuilderTest {
         final List<Class<?>> stepImpls = new ArrayList<Class<?>>();
         stepImpls.add(DuplicateStepImplementations.class);
 
-        SyntaxBuilder.buildSyntax( stepImpls,
-                new File("./target/test-classes/substeps/simple.substeps"));
+        SyntaxBuilder.buildSyntax(stepImpls, new File("./target/test-classes/substeps/simple.substeps"));
     }
 
 
@@ -111,8 +109,7 @@ public class SyntaxBuilderTest {
 
         for (final ParentStep parent : sortedList) {
             final StringBuilder buf = new StringBuilder();
-            buf.append("Parent: " + parent.getParent().getLine() + " in: "
-                    + parent.getSubStepFile());
+            buf.append("Parent: " + parent.getParent().getLine() + " in: " + parent.getSubStepFile());
 
             for (final Step substep : parent.getSteps()) {
                 buf.append("\n\t").append(substep.getLine());
