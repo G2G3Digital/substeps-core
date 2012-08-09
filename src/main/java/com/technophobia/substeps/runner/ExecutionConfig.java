@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 public class ExecutionConfig {
 
     private final Logger log = LoggerFactory.getLogger(ExecutionConfig.class);
-	
-	/**
-	 * 
+
+    /**
+     * 
      * @parameter
      */
     private String description;
@@ -272,7 +272,7 @@ public class ExecutionConfig {
         }
 
         if (systemProperties != null) {
-        	
+
             log.debug("Configuring system properties [" + systemProperties.size()
                     + "] for execution");
             final Properties existing = System.getProperties();

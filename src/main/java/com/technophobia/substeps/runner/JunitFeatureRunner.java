@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.model.Scope;
 
 public class JunitFeatureRunner extends org.junit.runner.Runner {
     private final Logger log = LoggerFactory.getLogger(JunitFeatureRunner.class);
@@ -83,16 +82,15 @@ public class JunitFeatureRunner extends org.junit.runner.Runner {
 
     // Used by tests only
     public JunitFeatureRunner() {
-        notifier = new JunitNotifier();
+        // notifier = new JunitNotifier();
     }
 
 
     // Used by tests only
-    public JunitFeatureRunner(final IJunitNotifier notifier) {
-        this.notifier = notifier;
-
-    }
-
+    // public JunitFeatureRunner(final IJunitNotifier notifier) {
+    // this.notifier = notifier;
+    //
+    // }
 
     // Constructor required by Junit
     public JunitFeatureRunner(final Class<?> classContainingTheTests) {
@@ -176,7 +174,7 @@ public class JunitFeatureRunner extends org.junit.runner.Runner {
             executionConfig.setDescription(classContainingTheTests.getSimpleName());
         }
 
-        rootNode = runner.prepareExecutionConfig(executionConfig, notifier);
+        rootNode = runner.prepareExecutionConfig(executionConfig);
 
         log.debug("rootNode.toDebugString():\n" + rootNode.toDebugString());
 
@@ -186,6 +184,7 @@ public class JunitFeatureRunner extends org.junit.runner.Runner {
         notifier = new JunitNotifier();
 
         notifier.setDescriptionMap(descriptionMap);
+        runner.addNotifier(notifier);
 
     }
 
@@ -224,10 +223,12 @@ public class JunitFeatureRunner extends org.junit.runner.Runner {
 
         log.debug("Description tree:\n" + printDescription(thisDescription, 0));
 
-        ExecutionContext.put(Scope.SUITE, JunitNotifier.NOTIFIER_EXECUTION_KEY, notifier);
+        // ExecutionContext.put(Scope.SUITE,
+        // INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY,
+        // notifier);
 
         notifier.setJunitRunNotifier(junitNotifier);
-        runner.setNotifier(notifier);
+        // runner.setNotifier(notifier);
 
         Assert.assertNotNull("execution config has not been initialised", executionConfig);
 

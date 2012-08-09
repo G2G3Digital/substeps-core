@@ -47,17 +47,21 @@ public class ExecutionNodeRunner {
     private boolean dryRun;
 
     private ExecutionNode rootNode;
-    private INotifier notifier;
+    private final INotificationDistributor notificationDistributor = new NotificationDistributor();
     private SetupAndTearDown setupAndTearDown;
     private ExecutionConfig config;
 
     private final MethodExecutor methodExecutor = new ImplementationCache();
 
 
-    public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig,
-            final INotifier notifierParam) {
+    public void addNotifier(final INotifier notifier) {
 
-        notifier = notifierParam;
+        notificationDistributor.addListener(notifier);
+    }
+
+
+    public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig) {
+
         config = theConfig;
         config.initProperties();
 
@@ -90,7 +94,8 @@ public class ExecutionNodeRunner {
         // building the tree can throw critical failures if exceptions are found
         rootNode = nodeTreeBuilder.buildExecutionNodeTree();
 
-        ExecutionContext.put(Scope.SUITE, JunitNotifier.NOTIFIER_EXECUTION_KEY, notifier);
+        ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY,
+                notificationDistributor);
 
         final String dryRunProperty = System.getProperty("dryRun");
         if (dryRunProperty != null && Boolean.parseBoolean(dryRunProperty)) {
@@ -109,7 +114,9 @@ public class ExecutionNodeRunner {
         log.debug("run root node");
         noTestsRun = true;
 
-        ExecutionContext.put(Scope.SUITE, JunitNotifier.NOTIFIER_EXECUTION_KEY, notifier);
+        // TODO - why is this here twice?
+        ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY,
+                notificationDistributor);
 
         try {
             runExecutionNodeHierarchy(Scope.SUITE, rootNode);
@@ -122,7 +129,7 @@ public class ExecutionNodeRunner {
 
             final Throwable t = new IllegalStateException("No tests executed");
             rootNode.getResult().setFailed(t);
-            notifier.notifyTestFailed(rootNode, t);
+            notificationDistributor.notifyNodeFailed(rootNode, t);
 
         }
 
@@ -139,14 +146,14 @@ public class ExecutionNodeRunner {
         boolean success = true;
         Throwable theException = null;
 
-        notifier.notifyTestStarted(node);
+        notificationDistributor.notifyNodeStarted(node);
 
         // node may have parsing error, in which case, bail immediately
         if (node.hasError()) {
             //
             success = false;
             theException = node.getResult().getThrown();
-            notifier.notifyTestFailed(node, theException);
+            notificationDistributor.notifyNodeFailed(node, theException);
             throw theException;
         }
 
@@ -273,7 +280,7 @@ public class ExecutionNodeRunner {
 
         if (success) {
             log.debug("node success");
-            notifier.notifyTestFinished(node);
+            notificationDistributor.notifyNodeFinished(node);
 
             node.getResult().setFinished();
 
@@ -284,7 +291,7 @@ public class ExecutionNodeRunner {
 
             log.debug("node failure", theException);
 
-            notifier.notifyTestFailed(node, theException);
+            notificationDistributor.notifyNodeFailed(node, theException);
 
             node.getResult().setFailed(theException);
 
@@ -341,8 +348,7 @@ public class ExecutionNodeRunner {
         this.dryRun = dryRun;
     }
 
-
-    public void setNotifier(final INotifier notifier) {
-        this.notifier = notifier;
-    }
+    // public void setNotifier(final INotifier notifier) {
+    // notificationDistributor = notifier;
+    // }
 }

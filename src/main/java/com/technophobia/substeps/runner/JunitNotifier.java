@@ -18,8 +18,6 @@
  */
 package com.technophobia.substeps.runner;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.runner.Description;
@@ -30,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 
-
 /**
  * A wrapper around the Junit notifier and any other registered test listeners
  * 
@@ -38,130 +35,64 @@ import com.technophobia.substeps.execution.ExecutionNode;
  * 
  */
 public class JunitNotifier implements IJunitNotifier {
-    public static final String NOTIFIER_EXECUTION_KEY = "notifier";
 
     private final Logger log = LoggerFactory.getLogger(JunitNotifier.class);
 
     private RunNotifier junitRunNotifier;
 
-    private List<INotifier> listeners;
-
     private Map<Long, Description> descriptionMap;
-
-
-    public void addListener(final INotifier listener) {
-        if (listeners == null) {
-            listeners = new ArrayList<INotifier>();
-        }
-        listeners.add(listener);
-    }
 
 
     /**
      * {@inheritDoc}
      */
-    public void notifyTestStarted(final Description junitDescription) {
+    private void notifyTestStarted(final Description junitDescription) {
 
-        if (junitRunNotifier != null && junitDescription != null  && junitDescription.isTest()) {
+        if (junitRunNotifier != null && junitDescription != null) {
             log.debug(junitDescription.getDisplayName() + " notifyTestStarted");
 
             junitRunNotifier.fireTestStarted(junitDescription);
         }
-        
-       	notifyListenersTestStarted(junitDescription);
-    }
 
-
-    /**
-     * @param listeners2
-     * @param junitDescription
-     */
-    private void notifyListenersTestStarted(final Description junitDescription) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
-                listener.notifyTestStarted(junitDescription);
-            }
-        }
     }
 
 
     /**
      * {@inheritDoc}
      */
-    public void notifyTestFinished(final Description junitDescription) {
-        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
+    private void notifyTestFinished(final Description junitDescription) {
+        if (junitRunNotifier != null && junitDescription != null) {
             log.debug(junitDescription.getDisplayName() + " notifyTestFinished");
 
             junitRunNotifier.fireTestFinished(junitDescription);
         }
-        
-        notifyListenersTestFinished(junitDescription);
-    }
 
-
-    /**
-     * @param listeners2
-     * @param junitDescription
-     */
-    private void notifyListenersTestFinished(final Description junitDescription) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
-                listener.notifyTestFinished(junitDescription);
-            }
-        }
     }
 
 
     /**
      * {@inheritDoc}
      */
-    public void notifyTestIgnored(final Description junitDescription) {
-        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
+    private void notifyTestIgnored(final Description junitDescription) {
+        if (junitRunNotifier != null && junitDescription != null) {
             junitRunNotifier.fireTestIgnored(junitDescription);
         }
-        notifyListenersTestIgnored(junitDescription);
-    }
 
-
-    /**
-     * @param listeners2
-     * @param junitDescription
-     */
-    private void notifyListenersTestIgnored(final Description junitDescription) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
-                listener.notifyTestIgnored(junitDescription);
-            }
-        }
     }
 
 
     /**
      * {@inheritDoc}
      */
-    public void notifyTestFailed(final Description junitDescription, final Throwable cause) {
-        if (junitRunNotifier != null && junitDescription != null && junitDescription.isTest()) {
+    private void notifyTestFailed(final Description junitDescription, final Throwable cause) {
+        if (junitRunNotifier != null && junitDescription != null) {
             log.debug(junitDescription.getDisplayName() + " notify running TestFailed");
 
             log.debug(junitDescription.getDisplayName() + " notify TestFailed");
             junitRunNotifier.fireTestFailure(new Failure(junitDescription, cause));
 
         }
-        notifyListenersTestFailed(junitDescription, cause);
-    }
 
-
-    /**
-     * @param listeners2
-     * @param junitDescription
-     * @param cause
-     */
-    private void notifyListenersTestFailed(final Description junitDescription, final Throwable cause) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
-                listener.notifyTestFailed(junitDescription, cause);
-            }
-        }
     }
 
 
@@ -170,43 +101,6 @@ public class JunitNotifier implements IJunitNotifier {
      */
     public void pleaseStop() {
         junitRunNotifier.pleaseStop();
-    }
-
-
-    /**
-     * @param notifier
-     * @param junitDescription
-     */
-    public static void notifyTestStarted(final INotifier notifier,
-            final Description junitDescription) {
-        if (notifier != null) {
-            notifier.notifyTestStarted(junitDescription);
-        }
-    }
-
-
-    /**
-     * @param notifier
-     * @param junitDescription
-     */
-    public static void notifyTestFinished(final INotifier notifier,
-            final Description junitDescription) {
-        if (notifier != null) {
-            notifier.notifyTestFinished(junitDescription);
-        }
-    }
-
-
-    /**
-     * @param notifier
-     * @param junitDescription
-     * @param cause
-     */
-    public static void notifyTestFailed(final INotifier notifier,
-            final Description junitDescription, final Throwable cause) {
-        if (notifier != null) {
-            notifier.notifyTestFailed(junitDescription, cause);
-        }
     }
 
 
@@ -226,7 +120,31 @@ public class JunitNotifier implements IJunitNotifier {
     }
 
 
-    public void notifyTestStarted(final ExecutionNode node) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.AbstractBaseNotifier#handleNotifyNodeFailed
+     * (com.technophobia.substeps.execution.ExecutionNode, java.lang.Throwable)
+     */
+
+    public void notifyNodeFailed(final ExecutionNode node, final Throwable cause) {
+
+        final Description description = descriptionMap.get(Long.valueOf(node.getId()));
+        notifyTestFailed(description, cause);
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.AbstractBaseNotifier#handleNotifyNodeStarted
+     * (com.technophobia.substeps.execution.ExecutionNode)
+     */
+
+    public void notifyNodeStarted(final ExecutionNode node) {
 
         final Description description = descriptionMap.get(Long.valueOf(node.getId()));
 
@@ -234,27 +152,39 @@ public class JunitNotifier implements IJunitNotifier {
         log.debug("notifyTestStarted nodeid: " + node.getId() + " description: " + b);
 
         notifyTestStarted(description);
+
     }
 
 
-    /**
-     * @param node
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.technophobia.substeps.runner.AbstractBaseNotifier#
+     * handleNotifyNodeFinished
+     * (com.technophobia.substeps.execution.ExecutionNode)
      */
-    public void notifyTestFinished(final ExecutionNode node) {
+
+    public void notifyNodeFinished(final ExecutionNode node) {
 
         final Description description = descriptionMap.get(Long.valueOf(node.getId()));
         notifyTestFinished(description);
+
     }
 
 
-    /**
-     * @param node
-     * @param theException
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.AbstractBaseNotifier#handleNotifyNodeIgnored
+     * (com.technophobia.substeps.execution.ExecutionNode)
      */
-    public void notifyTestFailed(final ExecutionNode node, final Throwable theException) {
+
+    public void notifyNodeIgnored(final ExecutionNode node) {
 
         final Description description = descriptionMap.get(Long.valueOf(node.getId()));
-        notifyTestFailed(description, theException);
+        notifyTestIgnored(description);
+
     }
 
 }

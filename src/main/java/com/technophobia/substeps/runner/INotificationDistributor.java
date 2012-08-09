@@ -1,3 +1,5 @@
+package com.technophobia.substeps.runner;
+
 /*
  *	Copyright Technophobia Ltd 2012
  *
@@ -16,22 +18,11 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.technophobia.substeps.runner;
+public interface INotificationDistributor extends INotifier {
 
-import org.junit.runner.RunWith;
+    // the key under which the distributor is placed in the ExecutionContext
+    public static final String NOTIFIER_DISTRIBUTOR_KEY = "notifier";
 
-import com.technophobia.substeps.runner.JunitFeatureRunner.SubStepsConfiguration;
-import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 
-/**
- * 
- * @author imoore
- * 
- */
-
-// @Ignore("this is only for local dev, not to actually run as a test!")
-@SubStepsConfiguration(featureFile = "./target/test-classes/features/allFeatures.feature", subStepsFile = "./target/test-classes/substeps/allFeatures.substeps", stepImplementations = { MockStepImplementations.class })
-@RunWith(JunitFeatureRunner.class)
-public class AllFeaturesJunit {
-
+    void addListener(final INotifier listener);
 }

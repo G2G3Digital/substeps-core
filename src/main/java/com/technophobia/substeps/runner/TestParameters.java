@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,9 @@ public class TestParameters {
 
         final File f = new File(".");
         log.debug("Current dir is: " + f.getAbsolutePath());
+
+        Assert.assertNotNull("No Feature files found!", featureFileList);
+        Assert.assertFalse("No Feature files found!", featureFileList.isEmpty());
 
         Collections.sort(featureFileList, new FeatureFileComparator());
     }
