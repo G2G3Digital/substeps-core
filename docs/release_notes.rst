@@ -5,8 +5,9 @@ Substeps Core - Release Notes
 
 0.0.7
 -----
-
-
+- BUGFix: Scenarios that should be allowed to fail the build were still failing the build.
+- Introduced a BuildFailureManager to assist with critical or otherwise failures.
+- Non Critical scenarios no longer need to have the features also tagged.
 
 
  
