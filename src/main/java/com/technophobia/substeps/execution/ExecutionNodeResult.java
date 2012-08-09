@@ -110,4 +110,13 @@ public class ExecutionNodeResult {
         thrown = t;
     }
 
+
+	/**
+	 * @param theException
+	 */
+	public void setSetupTearFailure(final Throwable t) {
+        result = ExecutionResult.SETUP_TEARDOWN_FAILURE;
+        thrown = t;
+	}
+
 }
