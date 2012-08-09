@@ -2,6 +2,13 @@ Substeps Core - Release Notes
 =============================
 
 - A list of changes per release 
+
+0.0.7
+-----
+
+
+
+
  
 0.0.6
 -----
@@ -11,3 +18,4 @@ Substeps Core - Release Notes
 - substeps filename now reported in debug
 - changes to support glossary building
 - SyntaxBuilder now allows a ClassAnalyser to be passed in, rather than instantiated (used in eclipse plugin)
+- added missing images from the basic report

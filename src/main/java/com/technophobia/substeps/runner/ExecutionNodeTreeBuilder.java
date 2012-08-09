@@ -168,7 +168,7 @@ public class ExecutionNodeTreeBuilder {
         }
 
         if (scenario.getSteps() != null && !scenario.getSteps().isEmpty()) {
-            log.debug("processing scenario steps");
+            log.debug("processing scenario: [" + scenario.getDescription() + "] steps");
 
             processListOfSteps(scenario.getSteps(), parameters.getSyntax().getSubStepsMap(), null,
                     true, scenarioParameters, scenarioNode);
