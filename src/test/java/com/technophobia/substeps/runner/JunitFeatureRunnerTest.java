@@ -190,7 +190,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // now verify that what was run was indeed run
 
-        verify(spy, times(7)).meth1();
+        verify(spy, times(8)).meth1();
 
         verify(spy, times(1)).meth12();
 
@@ -224,13 +224,16 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // test the number of times the notifier was called
 
-        verify(notifier, times(25)).fireTestStarted(argThat(any(Description.class)));
+        verify(notifier, times(27)).fireTestStarted(argThat(any(Description.class)));
         // this is now up to 25 as more of a hierarchy with outlines
 
-        verify(notifier, times(20)).fireTestFinished(argThat(any(Description.class)));
+        verify(notifier, times(22)).fireTestFinished(argThat(any(Description.class)));
         verify(notifier, times(5)).fireTestFailure(argThat(any(Failure.class)));
         // test failures now cascade upwards
 
+        verify(spy, times(1)).meth4("#quoted parameter");
+
+        
         final ExecutionNode root = runner.getRootExecutionNode();
         System.out.println(root.printTree());
 
