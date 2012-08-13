@@ -48,4 +48,8 @@ Scenario: a scenario is executed with a table as a parameter
           | W       |   X      |    Y       |     Z     |         
 
 ##### todo, pass the tables down to substeps, substeps use the values in the table....    
+
+
+Scenario: quoted hashes are not interpreted as comments
+    Test_Then something with a "#quoted parameter"
         
