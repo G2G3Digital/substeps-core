@@ -20,6 +20,8 @@ package com.technophobia.substeps.runner;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,7 @@ public class ExecutionNodeRunner {
     private final INotificationDistributor notificationDistributor = new NotificationDistributor();
     private SetupAndTearDown setupAndTearDown;
     private ExecutionConfig config;
+    private TagManager nonFatalTagmanager = null;
 
     private final MethodExecutor methodExecutor = new ImplementationCache();
 
@@ -74,6 +77,10 @@ public class ExecutionNodeRunner {
 
         final TagManager tagmanager = new TagManager(config.getTags());
 
+        if (config.getNonFatalTags() != null){
+        	nonFatalTagmanager = new TagManager(config.getNonFatalTags());
+        }
+        
         File subStepsFile = null;
 
         if (config.getSubStepsFileName() != null) {
@@ -110,54 +117,61 @@ public class ExecutionNodeRunner {
     }
 
 
-    public void run() {
+    public List<SubstepExecutionFailure> run() {
         log.debug("run root node");
         noTestsRun = true;
 
         // TODO - why is this here twice?
         ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY,
                 notificationDistributor);
-
-        try {
-            runExecutionNodeHierarchy(Scope.SUITE, rootNode);
-        } catch (final Throwable e) {
-            log.error("root node exception", e);
-
-        }
+        
+        final List<SubstepExecutionFailure> failures =        
+        		runExecutionNodeHierarchy(Scope.SUITE, rootNode);
 
         if (noTestsRun) {
 
             final Throwable t = new IllegalStateException("No tests executed");
             rootNode.getResult().setFailed(t);
             notificationDistributor.notifyNodeFailed(rootNode, t);
+            
+            addFailure(failures, new SubstepExecutionFailure(t, rootNode));
+
 
         }
 
+        return failures;
     }
 
+    private void addFailure(final List<SubstepExecutionFailure> failures, final SubstepExecutionFailure failure){
+        failures.add(failure);
+        logFailure(failure);
+        
+        // set the criticality of this failure
+        
+        if (!failure.isSetupOrTearDown() && this.nonFatalTagmanager != null &&
+        	 nonFatalTagmanager.acceptTaggedScenario(failure.getExeccutionNode().getTagsFromHierarchy())) {
 
-    private boolean runExecutionNodeHierarchy(final Scope scope, final ExecutionNode node)
-            throws Throwable {
+        	failure.setNonCritical(true);
+        }
+        
+    }
+    
+    private List<SubstepExecutionFailure> runExecutionNodeHierarchy(final Scope scope, 
+    		final ExecutionNode node){
 
         log.info("run Node Hierarchy @ " + scope.name() + ":" + node.getDebugStringForThisNode());
 
-        // do notify for this node
-
-        boolean success = true;
-        Throwable theException = null;
-
+        final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
+        
         notificationDistributor.notifyNodeStarted(node);
 
         // node may have parsing error, in which case, bail immediately
         if (node.hasError()) {
-            //
-            success = false;
-            theException = node.getResult().getThrown();
-            notificationDistributor.notifyNodeFailed(node, theException);
-            throw theException;
-        }
 
-        if (success) {
+            notificationDistributor.notifyNodeFailed(node, node.getResult().getThrown());
+            addFailure(failures, new SubstepExecutionFailure(node.getResult().getThrown(), node));
+        }
+        else {
             node.getResult().setStarted();
 
             // run setup if necessary for this depth and step
@@ -169,138 +183,157 @@ public class ExecutionNodeRunner {
             } catch (final Throwable t) {
                 log.debug("setup failed", t);
 
-                success = false;
-                theException = t;
-            }
-        }
-
-        // if background, run backgrounds
-        if (success && node.hasBackground() && !node.isOutlineScenario()) {
-            // any of these fail then bail & mark this node as failed
-            for (final ExecutionNode backgroundNode : node.getBackgrounds()) {
-                try {
-
-                    final boolean thisExecutionSuccess = runExecutionNodeHierarchy(
-                            Scope.SCENARIO_BACKGROUND, backgroundNode);
-                    if (success && !thisExecutionSuccess) {
-                        success = thisExecutionSuccess;
-                    }
-                } catch (final Throwable t) {
-                    log.debug("scenario background failed", t);
-
-                    success = false;
-                    theException = t;
-                }
-                if (!success) {
-                    break;
-                }
-            }
-        }
-
-        if (success && node.isExecutable()) {
-            log.debug("executing node method");
-
-            // if executable invoke
-            try {
-
-                if (!dryRun) {
-                    methodExecutor.executeMethod(node.getTargetClass(), node.getTargetMethod(),
-                            node.getMethodArgs());
-                }
-                noTestsRun = false;
-
-            } catch (final InvocationTargetException e) {
-
-                theException = e.getTargetException();
-                success = false;
-
-            } catch (final Throwable e) {
-
-                theException = e;
-                success = false;
-            }
-        }
-
-        // if children, run children
-
-        else if (success && node.shouldHaveChildren() && !node.hasChildren()) {
-            success = false;
-            // TODO - better error message required
-            theException = new IllegalStateException("node should have children but doesn't");
-        }
-
-        else if (success && node.hasChildren()) {
-            log.debug("node has children");
-            // if any fail, mark this as failed. if current scope is
-            // suite, feature then continue even if failure
-            // if scenario or outline or step, bail
-            for (final ExecutionNode child : node.getChildren()) {
-                final Scope childScope = getChildScope(node, scope);
-
-                try {
-
-                    final boolean thisExecutionSuccess = runExecutionNodeHierarchy(childScope,
-                            child);
-
-                    if (success && !thisExecutionSuccess) {
-                        success = thisExecutionSuccess;
-                    }
-                } catch (final Throwable t) {
-                    log.debug("running children failed", t);
-
-                    success = false;
-                    theException = t;
-                }
-
-                // bail out if current scope is Step or SCENARIO_OUTLINE_ROW
-
-                // bail if current scope is scenario and childscope is step
-                if (!success
-                        && (scope == Scope.STEP || scope == Scope.SCENARIO_OUTLINE_ROW || (scope == Scope.SCENARIO && childScope == Scope.STEP))) {
-                    log.debug("bailing out of execution");
-                    break;
-                }
-            }
-        }
-
-        try {
-            // run tear down if necessary for this depth and step
-            if (!node.isOutlineScenario()) {
-                setupAndTearDown.runTearDown(scope);
-                ExecutionContext.clear(scope);
-
-            }
-        } catch (final Throwable t) {
-            log.debug("tear down failed", t);
-
-            success = false;
-            theException = t;
-
-        }
-
-        if (success) {
-            log.debug("node success");
-            notificationDistributor.notifyNodeFinished(node);
-
-            node.getResult().setFinished();
-
-        } else {
-            if (theException == null) {
-                theException = new IllegalStateException("failure with no exception");
+                addFailure(failures, new SubstepExecutionFailure(t, node, true));
             }
 
-            log.debug("node failure", theException);
+            if (failures.isEmpty() && node.hasBackground() && !node.isOutlineScenario()) {
+	            // any of these fail then bail & mark this node as failed
+	            for (final ExecutionNode backgroundNode : node.getBackgrounds()) {
+//	                try {
+	
+//	            		runExecutionNodeHierarchy(Scope.SCENARIO_BACKGROUND, backgroundNode);
+	
+		        		final List<SubstepExecutionFailure> backgroundScenarioFailures = runExecutionNodeHierarchy(Scope.SCENARIO_BACKGROUND, backgroundNode);
+		        		
+		        		if (!backgroundScenarioFailures.isEmpty()){
+		        			log.debug("running background scenarios failed");
+		        			failures.addAll(backgroundScenarioFailures);
+		        		}
 
-            notificationDistributor.notifyNodeFailed(node, theException);
+	            		
+//	                }
+//	                catch (final Throwable t) {
+//	                    log.debug("scenario background failed", t);
+//	
+//	                    failures.add(new SubstepExecutionFailure(t, backgroundNode));
+//	                }
+	                
+	                if (!failures.isEmpty()){
+	                	break;
+	                }
+	            }
+	        }
+	        if (failures.isEmpty() && node.isExecutable()) {
+	
+	        	final SubstepExecutionFailure methodInvocationFailure = executeNodeMethod(node);
+	        	if (methodInvocationFailure != null){
+	        		
+	                addFailure(failures, methodInvocationFailure);
+	        	}
+	        }
 
-            node.getResult().setFailed(theException);
+	        // if children, run children
 
-            throw theException;
+	        else if (failures.isEmpty() && node.shouldHaveChildren() && !node.hasChildren()) {
+	
+	            // TODO - better error message required
+	        	
+                addFailure(failures, new SubstepExecutionFailure(new IllegalStateException("node should have children but doesn't"), node));
+
+	        }
+
+	        else if (failures.isEmpty() && node.hasChildren()) {
+	
+	            log.debug("node has children");
+	            // if any fail, mark this as failed. if current scope is
+	            // suite, feature then continue even if failure
+	            // if scenario or outline or step, bail
+	            for (final ExecutionNode child : node.getChildren()) {
+	                
+	            	final Scope childScope = getChildScope(node, scope);
+	
+	        		final List<SubstepExecutionFailure> childFailures = runExecutionNodeHierarchy(childScope,child);
+	        		
+	        		if (!childFailures.isEmpty()){
+	        			log.debug("running children failed");
+	        			failures.addAll(childFailures);
+	        		}
+	            		
+	                // bail out if current scope is Step or SCENARIO_OUTLINE_ROW
+	
+	                // bail if current scope is scenario and childscope is step
+	                if (!failures.isEmpty()
+	                		&& (scope == Scope.STEP || scope == Scope.SCENARIO_OUTLINE_ROW || (scope == Scope.SCENARIO && childScope == Scope.STEP))) {
+	                    log.debug("bailing out of execution");
+	                    break;
+	                }
+	            }
+	        }
+
+	        try {
+	            // run tear down if necessary for this depth and step
+	            if (!node.isOutlineScenario()) {
+	                setupAndTearDown.runTearDown(scope);
+	                ExecutionContext.clear(scope);
+	
+	            }
+	        }
+	        catch (final Throwable t) {
+	            log.debug("tear down failed", t);
+	
+	            failures.add(new SubstepExecutionFailure(t, node, true));
+	        }
+
+	        if (failures.isEmpty()) {
+	            log.debug("node success");
+	            notificationDistributor.notifyNodeFinished(node);
+	
+	            node.getResult().setFinished();
+	
+	        } 
+	        else {
+	
+	            log.debug("node failures");
+	            // just notify on the last one in..?
+	            final Throwable lastException = failures.get(failures.size()-1).getCause();
+	            notificationDistributor.notifyNodeFailed(node, lastException);
+	
+	            // TODO should this have been set earlier...?
+	                node.getResult().setFailed(lastException);
+	        }
         }
-        // do notify finished
-
-        return success;
+        return failures;
     }
+
+
+	/**
+	 * @param failure
+	 */
+	private void logFailure(final SubstepExecutionFailure failure) {
+
+		log.info("SubstepExecutionFailure @ " + failure.getExeccutionNode().getDebugStringForThisNode(), failure.getCause());
+	}
+
+
+	/**
+	 * @param node
+	 * @param theException
+	 * @return
+	 */
+	private SubstepExecutionFailure executeNodeMethod(final ExecutionNode node) {
+		
+		SubstepExecutionFailure theFailure = null;
+		log.debug("executing node method");
+
+		// if executable invoke
+		try {
+
+		    if (!dryRun) {
+		        methodExecutor.executeMethod(node.getTargetClass(), node.getTargetMethod(),
+		                node.getMethodArgs());
+		    }
+		    noTestsRun = false;
+
+		} catch (final InvocationTargetException e) {
+
+			theFailure = new SubstepExecutionFailure(e.getTargetException(), node);
+
+		} catch (final Throwable e) {
+
+			theFailure = new SubstepExecutionFailure(e, node);
+		}
+		return theFailure;
+	}
 
 
     private Scope getChildScope(final ExecutionNode node, final Scope currentScope) {
