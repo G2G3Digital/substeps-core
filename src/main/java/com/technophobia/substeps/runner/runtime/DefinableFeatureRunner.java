@@ -18,11 +18,10 @@
  */
 package com.technophobia.substeps.runner.runtime;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
-import com.google.common.collect.Lists;
 import com.technophobia.substeps.runner.JunitFeatureRunner;
 
 public class DefinableFeatureRunner extends JunitFeatureRunner {
@@ -38,12 +37,10 @@ public class DefinableFeatureRunner extends JunitFeatureRunner {
 
     public DefinableFeatureRunner(final Class<?> clazz) {
         super();
-        final String outputFolder = System.getProperty("outputFolder");
-        final String path = new File(outputFolder).getAbsolutePath();
-        final ClassLocator classLocator = new StepClassLocator(path);
 
-        init(clazz, Lists.newArrayList(classLocator.fromPath(path)), System.getProperty("substepsFeatureFile"), "",
-                System.getProperty("substepsFile"), toClasses(System.getProperty("beforeAndAfterProcessors")));
+        init(clazz, Arrays.asList(toClasses(System.getProperty("substepsImplClasses"))),
+                System.getProperty("substepsFeatureFile"), "", System.getProperty("substepsFile"),
+                toClasses(System.getProperty("beforeAndAfterProcessors")));
     }
 
 
