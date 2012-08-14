@@ -308,36 +308,38 @@ public class FeatureFileParser {
 
     public static String stripComments(final String line) {
         String trimmed = null;
-        final int idx = line.trim().indexOf("#");
-        if (idx >= 0) {
-            // is the # inside matched quotes
-
-            boolean doTrim = false;
-
-            if (idx == 0) {
-                // first char
-                doTrim = true;
-            }
-
-            final String[] splitByQuotes = line.split("\"[^\"]*\"|'[^']*'");
-            // this will find parts of the string not in quotes
-            for (final String split : splitByQuotes) {
-                if (split.indexOf("#") > 0) {
-                    // hash exists not in a matching pair of quotes
-                    doTrim = true;
-                    break;
-                }
-            }
-
-            if (doTrim) {
-                trimmed = line.substring(0, idx).trim();
-            } else {
-                trimmed = line.trim();
-            }
-        } else {
-            trimmed = line.trim();
+        if (line != null) {
+        	
+	        final int idx = line.trim().indexOf("#");
+	        if (idx >= 0) {
+	            // is the # inside matched quotes
+	
+	            boolean doTrim = false;
+	
+	            if (idx == 0) {
+	                // first char
+	                doTrim = true;
+	            }
+	
+	            final String[] splitByQuotes = line.split("\"[^\"]*\"|'[^']*'");
+	            // this will find parts of the string not in quotes
+	            for (final String split : splitByQuotes) {
+	                if (split.indexOf("#") > 0) {
+	                    // hash exists not in a matching pair of quotes
+	                    doTrim = true;
+	                    break;
+	                }
+	            }
+	
+	            if (doTrim) {
+	                trimmed = line.substring(0, idx).trim();
+	            } else {
+	                trimmed = line.trim();
+	            }
+	        } else {
+	            trimmed = line.trim();
+	        }
         }
-
         return trimmed;
     }
 
@@ -353,14 +355,15 @@ public class FeatureFileParser {
             final List<String> lines = Files.readLines(featureFile, Charset.forName("UTF-8"));
 
             for (final String s : lines) {
-
-                String trimmed = null;
-                final int idx = s.indexOf("#");
-                if (idx >= 0) {
-                    trimmed = s.substring(0, idx).trim();
-                } else {
-                    trimmed = s.trim();
-                }
+            	
+                final String trimmed = stripComments(s);
+                
+//                final int idx = s.indexOf("#");
+//                if (idx >= 0) {
+//                    trimmed = s.substring(0, idx).trim();
+//                } else {
+//                    trimmed = s.trim();
+//                }
 
                 if (!Strings.isNullOrEmpty(trimmed)) {
                     // up for inclusion
