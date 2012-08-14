@@ -40,6 +40,7 @@ public abstract class SubSteps {
     @Target(ElementType.TYPE)
     public static @interface StepImplementations {
         // no op
+    	Class<?>[] requiredInitialisationClasses() default {};
     }
 
     /**
