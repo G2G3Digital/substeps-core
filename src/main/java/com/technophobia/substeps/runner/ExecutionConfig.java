@@ -27,6 +27,9 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.technophobia.substeps.model.SubStepConfigurationException;
+import com.technophobia.substeps.model.SubSteps.StepImplementations;
+
 /**
  * @author ian
  */
@@ -357,4 +360,141 @@ public class ExecutionConfig {
         this.fastFailParseErrors = fastFailParseErrors;
     }
 
+
+	/**
+	 * @return
+	 */
+	public Class<?>[] determineInitialisationClasses() {
+		
+		List<Class<?>> initialisationClassList = null;
+		if (this.stepImplementationClasses != null){
+			
+			initialisationClassList = new ArrayList<Class<?>>();
+			
+			for (final Class<?> c : stepImplementationClasses){
+				
+				final StepImplementations annotation = c.getAnnotation(StepImplementations.class);
+				if (annotation != null) {
+					final Class<?>[] initClasses = annotation.requiredInitialisationClasses();
+				
+					if (initClasses != null){
+						
+
+						Class<?> predecessor = null;
+						//for (final Class<?> initClass : initClasses){
+						for (int i = initClasses.length; i>0; i--){
+							
+							final Class<?> initClass = initClasses[i-1];
+							
+							if (predecessor == null){
+								// can just put this one at the end
+								if (!initialisationClassList.contains(initClass)){
+									initialisationClassList.add(initClass);	
+								}
+							}
+							else {
+								
+								// put this class before the predecessor
+								final int predecessorIdx = initialisationClassList.indexOf(predecessor);
+								
+								// is this class already in ?
+								if (initialisationClassList.contains(initClass)){
+									
+									// don't need to add, just need to make sure the sequencing is ok
+									final int thisIdx = initialisationClassList.indexOf(initClass);
+									
+									if (thisIdx > predecessorIdx){
+										
+										// TODO - build up a message
+										
+										throw new SubStepConfigurationException("Incompatible initialisation sequence");
+									}
+								}
+								else {
+									initialisationClassList.add(predecessorIdx, initClass);
+								}
+							}
+							predecessor = initClass;
+						}
+						
+						// old
+						
+//						int lastIndex = -1;
+//						for (int i = initClasses.length; i>0; i--){
+//							
+//							final Class<?> initClass = initClasses[i-1];
+//							
+//							// is this class already in the list?
+//							if (!initialisationClassList.contains(initClass)){
+//								// not got this one
+//								if (lastIndex >= 0){
+//									initialisationClassList.add(lastIndex, initClass);
+//								}
+//								else {
+//									initialisationClassList.add(initClass);
+//								}
+//							}
+//							else {
+//								lastIndex = initialisationClassList.indexOf(initClass);
+//							}
+//						}
+					}
+				}
+				
+			}
+		}
+		if (initialisationClassList == null && initialisationClass != null){
+            initialisationClassList = getClassesFromConfig(initialisationClass);
+		}
+
+		if (initialisationClassList != null){
+	        initialisationClasses = new Class<?>[initialisationClassList.size()];
+	        // what do we need to execute the runner
+	
+	        initialisationClasses = initialisationClassList.toArray(initialisationClasses);
+		}
+		
+		return initialisationClasses;
+	}
+
+	
+	/*
+
+
+			for (final Class<?> c : stepImplementationClasses){
+				
+				final StepImplementations annotation = c.getAnnotation(StepImplementations.class);
+				if (annotation != null) {
+					final Class<?>[] initClasses = annotation.requiredInitialisationClasses();
+				
+					if (initClasses != null){
+						
+						int lastIndex = -1;
+						for (int i = initClasses.length; i>0; i--){
+							
+							final Class<?> initClass = initClasses[i-1];
+							
+							// is this class already in the list?
+							if (!initialisationClassList.contains(initClass)){
+								// not got this one
+								if (lastIndex >= 0){
+									initialisationClassList.add(lastIndex, initClass);
+								}
+								else {
+									initialisationClassList.add(initClass);
+								}
+							}
+							else {
+								lastIndex = initialisationClassList.indexOf(initClass);
+							}
+						}
+					}
+				}
+				
+			}
+
+
+	 */
+	
+	
 }
