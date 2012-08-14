@@ -39,8 +39,8 @@ public class DefinableFeatureRunner extends JunitFeatureRunner {
         super();
 
         init(clazz, Arrays.asList(toClasses(System.getProperty("substepsImplClasses"))),
-                System.getProperty("substepsFeatureFile"), "", System.getProperty("substepsFile"),
-                toClasses(System.getProperty("beforeAndAfterProcessors")));
+                System.getProperty("substepsFeatureFile"), System.getProperty("substepsTags"),
+                System.getProperty("substepsFile"), new Class[0]);
     }
 
 
