@@ -18,9 +18,10 @@
  */
 package com.technophobia.substeps.runner.runtime;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
-import com.google.common.collect.Lists;
 import com.technophobia.substeps.runner.JunitFeatureRunner;
 
 public class DefinableFeatureRunner extends JunitFeatureRunner {
@@ -36,11 +37,34 @@ public class DefinableFeatureRunner extends JunitFeatureRunner {
 
     public DefinableFeatureRunner(final Class<?> clazz) {
         super();
-        final String outputFolder = System.getProperty("outputFolder");
-        final String path = new File(outputFolder).getAbsolutePath();
-        final ClassLocator classLocator = new StepClassLocator(path);
 
-        init(clazz, Lists.newArrayList(classLocator.fromPath(path)),
-                System.getProperty("substepsFeatureFile"), "", "", new Class<?>[0]);
+        init(clazz, Arrays.asList(toClasses(System.getProperty("substepsImplClasses"))),
+                System.getProperty("substepsFeatureFile"), System.getProperty("substepsTags"),
+                System.getProperty("substepsFile"), new Class[0]);
+    }
+
+
+    private Class<?>[] toClasses(final String beforeAndAfterProcessors) {
+        final Collection<Class<?>> classes = new ArrayList<Class<?>>();
+        if (!beforeAndAfterProcessors.trim().isEmpty()) {
+            final String[] split = beforeAndAfterProcessors.split(";");
+            for (final String beforeAndAfterProcessor : split) {
+                final Class<?> processorClass = toClass(beforeAndAfterProcessor);
+                if (processorClass != null) {
+                    classes.add(processorClass);
+                }
+            }
+        }
+        return classes.toArray(new Class<?>[classes.size()]);
+    }
+
+
+    private Class<?> toClass(final String beforeAndAfterProcessor) {
+        try {
+            return Class.forName(beforeAndAfterProcessor);
+        } catch (final ClassNotFoundException e) {
+            // Class doesn't exist - for now, leave it
+            return null;
+        }
     }
 }
