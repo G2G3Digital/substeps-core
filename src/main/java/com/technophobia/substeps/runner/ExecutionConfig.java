@@ -422,32 +422,8 @@ public class ExecutionConfig {
                             }
                             predecessor = initClass;
                         }
-
-                        // old
-
-                        // int lastIndex = -1;
-                        // for (int i = initClasses.length; i>0; i--){
-                        //
-                        // final Class<?> initClass = initClasses[i-1];
-                        //
-                        // // is this class already in the list?
-                        // if (!initialisationClassList.contains(initClass)){
-                        // // not got this one
-                        // if (lastIndex >= 0){
-                        // initialisationClassList.add(lastIndex, initClass);
-                        // }
-                        // else {
-                        // initialisationClassList.add(initClass);
-                        // }
-                        // }
-                        // else {
-                        // lastIndex =
-                        // initialisationClassList.indexOf(initClass);
-                        // }
-                        // }
                     }
                 }
-
             }
         }
         if (initialisationClassList == null && initialisationClass != null) {
@@ -464,30 +440,4 @@ public class ExecutionConfig {
 
         return initialisationClasses;
     }
-
-    /*
-     * 
-     * 
-     * for (final Class<?> c : stepImplementationClasses){
-     * 
-     * final StepImplementations annotation =
-     * c.getAnnotation(StepImplementations.class); if (annotation != null) {
-     * final Class<?>[] initClasses =
-     * annotation.requiredInitialisationClasses();
-     * 
-     * if (initClasses != null){
-     * 
-     * int lastIndex = -1; for (int i = initClasses.length; i>0; i--){
-     * 
-     * final Class<?> initClass = initClasses[i-1];
-     * 
-     * // is this class already in the list? if
-     * (!initialisationClassList.contains(initClass)){ // not got this one if
-     * (lastIndex >= 0){ initialisationClassList.add(lastIndex, initClass); }
-     * else { initialisationClassList.add(initClass); } } else { lastIndex =
-     * initialisationClassList.indexOf(initClass); } } } }
-     * 
-     * }
-     */
-
 }
