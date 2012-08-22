@@ -8,6 +8,8 @@ Substeps Core - Release Notes
 - BUGFix: Scenarios that should be allowed to fail the build were still failing the build.
 - Introduced a BuildFailureManager to assist with critical or otherwise failures.
 - Non Critical scenarios no longer need to have the features also tagged.
+- quoted #'s are now treated as values rather than comment delimitter
+- Wiring in of initialisation classes via StepImplementations annotation
 
 
  
