@@ -1,5 +1,6 @@
 package com.technophobia.substeps.ant;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.report.DefaultExecutionReportBuilder;
 import com.technophobia.substeps.report.ExecutionReportBuilder;
 import com.technophobia.substeps.report.ReportData;
 import com.technophobia.substeps.runner.BuildFailureManager;
@@ -22,7 +24,9 @@ public class SubStepsTask extends Task {
 	
 	private final Logger log = LoggerFactory.getLogger(SubStepsTask.class);
 	private List<AntExecutionConfig> configs = new ArrayList<AntExecutionConfig>();
-	private final ExecutionReportBuilder executionReportBuilder = null;
+	private ExecutionReportBuilder executionReportBuilder = null;
+	private String outputDir;
+	private static final String REPORT_DIR_DEFAULT = ".";
 
 
 	public void execute() throws BuildException {
@@ -38,6 +42,10 @@ public class SubStepsTask extends Task {
 
 	public void addConfiguredExecutionConfig(AntExecutionConfig config) {
 		this.configs.add(config);
+	}
+	
+	public void setOutputDir(String outputDir) {
+		this.outputDir = outputDir;
 	}
 
 	private void executeInternal(final BuildFailureManager buildFailureManager,
@@ -62,9 +70,8 @@ public class SubStepsTask extends Task {
 			buildFailureManager.sortFailures(failures);
 		}
 
-		if (executionReportBuilder != null) {
-			executionReportBuilder.buildReport(data);
-		}
+		executionReportBuilder = new DefaultExecutionReportBuilder(new File(this.outputDir == null ? REPORT_DIR_DEFAULT : this.outputDir));
+		executionReportBuilder.buildReport(data);
 
 		if (buildFailureManager.testSuiteFailed()) {
 			throw new RuntimeException("Substep Execution failed:\n"
