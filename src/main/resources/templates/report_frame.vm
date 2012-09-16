@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!-- Copyright Technophobia Ltd 2012 -->
+<html lang="en">
+
+<head>
+    <title>SubSteps report</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <header>
+        <h1>SubSteps Report</h1>
+    </header>
+
+    <div id="test-summary" class="row-fluid">
+        <div class="span4">
+            <header>
+                <h2>Summary</h2>
+            </header>
+            <table class="table table-striped">
+                <tr>
+                    <td></td>
+                    <td>Number</td>
+                    <td>Run</td>
+                    <td>Passed</td>
+                    <td>Failed</td>
+                    <td>Skipped</td>
+                    <td>Success %</td>
+                </tr>
+                <tr>
+                    <td>Features</td>
+                    <td>$stats.getTotalFeatures()</td>
+                    <td>$stats.getTotalFeaturesRun()</td>
+                    <td>$stats.getTotalFeaturesPassed()</td>
+                    <td>$stats.getTotalFeaturesFailed()</td>
+                    <td>$stats.getTotalFeaturesSkipped()</td>
+                    <td>$stats.getTotalFeaturesSuccess() %</td>
+                </tr>
+
+                <tr>
+                    <td>Scenarios</td>
+                    <td>$stats.getTotalScenarios()</td>
+                    <td>$stats.getTotalScenariosRun()</td>
+                    <td>$stats.getTotalScenariosPassed()</td>
+                    <td>$stats.getTotalScenariosFailed()</td>
+                    <td>$stats.getTotalScenariosSkipped()</td>
+                    <td>$stats.getTotalScenariosSuccess() %</td>
+                </tr>
+
+                <tr>
+                    <td>Scenario steps</td>
+                    <td>$stats.getTotalScenarioSteps()</td>
+                    <td>$stats.getTotalScenarioStepsRun()</td>
+                    <td>$stats.getTotalScenarioStepsPassed()</td>
+                    <td>$stats.getTotalScenarioStepsFailed()</td>
+                    <td>$stats.getTotalScenarioStepsSkipped()</td>
+                    <td>$stats.getTotalScenarioStepsSuccess() %</td>
+                </tr>
+            </table>
+        </div>
+        <div class="span8">
+            <header>
+                <h3>Breakdown by tag</h3>
+            </header>
+            <table class="table table-striped">
+                <tr>
+                    <td>Tag</td>
+                    <td># Features</td>
+                    <td>Features Run</td>
+                    <td>Features Passed</td>
+                    <td>Features Failed</td>
+                    <td>Success %</td>
+                    <td></td>
+                    <td># Scenarios</td>
+                    <td>Scenarios Run</td>
+                    <td>Scenarios Passed</td>
+                    <td>Scenarios Failed</td>
+                    <td>Success %</td>
+                </tr>
+
+                #foreach( $statSet in $stats.sortedList )
+
+                    <tr>
+                        <td>$statSet.tag</td>
+                        <td>$statSet.featureStats.count </td>
+                        <td>$statSet.featureStats.run</td>
+                        <td>$statSet.featureStats.passed</td>
+                        <td>$statSet.featureStats.failed</td>
+                        <td>$statSet.featureStats.getSuccessPc() %</td>
+                        <td></td>
+                        <td>$statSet.scenarioStats.count </td>
+                        <td>$statSet.scenarioStats.run</td>
+                        <td>$statSet.scenarioStats.passed</td>
+                        <td>$statSet.scenarioStats.failed</td>
+                        <td>$statSet.scenarioStats.getSuccessPc() %</td>
+                    </tr>
+
+                #end
+            </table>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div id="feature-tree" class="span4">
+
+        </div>
+
+        <div id="feature-detail" class="span8">
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="js/jquery-1.8.1.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/jquery.jstree.js"></script>
+<script type="text/javascript">
+    $(function () {
+
+        jQuery.ajax({
+            url: "tree.json?callback=?",
+            type: "GET",
+            dataType: "text json"
+        })
+
+        .done(function ( data ) {
+            jQuery("#feature-tree").jstree({
+                "json_data":{
+                    "data" : data,
+                    "progressive_render":true
+                },
+                "plugins":[ "themes", "json_data" ]
+            });
+        })
+
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert( "Request failed: " + textStatus + " : [" + errorThrown + "]");
+        });
+
+
+    });
+</script>
+</body>
+
+</html>
