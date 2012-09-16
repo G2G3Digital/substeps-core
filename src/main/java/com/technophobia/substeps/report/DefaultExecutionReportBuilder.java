@@ -124,7 +124,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         try {
             writer.append("{ \"data\" : \"Feature report 2\", \"state\" : \"open\"");
 
-            List<ExecutionNode> nodeList = reportData.getNodeList();
+            List<ExecutionNode> nodeList = reportData.getRootNodes();
 
             if (!nodeList.isEmpty()) {
                 writer.append(", \"children\" : [ ");
@@ -152,11 +152,30 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     private void buildNodeJSON(final ExecutionNode node, Writer writer) throws IOException {
 
-        writer.append("{ \"data\" : \"");
+        writer.append("{ ");
 
+        /***** Data object *****/
+        writer.append("\"data\" : { ");
+
+        writer.append("\"title\" : \"");
         writer.append(getDescriptionForNode(node));
-
         writer.append("\"");
+
+        writer.append(", \"attr\" : { \"id\" : \"");
+        writer.append(Long.toString(node.getId()));
+        writer.append("\" }");
+
+        writer.append(", \"icon\" : \"");
+        writer.append(getNodeImage(node));
+        writer.append("\"");
+
+        writer.append("}");
+        /***** END: Data object *****/
+
+
+        if(node.hasError()) {
+            writer.append(", \"state\" : \"open\"");
+        }
 
         if(node.hasChildren()) {
             writer.append(", \"children\" : [");
