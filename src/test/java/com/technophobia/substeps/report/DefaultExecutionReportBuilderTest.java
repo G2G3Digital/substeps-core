@@ -132,37 +132,8 @@ public class DefaultExecutionReportBuilderTest
 		return data;
 	}
 	
-//	@Ignore("manual test to build the reports")
-//	@Test
-//	public void testReportBuilding(){
-//
-//		final DefaultExecutionReportBuilder builder = new DefaultExecutionReportBuilder();
-//
-////        final DescriptorStatus status = new DescriptorStatus();
-//        final ReportData data = getData();
-////        data.setStatus(status);
-//
-//        final ExecutionNode root = data.getNodeList().get(0);
-//
-//        final StringBuilder buf = new StringBuilder();
-//
-//		builder.buildTreeString(buf, root, data);
-//
-//		// TODO could check that this is well formed xhtml with unit or compare it to the html that's desired
-//		System.out.println("\n\n\n\n" + buf.toString() + "\n\n\n\n");
-//
-////		System.out.println(root.treeToString());
-////
-////		System.out.println("\n\n\n\n" );
-////
-////		for (final ExecutionNode flattened : data.getNodeList())
-////		{
-////
-////			System.out.println(data.getAddTreeNodeStr(flattened));
-////		}
-//	}
-
     @Test
+    @Ignore //For testing report generation
     public void testReportBuilding2() throws IOException {
 
         File testFile = new File("/home/dmoss/static_web");
