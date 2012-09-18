@@ -17,7 +17,7 @@
     </header>
 
     <div id="test-info" class="row-fluid">
-        <div id="summary" class="span5">
+        <div id="summary" class="span4 pull-right">
             <header>
                 <h2>Summary</h2>
             </header>
@@ -66,7 +66,7 @@
                 </tbody>
             </table>
         </div>
-        <div id="feature-tag-summary" class="span7 pull-right">
+        <div id="feature-tag-summary" class="span7 pull-left">
             <header>
                 <h2>Feature breakdown by tag</h2>
             </header>
@@ -96,7 +96,7 @@
                 </tbody>
             </table>
         </div>
-        <div id="scenario-tag-summary" class="span7 pull-right">
+        <div id="scenario-tag-summary" class="span7 pull-left">
             <header>
                 <h2>Scenario breakdown by tag</h2>
             </header>

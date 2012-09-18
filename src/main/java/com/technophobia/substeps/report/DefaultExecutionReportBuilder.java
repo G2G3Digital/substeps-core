@@ -154,15 +154,14 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         writer.append(getNodeImage(node));
         writer.append("\"");
 
-        if (node.hasError()) {
-            writer.append(", \"state\" : \"open\"");
-        }
-
         writer.append("}");
         /***** END: Data object *****/
 
 
         if (node.hasChildren()) {
+            if (node.hasError()) {
+                writer.append(", \"state\" : \"open\"");
+            }
             writer.append(", \"children\" : [");
             boolean first = true;
             for (ExecutionNode child : node.getChildren()) {
