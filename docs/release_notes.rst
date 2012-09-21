@@ -6,6 +6,7 @@ Substeps Core - Release Notes
 0.0.8
 -----
 - Empty Substep definitions are now excluded and no longer throw an NPE.
+- Addition of Ant task for running SubSteps
 
 0.0.7
 -----
