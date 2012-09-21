@@ -50,7 +50,8 @@ import com.technophobia.substeps.model.parameter.Converter;
  * 
  */
 public class ExecutionNodeTreeBuilder {
-    private final Logger log = LoggerFactory.getLogger(ExecutionNodeTreeBuilder.class);
+    private final Logger log = LoggerFactory
+            .getLogger(ExecutionNodeTreeBuilder.class);
 
     private final TestParameters parameters;
 
@@ -76,11 +77,13 @@ public class ExecutionNodeTreeBuilder {
      * @param notifier
      * @param ff
      */
-    private void buildExecutionNodesForFeature(final FeatureFile ff, final ExecutionNode rootNode) {
+    private void buildExecutionNodesForFeature(final FeatureFile ff,
+            final ExecutionNode rootNode) {
 
         if (parameters.isRunnable(ff)) {
 
-            final Feature feature = new Feature(ff.getName(), ff.getSourceFile().getName());
+            final Feature feature = new Feature(ff.getName(), ff
+                    .getSourceFile().getName());
 
             final ExecutionNode featureNode = new ExecutionNode();
             featureNode.setFilename(ff.getSourceFile().getName());
@@ -129,15 +132,16 @@ public class ExecutionNodeTreeBuilder {
                             scenarioNode.setOutline(true);
                             scenarioOutlineNode.setRowNumber(idx);
 
-                            buildExectionNodeForScenario(scenario, outlineParameters,
-                                    scenarioOutlineNode);
+                            buildExectionNodeForScenario(scenario,
+                                    outlineParameters, scenarioOutlineNode);
                             idx++;
                         }
                     }
 
                     else {
 
-                        buildExectionNodeForScenario(scenario, null, scenarioNode);
+                        buildExectionNodeForScenario(scenario, null,
+                                scenarioNode);
                     }
                 } catch (final Throwable t) {
 
@@ -159,27 +163,39 @@ public class ExecutionNodeTreeBuilder {
 
 
     public void buildExectionNodeForScenario(final Scenario scenario,
-            final Map<String, String> scenarioParameters, final ExecutionNode scenarioNode) {
+            final Map<String, String> scenarioParameters,
+            final ExecutionNode scenarioNode) {
         if (scenario.hasBackground()) {
             log.debug("building scenario background steps");
 
-            processListOfSteps(scenario.getBackgroundSteps(), parameters.getSyntax()
-                    .getSubStepsMap(), null, false, scenarioParameters, scenarioNode);
+            processListOfSteps(scenario.getBackgroundSteps(), parameters
+                    .getSyntax().getSubStepsMap(), null, false,
+                    scenarioParameters, scenarioNode);
         }
 
         if (scenario.getSteps() != null && !scenario.getSteps().isEmpty()) {
-            log.debug("processing scenario: [" + scenario.getDescription() + "] steps");
+            log.debug("processing scenario: [" + scenario.getDescription()
+                    + "] steps");
 
-            processListOfSteps(scenario.getSteps(), parameters.getSyntax().getSubStepsMap(), null,
-                    true, scenarioParameters, scenarioNode);
+            processListOfSteps(scenario.getSteps(), parameters.getSyntax()
+                    .getSubStepsMap(), null, true, scenarioParameters,
+                    scenarioNode);
         }
     }
 
 
     private void processListOfSteps(final List<Step> steps,
-            final PatternMap<ParentStep> subStepsMapLocal, final ParentStep parent,
-            final boolean nonBackground, final Map<String, String> parametersForSteps,
+            final PatternMap<ParentStep> subStepsMapLocal,
+            final ParentStep parent, final boolean nonBackground,
+            final Map<String, String> parametersForSteps,
             final ExecutionNode scenarioNode) {
+
+        if (steps == null || steps.isEmpty()) {
+
+            throw new SubStepConfigurationException("Scenario: "
+                    + scenarioNode.getDebugStringForThisNode()
+                    + " has no steps");
+        }
 
         for (final Step step : steps) {
 
@@ -208,13 +224,15 @@ public class ExecutionNodeTreeBuilder {
 
                 substepsParent.initialiseParamValues(step.getParameterLine());
 
-                final Map<String, String> parametersForSubSteps = substepsParent.getParamValueMap();
+                final Map<String, String> parametersForSubSteps = substepsParent
+                        .getParamValueMap();
 
                 stepNode.setLine(substepsParent.getParent().getParameterLine());
                 stepNode.setFilename(substepsParent.getSubStepFile());
 
                 final List<StepImplementation> list = parameters.getSyntax()
-                        .checkForStepImplementations(step.getKeyword(), step.getParameterLine());
+                        .checkForStepImplementations(step.getKeyword(),
+                                step.getParameterLine());
 
                 if (list != null && !list.isEmpty()) {
                     final StepImplementation problem = list.get(0);
@@ -223,19 +241,21 @@ public class ExecutionNodeTreeBuilder {
                     // step, ie a step that has substeps
                     // fail immediately or mark as parse error
 
-                    final String msg = "line: [" + step.getParameterLine() + "] in ["
-                            + step.getSource() + "] matches step implementation method: ["
+                    final String msg = "line: [" + step.getParameterLine()
+                            + "] in [" + step.getSource()
+                            + "] matches step implementation method: ["
                             + problem.getMethod().toString()
                             + "] AND matches a sub step definition: ["
-                            + substepsParent.getParent().getParameterLine() + "] in ["
-                            + substepsParent.getSubStepFile() + "]";
+                            + substepsParent.getParent().getParameterLine()
+                            + "] in [" + substepsParent.getSubStepFile() + "]";
 
                     throw new SubStepConfigurationException(msg);
 
                 }
 
-                processListOfSteps(substepsParent.getSteps(), subStepsMapLocal, substepsParent,
-                        nonBackground, parametersForSubSteps, stepNode);
+                processListOfSteps(substepsParent.getSteps(), subStepsMapLocal,
+                        substepsParent, nonBackground, parametersForSubSteps,
+                        stepNode);
 
             } else {
 
@@ -250,24 +270,27 @@ public class ExecutionNodeTreeBuilder {
      * @param step
      * @return
      */
-    private ParentStep locateSubStepsParent(final PatternMap<ParentStep> subStepsMapLocal,
-            final Step step) {
+    private ParentStep locateSubStepsParent(
+            final PatternMap<ParentStep> subStepsMapLocal, final Step step) {
         ParentStep substepsParent = subStepsMapLocal.get(step.getLine(), 0);
 
         // if we're not strict then we can look for other step defs that fit
         if (!parameters.getSyntax().isStrict() && substepsParent == null) {
             final String originalKeyword = step.getKeyword();
 
-            for (final String altKeyword : parameters.getSyntax().getNonStrictKeywordPrecedence()) {
+            for (final String altKeyword : parameters.getSyntax()
+                    .getNonStrictKeywordPrecedence()) {
                 // don't use the same keyword again
                 if (altKeyword.compareToIgnoreCase(originalKeyword) != 0) {
 
-                    final String altLine = step.getLine().replaceFirst(originalKeyword, altKeyword);
+                    final String altLine = step.getLine().replaceFirst(
+                            originalKeyword, altKeyword);
                     substepsParent = subStepsMapLocal.get(altLine, 0);
                     if (substepsParent != null) {
                         // do we need to modify the parent ??
 
-                        substepsParent = substepsParent.cloneWithAltLine(altLine);
+                        substepsParent = substepsParent
+                                .cloneWithAltLine(altLine);
 
                         break;
                     }
@@ -279,14 +302,15 @@ public class ExecutionNodeTreeBuilder {
     }
 
 
-    public void substituteStepParameters(final Map<String, String> parametersForSteps,
-            final Step step) {
+    public void substituteStepParameters(
+            final Map<String, String> parametersForSteps, final Step step) {
         // if this is an outline, need to perform token replacement at this
         // level before passing down the chain
         if (parametersForSteps != null && !parametersForSteps.isEmpty()) {
 
             // replace any tokens in this step
-            step.setParameterLine(substitutePlaceholders(step.getLine(), parametersForSteps));
+            step.setParameterLine(substitutePlaceholders(step.getLine(),
+                    parametersForSteps));
 
             final List<Map<String, String>> inlineTable = step.getInlineTable();
             if (inlineTable != null) {
@@ -300,8 +324,10 @@ public class ExecutionNodeTreeBuilder {
                     final Set<Entry<String, String>> entrySet = row.entrySet();
 
                     for (final Entry<String, String> e : entrySet) {
-                        replacedRow.put(e.getKey(),
-                                substitutePlaceholders(e.getValue(), parametersForSteps));
+                        replacedRow.put(
+                                e.getKey(),
+                                substitutePlaceholders(e.getValue(),
+                                        parametersForSteps));
                     }
                 }
 
@@ -311,13 +337,15 @@ public class ExecutionNodeTreeBuilder {
     }
 
 
-    public void executeStep(final ParentStep parent, final boolean throwException, final Step step,
+    public void executeStep(final ParentStep parent,
+            final boolean throwException, final Step step,
             final ExecutionNode stepNode) {
 
         log.debug("looking for impl for step: " + step.toString());
 
         if (parent != null && parent.getParamValueMap() != null) {
-            step.setParameterLine(substitutePlaceholders(step.getLine(), parent.getParamValueMap()));
+            step.setParameterLine(substitutePlaceholders(step.getLine(),
+                    parent.getParamValueMap()));
         }
 
         stepNode.setLine(step.getParameterLine());
@@ -345,11 +373,12 @@ public class ExecutionNodeTreeBuilder {
                 step.setParameterLine(null);
             }
         } else {
-            log.error("Unable to locate an implementation for the step: " + step.toDebugString());
+            log.error("Unable to locate an implementation for the step: "
+                    + step.toDebugString());
 
             final SubStepConfigurationException e = new SubStepConfigurationException(
-                    "Unable to locate an implementation for the step: " + step.toDebugString()
-                            + " in " + step.getSource());
+                    "Unable to locate an implementation for the step: "
+                            + step.toDebugString() + " in " + step.getSource());
 
             throw e;
 
@@ -363,19 +392,21 @@ public class ExecutionNodeTreeBuilder {
 
         // using the specified 'phrase' look for a corresponding impl
 
-        final List<StepImplementation> list = parameters.getSyntax().getStepImplementations(
-                step.getKeyword(), step.getParameterLine());
+        final List<StepImplementation> list = parameters.getSyntax()
+                .getStepImplementations(step.getKeyword(),
+                        step.getParameterLine());
 
         if (list != null && list.size() > 1) {
             log.error("found too many impls for line: " + step.getLine());
 
             for (final StepImplementation si : list) {
                 log.error("impl: regex[" + si.getValue() + "] in "
-                        + si.getImplementedIn().getSimpleName() + "." + si.getMethod().getName());
+                        + si.getImplementedIn().getSimpleName() + "."
+                        + si.getMethod().getName());
             }
 
-            throw new SubStepConfigurationException("Ambiguity resolving step to impl: "
-                    + step.toDebugString());
+            throw new SubStepConfigurationException(
+                    "Ambiguity resolving step to impl: " + step.toDebugString());
         }
 
         if (list != null && !list.isEmpty()) {
@@ -386,8 +417,9 @@ public class ExecutionNodeTreeBuilder {
     }
 
 
-    private void setMethodParameters(final StepImplementation execImpl, final String stepParameter,
-            final ParentStep parent, final List<Map<String, String>> inlineTable,
+    private void setMethodParameters(final StepImplementation execImpl,
+            final String stepParameter, final ParentStep parent,
+            final List<Map<String, String>> inlineTable,
             final ExecutionNode stepNode) throws IllegalArgumentException {
 
         final Method stepImplementationMethod = execImpl.getMethod();
@@ -405,8 +437,9 @@ public class ExecutionNodeTreeBuilder {
                 paramValueMap = parent.getParamValueMap();
             }
 
-            final Object[] methodParameters = getStepMethodArguments(stepParameter, paramValueMap,
-                    execImpl.getValue(), inlineTable, stepImplementationMethodParameterTypes,
+            final Object[] methodParameters = getStepMethodArguments(
+                    stepParameter, paramValueMap, execImpl.getValue(),
+                    inlineTable, stepImplementationMethodParameterTypes,
                     parameterConverters, stepNode);
 
             if (methodParameters.length != stepImplementationMethodParameterTypes.length) {
@@ -418,17 +451,21 @@ public class ExecutionNodeTreeBuilder {
 
 
     private Object[] getStepMethodArguments(final String stepParameter,
-            final Map<String, String> parentArguments, final String stepImplementationPattern,
-            final List<Map<String, String>> inlineTable, final Class<?>[] parameterTypes,
-            final Class<? extends Converter<?>>[] converterTypes, final ExecutionNode stepNode) {
+            final Map<String, String> parentArguments,
+            final String stepImplementationPattern,
+            final List<Map<String, String>> inlineTable,
+            final Class<?>[] parameterTypes,
+            final Class<? extends Converter<?>>[] converterTypes,
+            final ExecutionNode stepNode) {
         // does the stepParameter contain any <> which require substitution ?
         log.debug("getStepMethodArguments for: " + stepParameter);
 
-        final String substitutedStepParam = substitutePlaceholders(stepParameter, parentArguments);
+        final String substitutedStepParam = substitutePlaceholders(
+                stepParameter, parentArguments);
 
         stepNode.setLine(substitutedStepParam);
-        List<Object> argsList = Util.getArgs(stepImplementationPattern, substitutedStepParam,
-                parameterTypes, converterTypes);
+        List<Object> argsList = Util.getArgs(stepImplementationPattern,
+                substitutedStepParam, parameterTypes, converterTypes);
 
         if (inlineTable != null) {
             if (argsList == null) {
@@ -450,7 +487,8 @@ public class ExecutionNodeTreeBuilder {
     }
 
 
-    private Class<? extends Converter<?>>[] getParameterConverters(final Method method) {
+    private Class<? extends Converter<?>>[] getParameterConverters(
+            final Method method) {
 
         final Annotation[][] annotations = method.getParameterAnnotations();
         final int size = annotations.length;
@@ -475,7 +513,8 @@ public class ExecutionNodeTreeBuilder {
         String rtn;
         final String paramRegEx = ".*<([^>]*)>.*";
         final Pattern findParamPattern = Pattern.compile(paramRegEx);
-        if (parentArguments != null && findParamPattern.matcher(stepParameter).matches()) {
+        if (parentArguments != null
+                && findParamPattern.matcher(stepParameter).matches()) {
             // need to do a replacement, split on >
             rtn = stepParameter;
             final String paramRegEx2 = ".*<(.*)";
@@ -488,9 +527,11 @@ public class ExecutionNodeTreeBuilder {
                 if (matcher.find()) {
                     final String key = matcher.group(1);
                     final String val = parentArguments.get(key);
-                    log.debug("replacing: <" + key + "> with: " + val + " in string: " + rtn);
+                    log.debug("replacing: <" + key + "> with: " + val
+                            + " in string: " + rtn);
 
-                    rtn = rtn.replaceAll("<" + key + ">", Matcher.quoteReplacement(val));
+                    rtn = rtn.replaceAll("<" + key + ">",
+                            Matcher.quoteReplacement(val));
                 }
             }
         } else {
