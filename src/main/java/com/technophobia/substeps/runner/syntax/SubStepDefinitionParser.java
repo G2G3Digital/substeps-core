@@ -39,7 +39,8 @@ import com.technophobia.substeps.model.Step;
  * 
  */
 public class SubStepDefinitionParser {
-    private final Logger log = LoggerFactory.getLogger(SubStepDefinitionParser.class);
+    private final Logger log = LoggerFactory
+            .getLogger(SubStepDefinitionParser.class);
 
     private ParentStep currentParentStep;
     private File currentFile;
@@ -62,17 +63,28 @@ public class SubStepDefinitionParser {
     private void parseSubStepFile(final File substepFile) {
         currentFile = substepFile;
         try {
-            final List<String> lines = Files.readLines(substepFile, Charset.forName("UTF-8"));
+            final List<String> lines = Files.readLines(substepFile,
+                    Charset.forName("UTF-8"));
 
             for (final String line : lines) {
-                log.trace("substep line[" + substepFile.getName() + "]: " + line);
+                log.trace("substep line[" + substepFile.getName() + "]: "
+                        + line);
                 processLine(line, substepFile);
             }
 
             if (currentParentStep != null) {
-                // add the last scenario in
-                storeParentStepForPattern(currentParentStep.getParent().getPattern(), currentParentStep);
+                // add the last scenario in, but only if it has some steps
 
+                if (currentParentStep.getSteps() != null
+                        && !currentParentStep.getSteps().isEmpty()) {
+                    storeParentStepForPattern(currentParentStep.getParent()
+                            .getPattern(), currentParentStep);
+                } else {
+
+                    log.warn("Ignoring substep definition ["
+                            + currentParentStep.getParent().getLine()
+                            + "] as it has no steps");
+                }
                 // we're moving on to another file, so set this to null.
                 // TODO - pass this around rather than stash the state
                 currentParentStep = null;
@@ -88,7 +100,8 @@ public class SubStepDefinitionParser {
 
     public PatternMap<ParentStep> loadSubSteps(final File definitions) {
 
-        final List<File> substepsFiles = FileUtils.getFiles(definitions, ".substeps");
+        final List<File> substepsFiles = FileUtils.getFiles(definitions,
+                ".substeps");
 
         for (final File f : substepsFiles) {
             parseSubStepFile(f);
@@ -145,7 +158,8 @@ public class SubStepDefinitionParser {
     }
 
 
-    private void processDirective(final Directive d, final String remainder, final File source) {
+    private void processDirective(final Directive d, final String remainder,
+            final File source) {
         currentDirective = d;
 
         switch (currentDirective) {
@@ -157,13 +171,16 @@ public class SubStepDefinitionParser {
             final Step parent = new Step(remainder, true, source);
 
             if (currentParentStep != null) {
-                final String newPattern = currentParentStep.getParent().getPattern();
+                final String newPattern = currentParentStep.getParent()
+                        .getPattern();
                 // check for existing values
                 if (parentMap.containsPattern(newPattern)) {
-                    final ParentStep otherValue = parentMap.getValueForPattern(newPattern);
+                    final ParentStep otherValue = parentMap
+                            .getValueForPattern(newPattern);
 
-                    log.error("duplicate patterns detected: " + newPattern + " in : " + otherValue.getSubStepFile()
-                            + " and " + currentParentStep.getSubStepFile());
+                    log.error("duplicate patterns detected: " + newPattern
+                            + " in : " + otherValue.getSubStepFile() + " and "
+                            + currentParentStep.getSubStepFile());
 
                 }
 
@@ -178,7 +195,8 @@ public class SubStepDefinitionParser {
     }
 
 
-    private void storeParentStepForPattern(final String newPattern, final ParentStep parentStep) {
+    private void storeParentStepForPattern(final String newPattern,
+            final ParentStep parentStep) {
         try {
             parentMap.put(newPattern, parentStep);
         } catch (final DuplicatePatternException ex) {

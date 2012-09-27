@@ -3,6 +3,12 @@ Substeps Core - Release Notes
 
 - A list of changes per release 
 
+0.0.8
+-----
+- Empty Substep definitions are now excluded and no longer throw an NPE.
+- Addition of Ant task for running SubSteps
+- Scenarios without steps defined no longer throw an NPE.
+
 0.0.7
 -----
 - BUGFix: Scenarios that should be allowed to fail the build were still failing the build.
