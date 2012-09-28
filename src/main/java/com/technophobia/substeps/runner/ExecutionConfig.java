@@ -273,7 +273,7 @@ public class ExecutionConfig {
 
     public void initProperties() {
 
-        if (stepImplementationClasses == null) {
+        if (getStepImplementationClasses() == null) {
             stepImplementationClasses = getClassesFromConfig(stepImplementationClassNames);
         }
 
