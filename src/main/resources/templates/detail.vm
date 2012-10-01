@@ -1,16 +1,6 @@
-## Copyright Technophobia Ltd 2012 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!-- Copyright Technophobia Ltd 2012 -->
-<html>
-<head>
-		<link rel="StyleSheet" href="dtree.css" type="text/css" />
-	
-</head>
-<body>
-
 <p>$!node.getType() - $node.filename - Result: $node.result.result.toString()</p>
 
-File: $node.id in 
+File: $node.id in
 
 <p>Details: $node.getDebugStringForThisNode()</p>
 
@@ -25,16 +15,24 @@ $node.result.getStackTrace()
 #end
 
 
-	
-	<table width="100%">
 
-	#foreach( $child in $node.children )
-		<tr><td  class="$child.getResult().getResult() ">
-			$child.getDescription()
-		</td></tr>		
-	#end
-	
-	</table>
+<table class="table table-bordered table-condensed">
+    <tbody>
+    #foreach( $child in $node.children )
 
-</body>
-</html>
+        #set( $class = "")
+
+        #if($child.getResult().getResult() == "PASSED")
+            #set($class = 'class="success"')
+        #elseif($child.getResult().getResult() == "FAILED")
+            #set($class = 'class="error"')
+        #end
+
+        <tr $class>
+            <td>
+                $child.getDescription()
+            </td>
+        </tr>
+    #end
+    </tbody>
+</table>

@@ -18,16 +18,27 @@
  */
 package com.technophobia.substeps.report;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.Writer;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.MethodInvocationException;
@@ -37,479 +48,506 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
+import sun.net.www.protocol.file.FileURLConnection;
+
 import com.google.common.io.Files;
-import com.google.common.io.InputSupplier;
 import com.technophobia.substeps.execution.ExecutionNode;
 
 /**
  * @author ian
- * 
  */
 public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
-	private final Logger log = LoggerFactory
-			.getLogger(DefaultExecutionReportBuilder.class);
+    private final Logger log = LoggerFactory
+            .getLogger(DefaultExecutionReportBuilder.class);
 
-	private final Properties velocityProperties = new Properties();
+    private final Properties velocityProperties = new Properties();
 
-	/**
-	 * @parameter default-value = ${project.build.directory}
-	 */
-	private File outputDirectory;
+    public static final String JSON_DATA_FILENAME = "report_data.json";
+    public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.json";
 
-	public DefaultExecutionReportBuilder() {
-		velocityProperties.setProperty("resource.loader", "class");
-		velocityProperties
-				.setProperty("class.resource.loader.class",
-						"org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-	}
+    /**
+     * @parameter default-value = ${project.build.directory}
+     */
+    private File outputDirectory;
 
-	public DefaultExecutionReportBuilder(File outputDirectory) {
-		this();
-		this.outputDirectory = outputDirectory;
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.technophobia.substeps.report.ExecutionReportBuilder#buildReport(com
-	 * .technophobia.substeps.report.ReportData, java.io.File)
-	 */
-	public void buildReport(final ReportData data) {
+    public DefaultExecutionReportBuilder() {
+        velocityProperties.setProperty("resource.loader", "class");
+        velocityProperties
+                .setProperty("class.resource.loader.class",
+                        "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+    }
 
-		log.debug("Build report in: " + outputDirectory.getAbsolutePath());
 
-		final File reportDir = new File(outputDirectory + File.separator
-				+ "feature_report");
+    public DefaultExecutionReportBuilder(final File outputDirectory) {
+        this();
+        this.outputDirectory = outputDirectory;
+    }
 
-		try {
 
-			log.debug("trying to create: " + reportDir.getAbsolutePath());
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.report.ExecutionReportBuilder#buildReport(com
+     * .technophobia.substeps.report.ReportData, java.io.File)
+     */
+    public void buildReport(final ReportData data) {
 
-			if (reportDir.exists()) {
-				FileUtils.deleteDirectory(reportDir);
-			}
+        log.debug("Build report in: " + outputDirectory.getAbsolutePath());
 
-			Assert.assertTrue("failed to create directory: " + reportDir,
-					reportDir.mkdir());
+        final File reportDir = new File(outputDirectory + File.separator
+                + "feature_report");
 
-			copyStaticResources(reportDir);
+        try {
 
-			buildMainReport(data, reportDir);
+            log.debug("trying to create: " + reportDir.getAbsolutePath());
 
-			for (final ExecutionNode node : data.getNodeList()) {
+            if (reportDir.exists()) {
+                FileUtils.deleteDirectory(reportDir);
+            }
 
-				buildDetailReport(node, reportDir);
+            Assert.assertTrue("failed to create directory: " + reportDir,
+                    reportDir.mkdir());
 
-			}
+            copyStaticResources(reportDir);
 
-			final ExecutionStats stats = new ExecutionStats();
-			stats.buildStats(data);
+            buildMainReport(data, reportDir);
+            // buildDetailReports(data, reportDir);
+            buildTreeJSON(data, reportDir);
 
-			buildSummaryData(stats, reportDir);
+            buildDetailJSON(data, reportDir);
 
-		} catch (final IOException e) {
+        } catch (final IOException ex) {
+            log.error("IOException: ", ex);
+        } catch (final URISyntaxException ex) {
+            log.error("URISyntaxException: ", ex);
+        }
 
-			log.error("IOException: ", e);
-		}
+        // go through the flattened list and write out any exception stack
+        // traces
 
-		// go through the flattened list and write out any exception stack
-		// traces
+    }
 
-	}
 
-	/**
-	 * @param stats
-	 * @param reportDir
-	 */
-	private void buildSummaryData(final ExecutionStats stats,
-			final File reportDir) throws IOException {
+    /**
+     * @param data
+     * @param reportDir
+     * @throws IOException
+     */
+    private void buildDetailJSON(final ReportData data, final File reportDir)
+            throws IOException {
+        final File jsonFile = new File(reportDir, JSON_DETAIL_DATA_FILENAME);
 
-		final VelocityContext vCtx = new VelocityContext();
+        final BufferedWriter writer = Files.newWriter(jsonFile,
+                Charset.defaultCharset());
+        try {
+            buildDetailJSON(data, writer);
+        } finally {
+            writer.close();
+        }
 
-		vCtx.put("stats", stats);
+    }
 
-		final String vml = "summary.vm";
-		final String targetFilename = "summary.html";
 
-		renderAndWriteToFile(reportDir, vCtx, vml, targetFilename);
+    private void buildTreeJSON(final ReportData reportData, final File reportDir)
+            throws IOException {
+        log.debug("Building tree json file.");
 
-		// also create the summary.txt file for reading by sonar (hopefully!)
-		final VelocityContext vCtx2 = new VelocityContext();
-		vCtx2.put("stats", stats);
+        final File jsonFile = new File(reportDir, JSON_DATA_FILENAME);
 
-		renderAndWriteToFile(reportDir, vCtx2, "summary.txt.vm", "summary.txt");
+        final Writer writer = new BufferedWriter(new FileWriter(jsonFile));
 
-	}
+        final List<ExecutionNode> nodeList = reportData.getRootNodes();
 
-	/**
-	 * @param reportDir
-	 * @throws IOException
-	 */
-	private void copyStaticResources(final File reportDir) throws IOException {
-		copyStaticResource(reportDir, "report_frame.html", "");
-
-		copyStaticResource(reportDir, "dtree.css", "");
-		copyStaticResource(reportDir, "dtree.js", "");
-
-		final File imgDir = new File(reportDir + File.separator + "img");
-		Assert.assertTrue("failed to create directory: " + imgDir,
-				imgDir.mkdir());
-
-		for (final String img : STATIC_IMAGES) {
-			copyStaticResource(imgDir, img, "img/");
-		}
-
-	}
-
-	private static final String[] STATIC_IMAGES = { "base.gif", "FAILED.png",
-			"globe.gif", "join.gif", "minus.gif", "nolines_plus.gif",
-			"PASSED.png", "question.gif", "cd.gif", "folder.gif",
-			"imgfolder.gif", "line.gif", "musicfolder.gif", "NOT_RUN.png",
-			"plusbottom.gif", "trash.gif", "empty.gif", "folderopen.gif",
-			"joinbottom.gif", "minusbottom.gif", "nolines_minus.gif",
-			"page.gif", "plus.gif", "NON_CRITICAL_FAILURE.png",
-			"PARSE_FAILURE.png" };
-
-	/**
-	 * @param reportDir
-	 * @throws IOException
-	 */
-	private void copyStaticResource(final File reportDir,
-			final String resource, final String subfolder) throws IOException {
-
-		log.debug("copyStaticResource: reportDir: "
-				+ reportDir.getAbsolutePath() + " resource: " + resource
-				+ " subfolder: " + subfolder);
-
-		InputStream resourceAsStream = Thread.currentThread()
-				.getContextClassLoader()
-				.getResourceAsStream("static/" + subfolder + resource);
-
-		if (resourceAsStream == null) {
-			resourceAsStream = this.getClass().getClassLoader()
-					.getResourceAsStream("static/" + subfolder + resource);
-		}
-
-		final File newOutput = new File(reportDir, resource);
-
-		Assert.assertTrue("failed to create new file",
-				newOutput.createNewFile());
-
-		Files.copy(new FileInputSupplier(resourceAsStream), newOutput);
-	}
-
-	private static class FileInputSupplier implements
-			InputSupplier<InputStream> {
-		private final InputStream is;
-
-		public FileInputSupplier(final InputStream is) {
-			this.is = is;
-		}
-
-		public InputStream getInput() {
-			return is;
-		}
-	}
-
-	/**
-	 * @param node
-	 * @param reportDir
-	 * @throws IOException
-	 */
-	private void buildDetailReport(final ExecutionNode node,
-			final File reportDir) throws IOException {
-
-		final VelocityContext vCtx = new VelocityContext();
-
-		vCtx.put("node", node);
-
-		final String vml = "detail.vm";
-
-		renderAndWriteToFile(reportDir, vCtx, vml, node.getId()
-				+ "-details.html");
-	}
-
-	private static final String EMPTY_IMAGE = "<img src=\"img/empty.gif\" alt=\"\"/>";
-
-	private static final String EXPANDED = "img/minusbottom.gif";
-	private static final String LAST_CHILD = "img/joinbottom.gif";
-	private static final String CHILD = "img/join.gif";
-	private static final String COLLAPSED = "img/plus.gif";
-
-	/**
-	 * @param node
-	 * @return
-	 */
-	private String getTreeNodeImage(final ExecutionNode node) {
-		String img;
-		if (node.hasChildren()) {
-
-			// return + or - depending on depth
-			if (node.getDepth() >= 3) {
-				img = COLLAPSED;
-			} else {
-				img = EXPANDED;
-			}
-		} else {
-
-			// are we last ?
-			final List<ExecutionNode> siblings = node.getParent().getChildren();
-
-			if (siblings.indexOf(node) == siblings.size() - 1) {
-				img = LAST_CHILD;
-			} else {
-				img = CHILD;
-			}
-		}
-		return img;
-	}
-
-	private String getNodeImage(final ExecutionNode node) {
-		return "img/" + node.getResult().getResult() + ".png";
-	}
-
-	private void appendMainData(final StringBuilder buf,
-			final ExecutionNode node) {
-
-		final String image = getNodeImage(node);
-
-		final String treeImage = getTreeNodeImage(node);
-
-		buf.append("<a href=\"javascript: o(")
-				.append(node.getId())
-				.append(");\"><img id=\"jd")
-				.append(node.getId())
-				.append("\" src=\"")
-				.append(treeImage)
-				.append("\" alt=\"\"/></a>\n<img id=\"id")
-				.append(node.getId())
-				.append("\" src=\"")
-				.append(image)
-				.append("\" alt=\"\"/>\n<a id=\"sd")
-				.append(node.getId())
-				.append("\" class=\"node\" href=\"")
-				.append(node.getId())
-				.append("-details.html\" target=\"detailsFrame\" onclick=\"javascript: d.s(")
-				.append(node.getId()).append(");\">")
-				.append(getDescriptionForNode(node)).append("</a>");
-
-	}
-
-	private String getDescriptionForNode(final ExecutionNode node) {
-		final StringBuilder buf = new StringBuilder();
-
-		if (node.getParent() == null) {
-			// buf.append(0).append(", \"");
-
-			if (node.getLine() != null) {
-				buf.append(node.getLine());
-			} else {
-				buf.append("executionNodeRoot\"");
-			}
-		} else {
-
-			buildDescriptionString(null, node, buf);
-
-		}
-		return StringEscapeUtils.escapeHtml(buf.toString());
-	}
-
-	public static void buildDescriptionString(final String prefix,
-			final ExecutionNode node, final StringBuilder buf) {
-		if (prefix != null) {
-			buf.append(prefix);
-		}
-
-		if (node.getFeature() != null) {
-
-			buf.append(node.getFeature().getName());
-
-		} else if (node.getScenarioName() != null) {
-
-			if (node.isOutlineScenario()) {
-				buf.append("Scenario #: ");
-			} else {
-				buf.append("Scenario: ");
-			}
-			buf.append(node.getScenarioName());
-		}
-
-		if (node.getParent() != null && node.getParent().isOutlineScenario()) {
-
-			buf.append(node.getRowNumber()).append(" ")
-					.append(node.getParent().getScenarioName()).append(":");
-		}
-
-		if (node.getLine() != null) {
-			buf.append(node.getLine());
-		}
-	}
-
-	private void appendTreeNode(final StringBuilder buf,
-			final ExecutionNode node) {
-
-		buf.append("<div class=\"dTreeNode\">");
-
-		buf.append(Strings.repeat(EMPTY_IMAGE, node.getDepth()));
-
-		appendMainData(buf, node);
-
-		buf.append("</div>");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.technophobia.substeps.report.ExecutionReportBuilder#buildTreeString
-	 * (java.lang.StringBuilder,
-	 * com.technophobia.substeps.execution.ExecutionNode,
-	 * com.technophobia.substeps.report.ReportData)
-	 */
-	public void buildTreeString(final StringBuilder buf,
-			final ExecutionNode node, final ReportData data) {
-
-		String display = getDisplay(node.getDepth());
-
-		if (node.getParent() == null && node.hasChildren()) {
-			parentDivStart(node.getId() - 1, buf, display);
-		}
-
-		appendTreeNode(buf, node);
-
-		if (node.hasChildren()) {
-
-			display = getDisplay(node.getDepth() + 1);
-			parentDivStart(node.getId(), buf, display);
-
-			for (final ExecutionNode child : node.getChildren()) {
-				buf.append("<!-- child id " + child.getId() + " -->");
-
-				buildTreeString(buf, child, data);
-
-				buf.append("<!-- end child id " + child.getId() + " -->");
-			}
-
-			buf.append("</div>");
-		}
-	}
-
-	/**
-	 * @param depth
-	 * @return
-	 */
-	private String getDisplay(final int depth) {
-		String display = "block";
-		// TODO make this a parameter
-		if (depth >= 4) {
-			display = "none";
-		}
-		return display;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.technophobia.substeps.report.ExecutionReportBuilder#parentDivStart
-	 * (long, java.lang.StringBuilder, java.lang.String)
-	 */
-	public void parentDivStart(final long id, final StringBuilder buf,
-			final String display) {
-		buf.append("<div id=\"dd").append(id)
-				.append("\" class=\"clip\" style=\"display: ").append(display)
-				.append(";\">");
-	}
-
-	private void buildMainReport(final ReportData data, final File reportDir)
-			throws IOException {
-
-		final VelocityContext vCtx = new VelocityContext();
-
-		final String vml = "report2.vm";
-
-		final StringBuilder buf = new StringBuilder();
-
-		for (final ExecutionNode rootNode : data.getRootNodes()) {
-
-			buildTreeString(buf, rootNode, data);
-		}
-
-		vCtx.put("tree", buf.toString());
-
-		final String targetFilename = "tree.html";
-
-		renderAndWriteToFile(reportDir, vCtx, vml, targetFilename);
-
-	}
-
-	/**
-	 * @param reportDir
-	 * @param vCtx
-	 * @param vml
-	 * @param targetFilename
-	 * @throws IOException
-	 */
-	private void renderAndWriteToFile(final File reportDir,
-			final VelocityContext vCtx, final String vml,
-			final String targetFilename) throws IOException {
-		final String rendered = renderText(vml, vCtx);
-
-		writeToFile(reportDir, targetFilename, rendered);
-	}
-
-	/**
-	 * @param reportDir
-	 * @param targetFilename
-	 * @param rendered
-	 * @throws IOException
-	 */
-	private void writeToFile(final File reportDir, final String targetFilename,
-			final String rendered) throws IOException {
-		final File mainreport = new File(reportDir, targetFilename);
-
-		Assert.assertTrue("failed to create new file",
-				mainreport.createNewFile());
-
-		Files.write(rendered, mainreport, Charset.defaultCharset());
-	}
-
-	private String renderText(final String vm, final VelocityContext vCtx) {
-		String rendered = null;
-
-		StringWriter writer = null;
-		try {
-			final VelocityEngine velocityEngine = new VelocityEngine();
-			velocityEngine.init(velocityProperties);
-
-			writer = new StringWriter();
-
-			velocityEngine.getTemplate("templates/" + vm).merge(vCtx, writer);
-
-			rendered = writer.getBuffer().toString();
-
-		} catch (final ResourceNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (final ParseErrorException e) {
-			throw new RuntimeException(e);
-		} catch (final MethodInvocationException e) {
-			throw new RuntimeException(e);
-		} catch (final IOException e) {
-			throw new RuntimeException(e);
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			try {
-				if (writer != null) {
-					writer.close();
-				}
-			} catch (final IOException e) {
-
-				log.error("IOException: ", e);
-			}
-		}
-		return rendered;
-	}
+        boolean rootNodeInError = false;
+
+        try {
+            if (!nodeList.isEmpty()) {
+
+                for (final ExecutionNode rootNode : nodeList) {
+
+                    rootNodeInError = rootNode.hasError();
+                    if (rootNodeInError) {
+                        break;
+                    }
+                }
+
+                writer.append("var treeData =  { \"data\" : { \"title\" : \"Substeps tests\", \"attr\" : { \"id\" : \"0\" }, ");
+
+                if (rootNodeInError) {
+
+                    writer.append("\"icon\" : \"img/FAILED.png\"}, \"children\" : [");
+
+                } else {
+                    writer.append("\"icon\" : \"img/PASSED.png\"}, \"children\" : [");
+                }
+
+                boolean first = true;
+                for (final ExecutionNode rootNode : nodeList) {
+
+                    if (!first) {
+                        writer.append(",\n");
+                    }
+
+                    buildNodeJSON(rootNode, writer);
+                    first = false;
+                }
+
+                writer.append("]};\n");
+
+            }
+
+        } finally {
+            writer.close();
+        }
+
+    }
+
+
+    /**
+     * @param reportData
+     * @param writer
+     * @throws IOException
+     */
+    private void buildDetailJSON(final ReportData reportData,
+            final Writer writer) throws IOException {
+
+        writer.append("var detail = new Array();\n");
+
+        for (final ExecutionNode node : reportData.getRootNodes()) {
+            buildDetailJSON(node, writer);
+        }
+
+    }
+
+
+    /**
+     * @param node
+     * @param writer
+     */
+    private void buildDetailJSON(final ExecutionNode node, final Writer writer)
+            throws IOException {
+
+        // create some json for each node
+
+        writer.append("detail[" + node.getId() + "]=");
+
+        writer.append("{\"nodetype\": \""
+                + node.getType()
+                + "\",\"filename\": \""
+                + node.getFilename()
+                + "\",\"result\": \""
+                + node.getResult().getResult().toString()
+                + "\",\"id\": "
+                + node.getId()
+                + ",\"debugstr\": \""
+                + StringEscapeUtils.escapeHtml4(node
+                        .getDebugStringForThisNode().trim())
+                + "\",\"emessage\": \"");
+
+        String stackTrace = null;
+
+        if (node.getResult().getThrown() != null) {
+            writer.append(StringEscapeUtils.escapeHtml4(node.getResult()
+                    .getThrown().getMessage()));
+
+            final StackTraceElement[] stackTraceElements = node.getResult()
+                    .getThrown().getStackTrace();
+
+            final StringBuilder buf = new StringBuilder();
+            for (final StackTraceElement e : stackTraceElements) {
+
+                buf.append(StringEscapeUtils.escapeHtml4(e.toString().trim()))
+                        .append("<br/>");
+            }
+            stackTrace = buf.toString();
+        }
+
+        if (stackTrace == null) {
+            stackTrace = "";
+        }
+
+        writer.append("\",\"stacktrace\": \"" + stackTrace
+                + "\",\"children\": [");
+
+        boolean first = true;
+        if (node.getChildren() != null) {
+            for (final ExecutionNode child : node.getChildren()) {
+
+                if (!first) {
+                    writer.append(",");
+                }
+                writer.append("{\"result\": \"" + child.getResult().getResult()
+                        + "\",\"description\": \""
+                        + StringEscapeUtils.escapeHtml4(child.getDescription())
+                        + "\", }");
+                first = false;
+            }
+        }
+        writer.append("]};\n");
+
+        if (node.hasChildren()) {
+            for (final ExecutionNode child : node.getChildren()) {
+                buildDetailJSON(child, writer);
+            }
+        }
+
+    }
+
+
+    private void buildNodeJSON(final ExecutionNode node, final Writer writer)
+            throws IOException {
+
+        writer.append("{ ");
+
+        /***** Data object *****/
+        writer.append("\"data\" : { ");
+
+        writer.append("\"title\" : \"");
+        writer.append(getDescriptionForNode(node));
+        writer.append("\"");
+
+        writer.append(", \"attr\" : { \"id\" : \"");
+        writer.append(Long.toString(node.getId()));
+        writer.append("\" }");
+
+        writer.append(", \"icon\" : \"");
+        writer.append(getNodeImage(node));
+        writer.append("\"");
+
+        writer.append("}");
+        /***** END: Data object *****/
+
+        if (node.hasChildren()) {
+            if (node.hasError()) {
+                writer.append(", \"state\" : \"open\"");
+            }
+            writer.append(", \"children\" : [");
+            boolean first = true;
+            for (final ExecutionNode child : node.getChildren()) {
+                if (!first) {
+                    writer.append(", ");
+                }
+                buildNodeJSON(child, writer);
+                first = false;
+            }
+            writer.append("]");
+        }
+
+        writer.append("}");
+
+    }
+
+
+    private void buildDetailReports(final ReportData reporData,
+            final File reportDir) throws IOException {
+        log.debug("Building detail report partials.");
+        for (final ExecutionNode node : reporData.getRootNodes()) {
+            buildDetailReport(node, reportDir);
+        }
+    }
+
+
+    /**
+     * @param reportDir
+     * @throws IOException
+     */
+    private void copyStaticResources(final File reportDir)
+            throws URISyntaxException, IOException {
+
+        log.debug("Copying static resources to: " + reportDir.getAbsolutePath());
+
+        final URL staticURL = getClass().getResource("/static");
+        if (staticURL == null) {
+            throw new IllegalStateException(
+                    "Failed to copy static resources for report.  URL for resources is null.");
+        }
+
+        copyResourcesRecursively(staticURL, reportDir);
+    }
+
+
+    /**
+     * @param node
+     * @param reportDir
+     * @throws IOException
+     */
+    private void buildDetailReport(final ExecutionNode node,
+            final File reportDir) throws IOException {
+
+        final VelocityContext vCtx = new VelocityContext();
+
+        vCtx.put("node", node);
+
+        final String vml = "detail.vm";
+
+        renderAndWriteToFile(reportDir, vCtx, vml, node.getId()
+                + "-details.html");
+
+        if (node.hasChildren()) {
+            for (final ExecutionNode child : node.getChildren()) {
+                buildDetailReport(child, reportDir);
+            }
+        }
+    }
+
+
+    private String getNodeImage(final ExecutionNode node) {
+        return "img/" + node.getResult().getResult() + ".png";
+    }
+
+
+    private String getDescriptionForNode(final ExecutionNode node) {
+        final StringBuilder buf = new StringBuilder();
+
+        if (node.getParent() == null) {
+            if (node.getLine() != null) {
+                buf.append(node.getLine());
+            } else {
+                buf.append("executionNodeRoot");
+            }
+        } else {
+
+            buildDescriptionString(null, node, buf);
+
+        }
+        return StringEscapeUtils.escapeHtml4(buf.toString());
+    }
+
+
+    public static void buildDescriptionString(final String prefix,
+            final ExecutionNode node, final StringBuilder buf) {
+        if (prefix != null) {
+            buf.append(prefix);
+        }
+
+        if (node.getFeature() != null) {
+
+            buf.append(node.getFeature().getName());
+
+        } else if (node.getScenarioName() != null) {
+
+            if (node.isOutlineScenario()) {
+                buf.append("Scenario #: ");
+            } else {
+                buf.append("Scenario: ");
+            }
+            buf.append(node.getScenarioName());
+        }
+
+        if (node.getParent() != null && node.getParent().isOutlineScenario()) {
+
+            buf.append(node.getRowNumber()).append(" ")
+                    .append(node.getParent().getScenarioName()).append(":");
+        }
+
+        if (node.getLine() != null) {
+            buf.append(node.getLine());
+        }
+    }
+
+
+    private void buildMainReport(final ReportData data, final File reportDir)
+            throws IOException {
+
+        log.debug("Building main report file.");
+
+        final VelocityContext vCtx = new VelocityContext();
+
+        final String vml = "report_frame.vm";
+
+        final ExecutionStats stats = new ExecutionStats();
+        stats.buildStats(data);
+
+        vCtx.put("stats", stats);
+
+        renderAndWriteToFile(reportDir, vCtx, vml, "report_frame.html");
+
+    }
+
+
+    /**
+     * @param reportDir
+     * @param vCtx
+     * @param vm
+     * @param targetFilename
+     * @throws IOException
+     */
+    private void renderAndWriteToFile(final File reportDir,
+            final VelocityContext vCtx, final String vm,
+            final String targetFilename) throws IOException {
+
+        final Writer writer = new BufferedWriter(new FileWriter(new File(
+                reportDir, targetFilename)));
+
+        final VelocityEngine velocityEngine = new VelocityEngine();
+
+        try {
+
+            velocityEngine.init(velocityProperties);
+            velocityEngine.getTemplate("templates/" + vm).merge(vCtx, writer);
+
+        } catch (final ResourceNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (final ParseErrorException e) {
+            throw new RuntimeException(e);
+        } catch (final MethodInvocationException e) {
+            throw new RuntimeException(e);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (final IOException e) {
+
+                log.error("IOException: ", e);
+            }
+        }
+    }
+
+
+    public void copyResourcesRecursively(final URL originUrl,
+            final File destination) throws IOException {
+        final URLConnection urlConnection = originUrl.openConnection();
+        if (urlConnection instanceof JarURLConnection) {
+            copyJarResourcesRecursively(destination,
+                    (JarURLConnection) urlConnection);
+        } else if (urlConnection instanceof FileURLConnection) {
+            FileUtils.copyDirectory(new File(originUrl.getPath()), destination);
+        } else {
+            throw new RuntimeException("URLConnection["
+                    + urlConnection.getClass().getSimpleName()
+                    + "] is not a recognized/implemented connection type.");
+        }
+    }
+
+
+    public void copyJarResourcesRecursively(final File destination,
+            final JarURLConnection jarConnection) throws IOException {
+        final JarFile jarFile = jarConnection.getJarFile();
+        for (final JarEntry entry : Collections.list(jarFile.entries())) {
+            if (entry.getName().startsWith(jarConnection.getEntryName())) {
+                final String fileName = StringUtils.removeStart(
+                        entry.getName(), jarConnection.getEntryName());
+                if (!entry.isDirectory()) {
+                    InputStream entryInputStream = null;
+                    try {
+                        entryInputStream = jarFile.getInputStream(entry);
+                        FileUtils.copyInputStreamToFile(entryInputStream,
+                                new File(destination, fileName));
+                    } finally {
+                        IOUtils.closeQuietly(entryInputStream);
+                    }
+                } else {
+                    new File(destination, fileName).mkdirs();
+                }
+            }
+        }
+    }
+
 }
