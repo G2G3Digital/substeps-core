@@ -112,6 +112,13 @@
     
 
     <dependencies>
+    
+	    <dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>1.8.4</version>
+		</dependency>
+	            
 
         <dependency>
             <groupId>velocity</groupId>
@@ -126,9 +133,9 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
         </dependency>
         
         <dependency>
@@ -248,6 +255,7 @@
                     </includes>
                     <excludes>
                         <exclude>**/AllFeaturesJunit.java</exclude>
+                        <exclude>**/BugFeaturesJunit.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>            

@@ -7,6 +7,40 @@
     <link href="css/bootstrap.min.css" rel="stylesheet"/>
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet"/>
     <link href="css/substeps.css" rel="stylesheet"/>
+    
+<script type="text/javascript">
+//<!--
+function toggle(id){
+
+    elem = document.getElementById(id);
+    if (elem.style.display == 'none') {
+        elem.style.display = 'block';
+        
+    } else {
+        elem.style.display = 'none';
+    }
+}
+
+
+function autoResize(id){
+    var newheight;
+    var newwidth;
+
+    if(document.getElementById){
+        newheight=document.getElementById(id).contentWindow.document .body.scrollHeight;
+        newwidth=document.getElementById(id).contentWindow.document .body.scrollWidth;
+    }
+
+    document.getElementById(id).height= (newheight) + "px";
+    document.getElementById(id).width= (newwidth) + "px";
+}
+//-->
+
+
+
+</script>
+    
+    
 </head>
 
 <body data-spy="scroll" data-target=".navbar">
@@ -15,11 +49,11 @@
     <header class="row-fluid">
         <div id="navbar" class="navbar navbar-fixed-top">
             <div class="navbar-inner">
-                <a class="brand" href="#">Substeps report</a>
+                <a class="brand" href="#">&nbsp;Substeps report</a>
                 <ul class="nav">
                     <li class="active"><a href="#summary">Summary</a></li>
-                    <li><a href="#feature-tag-summary">Features by tag</a></li>
-                    <li><a href="#scenario-tag-summary">Scenario tag summary</a></li>
+                    <li><a href="#feature-tag-summary" onclick="javascript:toggle('feature-tag-summary')">Features by tag</a></li>
+                    <li><a href="#scenario-tag-summary" onclick="javascript:toggle('scenario-tag-summary')">Scenario tag summary</a></li>
                     <li><a href="#test-detail">Test detail</a></li>
                 </ul>
             </div>
@@ -76,7 +110,7 @@
         </table>
     </div>
 
-    <div id="feature-tag-summary" class="row-fluid">
+    <div id="feature-tag-summary" class="row-fluid" style="display:none;">
         <header>
             <h2>Feature breakdown by tag</h2>
         </header>
@@ -106,7 +140,8 @@
             </tbody>
         </table>
     </div>
-    <div id="scenario-tag-summary" class="row-fluid">
+    
+    <div id="scenario-tag-summary" class="row-fluid" style="display:none;">
         <header>
             <h2>Scenario breakdown by tag</h2>
         </header>
@@ -137,16 +172,18 @@
         </table>
     </div>
 
-    <div id="test-detail" class="row-fluid">
         <header>
             <h2>Test details</h2>
         </header>
-        <div id="feature-tree" class="span4">
+        
+    <div id="test-detail" class="row-fluid">
+
+        <div id="feature-tree" class="span6">
 
         </div>
 
-        <div id="feature-detail" class="span7">
-
+        <div id="feature-detail" class="span6">
+ 
         </div>
     </div>
 </div>
@@ -155,6 +192,8 @@
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
 <script type="text/javascript" src="js/jquery.jstree.js"></script>
 <script type="text/javascript" src="js/substeps.js"></script>
+
+<script type="text/javascript" src="report_data.json"></script>
 
 </body>
 

@@ -31,15 +31,20 @@ public class ExecutionNodeResult {
 
     private Throwable thrown = null;
 
+
     public String getStackTrace() {
-        final StringWriter sw = new StringWriter();
-        final PrintWriter pw = new PrintWriter(sw);
+        if (thrown != null) {
+            final StringWriter sw = new StringWriter();
+            final PrintWriter pw = new PrintWriter(sw);
 
-        thrown.printStackTrace(pw);
+            thrown.printStackTrace(pw);
 
-        pw.close();
+            pw.close();
 
-        return sw.toString();
+            return sw.toString();
+        } else {
+            return "";
+        }
     }
 
 
@@ -111,12 +116,12 @@ public class ExecutionNodeResult {
     }
 
 
-	/**
-	 * @param theException
-	 */
-	public void setSetupTearFailure(final Throwable t) {
+    /**
+     * @param theException
+     */
+    public void setSetupTearFailure(final Throwable t) {
         result = ExecutionResult.SETUP_TEARDOWN_FAILURE;
         thrown = t;
-	}
+    }
 
 }
