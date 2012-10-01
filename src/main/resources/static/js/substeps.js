@@ -47,29 +47,22 @@ $(document).ready(function() {
 	
 	$("#feature-detail").html(detailhtml);
 	
-	//	var topoffset = $("#affix-marker").position().top;
+	// get the offset of where we should be?
+	var topOffsetShouldbe = $("#detail-div-container").offset().top;
 	
-	//	var leftoffset = $("#feature-detail").offset().left;
-	//	var marginleft =  $("#feature-detail").css("margin-left");
+	//alert ('topOffsetShouldbe: ' + topOffsetShouldbe);
 	
-	//	alert ('topoffset: ' + topoffset);
+	// get the offset of the affixed div
+	var affixOffset = $("#affix-marker").offset().top;
 	
-	//alert ('parsedleft: ' + parseInt(leftoffset) );
-	//alert ('parsedmargin: ' + parseInt(marginleft));
+	// so the absolute position position, relative to the parent should be affixOffset - topOffsetShouldbe
+	var absPosition = affixOffset - topOffsetShouldbe;
 	
-	//	var newleftOffest =  parseInt(leftoffset) - parseInt(marginleft);
-	//	var newTopoffset = 0 - parseInt(topoffset);
+	$("#feature-detail").css("top", absPosition + 'px');	
 	
-	//	alert ('newTopoffset: ' + newTopoffset);
-	
-	//	$("#feature-detail").css("top", newTopoffset + 'px');
-			
-	//	var postSet = $("#feature-detail").css("left");
-	//	alert('post set' + postSet);	
-	
-	 //   $('[data-spy="affix"]').each(function () {
-	 //   	$(this).affix('refresh');
-	 //   });
+    $('[data-spy="affix"]').each(function () {
+    	$(this).affix('refresh');
+    });
 		
 		
     };

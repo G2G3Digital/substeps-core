@@ -186,11 +186,9 @@ function autoResize(id){
 
         </div>
 
-    <!--<div>
-        <div id="affix-marker" data-spy="affix" data-offset-top="200"> X</div>
-    </div> -->      
 
-        <div class="span5 ">
+        <div class="span5" id="detail-div-container">
+            <div id="affix-marker" data-spy="affix" data-offset-top="200"></div>
             <div id="feature-detail" class="detail-div"></div>
         </div>
     </div>
