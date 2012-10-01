@@ -32,3 +32,23 @@ body {
     border: 0;
 }
 
+div.stacktrace{
+	
+	overflow-x:auto;
+    overflow-y:hidden;
+}
+
+div.affix {
+    position: fixed; 
+    top: 50px; 
+    left: 107px;
+ 
+}
+
+pre.stacktracepre{
+background-color: transparent;
+    border: none;
+  white-space: pre;
+    word-break: normal;
+    word-wrap: normal;
+}

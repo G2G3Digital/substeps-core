@@ -28,6 +28,7 @@ import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import sun.net.www.protocol.file.FileURLConnection;
 
+import com.google.common.io.Files;
 import com.technophobia.substeps.execution.ExecutionNode;
 
 /**
@@ -61,6 +63,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     private final Properties velocityProperties = new Properties();
 
     public static final String JSON_DATA_FILENAME = "report_data.json";
+    public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.json";
 
     /**
      * @parameter default-value = ${project.build.directory}
@@ -110,8 +113,10 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             copyStaticResources(reportDir);
 
             buildMainReport(data, reportDir);
-//            buildDetailReports(data, reportDir);
+            // buildDetailReports(data, reportDir);
             buildTreeJSON(data, reportDir);
+
+            buildDetailJSON(data, reportDir);
 
         } catch (final IOException ex) {
             log.error("IOException: ", ex);
@@ -121,6 +126,26 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
         // go through the flattened list and write out any exception stack
         // traces
+
+    }
+
+
+    /**
+     * @param data
+     * @param reportDir
+     * @throws IOException
+     */
+    private void buildDetailJSON(final ReportData data, final File reportDir)
+            throws IOException {
+        final File jsonFile = new File(reportDir, JSON_DETAIL_DATA_FILENAME);
+
+        final BufferedWriter writer = Files.newWriter(jsonFile,
+                Charset.defaultCharset());
+        try {
+            buildDetailJSON(data, writer);
+        } finally {
+            writer.close();
+        }
 
     }
 
@@ -135,26 +160,42 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
         final List<ExecutionNode> nodeList = reportData.getRootNodes();
 
+        boolean rootNodeInError = false;
+
         try {
             if (!nodeList.isEmpty()) {
-            	
-                //final ExecutionNode rootNode = nodeList.get(0);
 
-                writer.append("var treeData =  { \"data\" : { \"title\" : \"root\", \"attr\" : { \"id\" : \"0\" }, \"icon\" : \"img/PASSED.png\"}, \"children\" : [");
+                for (final ExecutionNode rootNode : nodeList) {
+
+                    rootNodeInError = rootNode.hasError();
+                    if (rootNodeInError) {
+                        break;
+                    }
+                }
+
+                writer.append("var treeData =  { \"data\" : { \"title\" : \"Substeps tests\", \"attr\" : { \"id\" : \"0\" }, ");
+
+                if (rootNodeInError) {
+
+                    writer.append("\"icon\" : \"img/FAILED.png\"}, \"children\" : [");
+
+                } else {
+                    writer.append("\"icon\" : \"img/PASSED.png\"}, \"children\" : [");
+                }
+
                 boolean first = true;
-                for (final ExecutionNode rootNode : nodeList){
-                	
+                for (final ExecutionNode rootNode : nodeList) {
+
                     if (!first) {
                         writer.append(",\n");
                     }
 
-                	buildNodeJSON(rootNode, writer);
-                	first = false;
+                    buildNodeJSON(rootNode, writer);
+                    first = false;
                 }
 
                 writer.append("]};\n");
 
-                buildDetailJSON(reportData, writer);
             }
 
         } finally {
@@ -192,37 +233,43 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
         writer.append("detail[" + node.getId() + "]=");
 
-        
-        
-        writer.append("{\"nodetype\": \"" + node.getType()
-                + "\",\"filename\": \"" + node.getFilename()
-                + "\",\"result\": \"" + node.getResult().getResult().toString()
-                + "\",\"id\": " + node.getId() + ",\"debugstr\": \""
-                + StringEscapeUtils.escapeHtml4(node.getDebugStringForThisNode().trim())
+        writer.append("{\"nodetype\": \""
+                + node.getType()
+                + "\",\"filename\": \""
+                + node.getFilename()
+                + "\",\"result\": \""
+                + node.getResult().getResult().toString()
+                + "\",\"id\": "
+                + node.getId()
+                + ",\"debugstr\": \""
+                + StringEscapeUtils.escapeHtml4(node
+                        .getDebugStringForThisNode().trim())
                 + "\",\"emessage\": \"");
 
         String stackTrace = null;
-        
+
         if (node.getResult().getThrown() != null) {
-            writer.append(StringEscapeUtils.escapeHtml4(node.getResult().getThrown().getMessage()));
-            
-            final StackTraceElement[] stackTraceElements = node.getResult().getThrown().getStackTrace();
-            
+            writer.append(StringEscapeUtils.escapeHtml4(node.getResult()
+                    .getThrown().getMessage()));
+
+            final StackTraceElement[] stackTraceElements = node.getResult()
+                    .getThrown().getStackTrace();
+
             final StringBuilder buf = new StringBuilder();
-            for (final StackTraceElement e : stackTraceElements){
-            	
-            	buf.append(StringEscapeUtils.escapeHtml4(e.toString().trim()))
-            	.append("<br/>");
+            for (final StackTraceElement e : stackTraceElements) {
+
+                buf.append(StringEscapeUtils.escapeHtml4(e.toString().trim()))
+                        .append("<br/>");
             }
             stackTrace = buf.toString();
         }
 
-        if (stackTrace == null){
-        	stackTrace ="";
+        if (stackTrace == null) {
+            stackTrace = "";
         }
-        
-        writer.append("\",\"stacktrace\": \""
-                + stackTrace + "\",\"children\": [");
+
+        writer.append("\",\"stacktrace\": \"" + stackTrace
+                + "\",\"children\": [");
 
         boolean first = true;
         if (node.getChildren() != null) {
@@ -232,7 +279,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                     writer.append(",");
                 }
                 writer.append("{\"result\": \"" + child.getResult().getResult()
-                        + "\",\"description\": \"" + StringEscapeUtils.escapeHtml4(child.getDescription())
+                        + "\",\"description\": \""
+                        + StringEscapeUtils.escapeHtml4(child.getDescription())
                         + "\", }");
                 first = false;
             }
