@@ -51,6 +51,24 @@ import com.technophobia.substeps.steps.TestStepImplementations;
 public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
     @Test(expected = SubStepConfigurationException.class)
+    public void testScenarioWithMissingStepsCausesFailure() {
+        final String feature = "./target/test-classes/features/scenario_missing_steps.feature";
+
+        final String tag = "@scenario_with_missing_steps";
+        final String substeps = "./target/test-classes/substeps/error.substeps";
+
+        final JunitFeatureRunner runner = new JunitFeatureRunner();
+
+        final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
+        stepImplsList.add(TestStepImplementations.class);
+
+        runner.init(this.getClass(), stepImplsList, feature, tag, substeps,
+                null);
+        runner.run(null);
+    }
+
+
+    @Test(expected = SubStepConfigurationException.class)
     public void testMissingSubStepCausesFailure() {
         final String feature = "./target/test-classes/features/error.feature";
         final String tag = "@bug_missing_sub_step_impl";
@@ -61,7 +79,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
 
-        runner.init(this.getClass(), stepImplsList, feature, tag, substeps, null);
+        runner.init(this.getClass(), stepImplsList, feature, tag, substeps,
+                null);
     }
 
 
@@ -77,7 +96,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
 
-        runner.init(this.getClass(), stepImplsList, feature, tag, substeps, null);
+        runner.init(this.getClass(), stepImplsList, feature, tag, substeps,
+                null);
 
         final TestStepImplementations stepImpls = new TestStepImplementations();
         final TestStepImplementations spy = spy(stepImpls);
@@ -115,7 +135,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         stepImplsList.add(TestStepImplementations.class);
 
         runner.init(this.getClass(), stepImplsList,
-                "./target/test-classes/features/paramsToSubSteps.feature", "nested_params_bug",
+                "./target/test-classes/features/paramsToSubSteps.feature",
+                "nested_params_bug",
                 "./target/test-classes/substeps/nested_params_substeps", null);
 
         final TestStepImplementations stepImpls = new TestStepImplementations();
@@ -140,7 +161,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
 
-        runner.init(this.getClass(), stepImplsList, "./target/test-classes/features_dir", null,
+        runner.init(this.getClass(), stepImplsList,
+                "./target/test-classes/features_dir", null,
                 "./target/test-classes/substeps_dir", null);
 
         final TestStepImplementations stepImpls = new TestStepImplementations();
@@ -224,16 +246,17 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // test the number of times the notifier was called
 
-        verify(notifier, times(27)).fireTestStarted(argThat(any(Description.class)));
+        verify(notifier, times(27)).fireTestStarted(
+                argThat(any(Description.class)));
         // this is now up to 25 as more of a hierarchy with outlines
 
-        verify(notifier, times(22)).fireTestFinished(argThat(any(Description.class)));
+        verify(notifier, times(22)).fireTestFinished(
+                argThat(any(Description.class)));
         verify(notifier, times(5)).fireTestFailure(argThat(any(Failure.class)));
         // test failures now cascade upwards
 
         verify(spy, times(1)).meth4("#quoted parameter");
 
-        
         final ExecutionNode root = runner.getRootExecutionNode();
         System.out.println(root.printTree());
 
@@ -282,7 +305,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
      * @param notifier
      * @param rootDescription
      */
-    private void verifyNotifications(final RunNotifier notifier, final Description rootDescription) {
+    private void verifyNotifications(final RunNotifier notifier,
+            final Description rootDescription) {
         int idx = 1;
 
         verify(notifier, times(1)).fireTestStarted(rootDescription);
@@ -326,8 +350,9 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
         // pass in the stuff that would normally be placed in the annotation
         runner.init(this.getClass(), stepImplsList,
-                "./target/test-classes/features/stepWithInlineTable.feature", null,
-                "./target/test-classes/substeps/allFeatures.substeps", null);
+                "./target/test-classes/features/stepWithInlineTable.feature",
+                null, "./target/test-classes/substeps/allFeatures.substeps",
+                null);
 
         final MockStepImplementations stepImpls = new MockStepImplementations();
         final MockStepImplementations spy = spy(stepImpls);
@@ -356,8 +381,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
     @Test
     public void testStepImplConstruction() {
-        final StepImplementation si = StepImplementation.parse("Given it is Christmas",
-                this.getClass(), null);
+        final StepImplementation si = StepImplementation.parse(
+                "Given it is Christmas", this.getClass(), null);
 
         Assert.assertNotNull(si);
         Assert.assertThat(si.getValue(), is("Given it is Christmas"));
@@ -374,8 +399,9 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         stepImplsList.add(MockStepImplementations.class);
 
         // pass in the stuff that would normally be placed in the annotation
-        runner.init(this.getClass(), stepImplsList, "./target/test-classes/features/bugs.feature",
-                "@bug1", "./target/test-classes/substeps/bugs.substeps", null);
+        runner.init(this.getClass(), stepImplsList,
+                "./target/test-classes/features/bugs.feature", "@bug1",
+                "./target/test-classes/substeps/bugs.substeps", null);
 
         final MockStepImplementations stepImpls = new MockStepImplementations();
         final MockStepImplementations spy = spy(stepImpls);
@@ -399,7 +425,8 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
         verify(spy, never()).meth9();
         verify(spy, never()).meth6();
 
-        verify(notifier, times(6)).fireTestStarted(argThat(any(Description.class)));
+        verify(notifier, times(6)).fireTestStarted(
+                argThat(any(Description.class)));
 
         verify(notifier, times(5)).fireTestFailure(argThat(any(Failure.class)));
 
