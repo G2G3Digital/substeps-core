@@ -249,8 +249,14 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         String stackTrace = null;
 
         if (node.getResult().getThrown() != null) {
-            writer.append(StringEscapeUtils.escapeHtml4(node.getResult()
-                    .getThrown().getMessage()));
+
+            String exceptionMsg = StringEscapeUtils.escapeHtml4(node
+                    .getResult().getThrown().getMessage());
+            if (exceptionMsg.contains("\n")) {
+
+                exceptionMsg = exceptionMsg.replaceAll("\n", "<br/>");
+            }
+            writer.append(exceptionMsg);
 
             final StackTraceElement[] stackTraceElements = node.getResult()
                     .getThrown().getStackTrace();

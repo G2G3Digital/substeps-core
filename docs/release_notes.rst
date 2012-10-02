@@ -8,6 +8,7 @@ Substeps Core - Release Notes
 - Empty Substep definitions are now excluded and no longer throw an NPE.
 - Addition of Ant task for running SubSteps
 - Scenarios without steps defined no longer throw an NPE.
+- Major improvements to the HTML test report (still more to do here).
 
 0.0.7
 -----
