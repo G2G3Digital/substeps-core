@@ -426,7 +426,9 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             buildDescriptionString(null, node, buf);
 
         }
-        return StringEscapeUtils.escapeHtml4(buf.toString());
+        // return StringEscapeUtils.escapeHtml4(buf.toString());
+        // no need to escape this
+        return buf.toString();
     }
 
 
