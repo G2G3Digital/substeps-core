@@ -58,8 +58,8 @@ public class FeatureFileParser {
         final FeatureFile ff = new FeatureFile();
         ff.setSourceFile(featureFile);
 
-        Assert.assertTrue("Feature file: " + featureFile.getAbsolutePath() + " does not exist!",
-                featureFile.exists());
+        Assert.assertTrue("Feature file: " + featureFile.getAbsolutePath()
+                + " does not exist!", featureFile.exists());
 
         final String deCommented = stripCommentsAndBlankLines(featureFile);
 
@@ -77,11 +77,13 @@ public class FeatureFileParser {
 
                 return ff;
             } else {
-                log.debug("discarding feature " + featureFile.getName() + "as no scenarios");
+                log.debug("discarding feature " + featureFile.getName()
+                        + "as no scenarios");
                 return null;
             }
         } else {
-            log.debug("discarding feature " + featureFile.getName() + "as no feature description");
+            log.debug("discarding feature " + featureFile.getName()
+                    + "as no feature description");
             return null;
         }
 
@@ -164,7 +166,8 @@ public class FeatureFileParser {
                         parseExamples(line, sc);
                     } else {
                         // this is an inline table
-                        final Step last = sc.getSteps().get(sc.getSteps().size() - 1);
+                        final Step last = sc.getSteps().get(
+                                sc.getSteps().size() - 1);
                         final String[] data = line.split("\\|");
                         last.addTableData(data);
                     }
@@ -183,14 +186,16 @@ public class FeatureFileParser {
         }
     }
 
-    private static final Pattern DIRECTIVE_PATTERN = Pattern.compile("([\\w ]*):");
+    private static final Pattern DIRECTIVE_PATTERN = Pattern
+            .compile("([\\w ]*):");
 
 
     /**
      * @param fileContents
      * @param ff
      */
-    private void chunkUpFeatureFile(final String fileContents, final FeatureFile ff) {
+    private void chunkUpFeatureFile(final String fileContents,
+            final FeatureFile ff) {
         // get the feature name / description
         // split the feature file up
 
@@ -211,7 +216,8 @@ public class FeatureFileParser {
 
                     final Matcher m = DIRECTIVE_PATTERN.matcher(sc);
                     if (m.lookingAt()) {
-                        final Directive directive = directiveMap.get(m.group(1));
+                        final Directive directive = directiveMap
+                                .get(m.group(1));
 
                         switch (directive) {
                         case TAGS: {
@@ -236,13 +242,15 @@ public class FeatureFileParser {
                             break;
                         }
                         case SCENARIO: {
-                            processScenarioDirective(ff, currentTags, currentBackground, sc, false);
+                            processScenarioDirective(ff, currentTags,
+                                    currentBackground, sc, false);
 
                             currentTags = null;
                             break;
                         }
                         case SCENARIO_OUTLINE: {
-                            processScenarioDirective(ff, currentTags, currentBackground, sc, true);
+                            processScenarioDirective(ff, currentTags,
+                                    currentBackground, sc, true);
 
                             currentTags = null;
                             break;
@@ -268,8 +276,9 @@ public class FeatureFileParser {
      * @param outline
      * @return
      */
-    private void processScenarioDirective(final FeatureFile ff, final Set<String> currentTags,
-            final String currentBackground, final String sc, final boolean outline) {
+    private void processScenarioDirective(final FeatureFile ff,
+            final Set<String> currentTags, final String currentBackground,
+            final String sc, final boolean outline) {
         final Scenario scenario = new Scenario();
 
         scenario.setRawText(sc);
@@ -309,36 +318,36 @@ public class FeatureFileParser {
     public static String stripComments(final String line) {
         String trimmed = null;
         if (line != null) {
-        	
-	        final int idx = line.trim().indexOf("#");
-	        if (idx >= 0) {
-	            // is the # inside matched quotes
-	
-	            boolean doTrim = false;
-	
-	            if (idx == 0) {
-	                // first char
-	                doTrim = true;
-	            }
-	
-	            final String[] splitByQuotes = line.split("\"[^\"]*\"|'[^']*'");
-	            // this will find parts of the string not in quotes
-	            for (final String split : splitByQuotes) {
-	                if (split.indexOf("#") > 0) {
-	                    // hash exists not in a matching pair of quotes
-	                    doTrim = true;
-	                    break;
-	                }
-	            }
-	
-	            if (doTrim) {
-	                trimmed = line.substring(0, idx).trim();
-	            } else {
-	                trimmed = line.trim();
-	            }
-	        } else {
-	            trimmed = line.trim();
-	        }
+
+            final int idx = line.trim().indexOf("#");
+            if (idx >= 0) {
+                // is the # inside matched quotes
+
+                boolean doTrim = false;
+
+                if (idx == 0) {
+                    // first char
+                    doTrim = true;
+                }
+
+                final String[] splitByQuotes = line.split("\"[^\"]*\"|'[^']*'");
+                // this will find parts of the string not in quotes
+                for (final String split : splitByQuotes) {
+                    if (split.indexOf("#") > 0) {
+                        // hash exists not in a matching pair of quotes
+                        doTrim = true;
+                        break;
+                    }
+                }
+
+                if (doTrim) {
+                    trimmed = line.trim().substring(0, idx).trim();
+                } else {
+                    trimmed = line.trim();
+                }
+            } else {
+                trimmed = line.trim();
+            }
         }
         return trimmed;
     }
@@ -352,18 +361,19 @@ public class FeatureFileParser {
 
         final StringBuilder buf = new StringBuilder();
         try {
-            final List<String> lines = Files.readLines(featureFile, Charset.forName("UTF-8"));
+            final List<String> lines = Files.readLines(featureFile,
+                    Charset.forName("UTF-8"));
 
             for (final String s : lines) {
-            	
+
                 final String trimmed = stripComments(s);
-                
-//                final int idx = s.indexOf("#");
-//                if (idx >= 0) {
-//                    trimmed = s.substring(0, idx).trim();
-//                } else {
-//                    trimmed = s.trim();
-//                }
+
+                // final int idx = s.indexOf("#");
+                // if (idx >= 0) {
+                // trimmed = s.substring(0, idx).trim();
+                // } else {
+                // trimmed = s.trim();
+                // }
 
                 if (!Strings.isNullOrEmpty(trimmed)) {
                     // up for inclusion
