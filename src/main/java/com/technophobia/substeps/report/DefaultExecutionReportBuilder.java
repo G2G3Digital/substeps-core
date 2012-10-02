@@ -224,7 +224,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     private String replaceNewLines(final String s) {
 
-        if (s.contains("\n")) {
+        if (s != null && s.contains("\n")) {
 
             return s.replaceAll("\n", "<br/>");
         } else {
@@ -428,7 +428,14 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
         // return StringEscapeUtils.escapeHtml4(buf.toString());
         // no need to escape this
-        return buf.toString();
+
+        // need to replace "
+        String msg = buf.toString();
+        if (msg.contains("\"")) {
+            msg = msg.replace("\"", "\\\"");
+        }
+
+        return msg;
     }
 
 
