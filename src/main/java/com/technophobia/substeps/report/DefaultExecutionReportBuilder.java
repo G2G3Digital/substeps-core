@@ -222,6 +222,17 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     }
 
 
+    private String replaceNewLines(final String s) {
+
+        if (s.contains("\n")) {
+
+            return s.replaceAll("\n", "<br/>");
+        } else {
+            return s;
+        }
+    }
+
+
     /**
      * @param node
      * @param writer
@@ -242,21 +253,18 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 + "\",\"id\": "
                 + node.getId()
                 + ",\"debugstr\": \""
-                + StringEscapeUtils.escapeHtml4(node
-                        .getDebugStringForThisNode().trim())
+                + replaceNewLines(StringEscapeUtils.escapeHtml4(node
+                        .getDebugStringForThisNode().trim()))
                 + "\",\"emessage\": \"");
 
         String stackTrace = null;
 
         if (node.getResult().getThrown() != null) {
 
-            String exceptionMsg = StringEscapeUtils.escapeHtml4(node
+            final String exceptionMsg = StringEscapeUtils.escapeHtml4(node
                     .getResult().getThrown().getMessage());
-            if (exceptionMsg.contains("\n")) {
 
-                exceptionMsg = exceptionMsg.replaceAll("\n", "<br/>");
-            }
-            writer.append(exceptionMsg);
+            writer.append(replaceNewLines(exceptionMsg));
 
             final StackTraceElement[] stackTraceElements = node.getResult()
                     .getThrown().getStackTrace();

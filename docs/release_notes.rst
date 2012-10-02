@@ -10,6 +10,7 @@ Substeps Core - Release Notes
 - Scenarios without steps defined no longer throw an NPE.
 - Major improvements to the HTML test report (still more to do here).
 - empty table values are now substituted correctly without throwing an NPE.
+- bugs around new lines in report json
 
 0.0.7
 -----
