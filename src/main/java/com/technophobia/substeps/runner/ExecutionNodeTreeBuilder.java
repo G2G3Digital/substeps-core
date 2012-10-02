@@ -526,12 +526,17 @@ public class ExecutionNodeTreeBuilder {
                 final Matcher matcher = p2.matcher(s);
                 if (matcher.find()) {
                     final String key = matcher.group(1);
-                    final String val = parentArguments.get(key);
+                    String val = parentArguments.get(key);
                     log.debug("replacing: <" + key + "> with: " + val
                             + " in string: " + rtn);
 
+                    if (val == null) {
+                        val = " ";
+                    }
+
                     rtn = rtn.replaceAll("<" + key + ">",
                             Matcher.quoteReplacement(val));
+
                 }
             }
         } else {

@@ -9,6 +9,7 @@ Substeps Core - Release Notes
 - Addition of Ant task for running SubSteps
 - Scenarios without steps defined no longer throw an NPE.
 - Major improvements to the HTML test report (still more to do here).
+- empty table values are now substituted correctly without throwing an NPE.
 
 0.0.7
 -----
