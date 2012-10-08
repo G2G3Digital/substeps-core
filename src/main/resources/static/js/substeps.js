@@ -1,80 +1,160 @@
+// image variables used in the tree
+var imgP = "img/PASSED.png";
+var imgNR = "img/NOT_RUN.png";
+var imgPF = "img/PARSE_FAILURE.png";
+var imgF = "img/FAILED.png";
 
 
 $(document).ready(function() {
 
+	$('#feature-stats-div').html( '<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="feature-stats-table"></table>' );
+	
+	$('#feature-stats-table').dataTable( {
+			"bPaginate": true,
+			"bFilter": false,
+			"bSort": true,
+			"aaSorting": [[ 4, "desc" ]],
+			"aaData": featureStatsData,
+			
+			"fnCreatedRow": function( nRow, aData, iDisplayIndex ) {
+				/* Append the grade to the default row class name */
+				if ( aData[4] > "0" )
+				{
+					$(nRow).addClass( "error_row");
+				}
+				return nRow;
+			},
+			
+			"aoColumns": [
+				{ "sTitle": "Tag" },
+				{ "sTitle": "Features" },
+				{ "sTitle": "Features run" },
+				{ "sTitle": "Features passed" },
+				{ "sTitle": "Features failed" },
+				{ "sTitle": "Features success" }
+			],
+			"aoColumnDefs": [ 
+			     			{
+			     				"fnRender": function ( oObj ) {
+			     					return oObj.aData[5] +' %';
+			     				},
+			     				"aTargets": [ 5 ]
+			     			}
+		} );
+	
+	
+	$('#scenario-stats-div').html( '<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="scenario-stats-table"></table>' );
+	
+	$('#scenario-stats-table').dataTable( {
+			"bPaginate": true,
+			"bFilter": false,
+			"bSort": true,
+			"aaSorting": [[ 4, "desc" ]],
+			"aaData": scenarioStatsData,
+			
+			"fnCreatedRow": function( nRow, aData, iDisplayIndex ) {
+				/* Append the grade to the default row class name */
+				if ( aData[4] > "0" )
+				{
+					$(nRow).addClass( "error_row");
+				}
+				return nRow;
+			},
+			
+			"aoColumns": [
+				{ "sTitle": "Tag" },
+				{ "sTitle": "Scenarios" },
+				{ "sTitle": "Scenarios run" },
+				{ "sTitle": "Scenarios passed" },
+				{ "sTitle": "Scenarios failed" },
+				{ "sTitle": "Scenarios success" }
+			],
+			"aoColumnDefs": [ 
+			     			{
+			     				"fnRender": function ( oObj ) {
+			     					return oObj.aData[5] +' %';
+			     				},
+			     				"aTargets": [ 5 ]
+			     			}
+		} );		
+	
+	
 	var treeClick = function (event) {
         event.preventDefault();
         var id = jQuery(this).attr("id");
 
-	// get the iframe and set the inner html to be...
-	
-//	var url = "" + id + "-details.html";
-	
-	//alert("set frame to: " + url);	
-
-//	document.getElementById("feature-detail-frame").src = url;
-
-	var detailJSON = detail[id];
-	
-	var detailhtml = "<p>" + detailJSON.nodetype +
-	" - " + detailJSON.filename +" - Result: " + 
-	detailJSON.result + "</p>File: " + detailJSON.id + " in <p>Details: " +
-	detailJSON.debugstr + "</p>";
-	
-	if (detailJSON.emessage.length > 0){
-		detailhtml = detailhtml + "<p>" + detailJSON.emessage + "</p><div class=\"stacktrace\"><pre class=\"stacktracepre\">" +
-		detailJSON.stacktrace + "</div></pre>";
-	}
-
-	if (detailJSON.children.length > 0){
+		var detailJSON = detail[id];
+		if (detailJSON ) {
 		
-		detailhtml = detailhtml + '<table class="table table-bordered table-condensed"><tbody>';
+			var detailhtml = "<p>" + detailJSON.result +"</p>"
 		
-		for (i=0;i<detailJSON.children.length;i++){
-		
-			detailhtml = detailhtml + "<tr";
-			if (detailJSON.children[i].result == 'PASSED'){
-				detailhtml = detailhtml +' class="success"'
+			if (detailJSON.filename.length >0){
+				detailhtml += "<p>File: " +  detailJSON.filename + "</p>";
 			}
-			else if (detailJSON.children[i].result == 'FAILED'){
-				detailhtml = detailhtml +' class="error"'
+		 
+			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.desc + "</p>";
+		
+			if (detailJSON.method.length > 0){
+				detailhtml = detailhtml + "<p>Method: " + detailJSON.method + "</p>";
 			}
+	
+			if (detailJSON.emessage.length > 0){
+				detailhtml = detailhtml + "<p>" + detailJSON.emessage + "</p><div class=\"stacktrace\"><pre class=\"stacktracepre\">" +
+				detailJSON.stacktrace + "</div></pre>";
+			}
+
+			if (detailJSON.children.length > 0){
+				
+				detailhtml = detailhtml + '<table class="table table-bordered table-condensed"><tbody>';
+				
+				for (i=0;i<detailJSON.children.length;i++){
+				
+					detailhtml = detailhtml + "<tr";
+					if (detailJSON.children[i].result == 'PASSED'){
+						detailhtml = detailhtml +' class="success"'
+					}
+					else if (detailJSON.children[i].result == 'FAILED'){
+						detailhtml = detailhtml +' class="error"'
+					}
+					
+					detailhtml = detailhtml + "><td>" + detailJSON.children[i].description + "</td></tr>";
+				 }
+				detailhtml = detailhtml + "</tbody></table>";
+			}
+	
+			$("#feature-detail").html(detailhtml);
+	
+			// get the offset of where we should be?
+			var topOffsetShouldbe = $("#detail-div-container").offset().top;
+	
+			// get the offset of the affixed div
+			var affixOffset = $("#affix-marker").offset().top;
+	
+			// so the absolute position position, relative to the parent should be affixOffset - topOffsetShouldbe
+			var absPosition = affixOffset - topOffsetShouldbe;
 			
-			detailhtml = detailhtml + "><td>" + detailJSON.children[i].description + "</td></tr>";
-		 }
-		detailhtml = detailhtml + "</tbody></table>";
-	}
+			if (absPosition < 0){
+				absPosition = 0;
+			}
 	
-	$("#feature-detail").html(detailhtml);
+			$("#feature-detail").css("top", absPosition + 'px');	
 	
-	// get the offset of where we should be?
-	var topOffsetShouldbe = $("#detail-div-container").offset().top;
+		    $('[data-spy="affix"]').each(function () {
+		    	$(this).affix('refresh');
+		    });
 	
-	//alert ('topOffsetShouldbe: ' + topOffsetShouldbe);
-	
-	// get the offset of the affixed div
-	var affixOffset = $("#affix-marker").offset().top;
-	
-	// so the absolute position position, relative to the parent should be affixOffset - topOffsetShouldbe
-	var absPosition = affixOffset - topOffsetShouldbe;
-	
-	$("#feature-detail").css("top", absPosition + 'px');	
-	
-    $('[data-spy="affix"]').each(function () {
-    	$(this).affix('refresh');
-    });
-		
+		}
 		
     };
 
-        jQuery("#feature-tree").jstree({
-            "json_data":{
-                "data":treeData,
-                "progressive_render":true
-            },
-            "plugins":[ "themes", "json_data", "ui" ]
-        })
-        .delegate("a", "click", treeClick);
+    jQuery("#feature-tree").jstree({
+        "json_data":{
+            "data":treeData,
+            "progressive_render":true
+        },
+        "plugins":[ "themes", "json_data", "ui" ]
+    })
+    .delegate("a", "click", treeClick);
 
  });
 

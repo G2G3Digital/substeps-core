@@ -3,6 +3,10 @@ Substeps Core - Release Notes
 
 - A list of changes per release 
 
+0.0.9
+-----
+- Further improvements around the reporting, better layout, tables of failed tags, layout etc, tag data now externalised.
+
 0.0.8
 -----
 - Empty Substep definitions are now excluded and no longer throw an NPE.

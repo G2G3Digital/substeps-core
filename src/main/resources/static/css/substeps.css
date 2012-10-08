@@ -2,6 +2,10 @@ body {
     padding-top: 50px;
 }
 
+#feature-tree {
+    background: white;
+}
+
 #feature-tree li {
     min-height: 32px;
     line-height: 32px;
@@ -61,4 +65,16 @@ background-color: transparent;
     position:absolute;
     top: 0px;
     left: 0px;
+}
+
+tr.error_row{
+    background-color: #FFDDDD;
+}
+
+tr.error_row td{
+    background-color: #FFDDDD;
+}
+
+.table-striped tbody tr:nth-child(2n+1).error_row td, .table-striped tbody tr:nth-child(2n+1).error_row th {
+    background-color: #FFB7B7;
 }

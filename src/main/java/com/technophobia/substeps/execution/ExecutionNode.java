@@ -300,7 +300,8 @@ public class ExecutionNode {
 
     @Override
     public String toString() {
-        return id + ":" + getDescription() + " children size: " + getChildrenSize();
+        return id + ":" + getDescription() + " children size: "
+                + getChildrenSize();
     }
 
 
@@ -332,8 +333,8 @@ public class ExecutionNode {
             buf.append(Strings.repeat("\t", depth));
 
             if (feature != null) {
-                buf.append(feature.getName()).append(" in ").append(feature.getFilename())
-                        .append("\n");
+                buf.append(feature.getName()).append(" in ")
+                        .append(feature.getFilename()).append("\n");
             } else if (scenarioName != null) {
                 buf.append(scenarioName).append("\n");
             }
@@ -350,7 +351,7 @@ public class ExecutionNode {
                 buf.append(line);
             }
 
-            appendMethodInfo(buf);
+            appendMethodInfo("  -  ", buf);
 
         } else {
             buf.append(": Root");
@@ -368,7 +369,8 @@ public class ExecutionNode {
         if (parent != null) {
 
             buf.append(id).append(Strings.repeat("\t", depth)).append("file: ")
-                    .append(getFilename()).append(" ").append(parent.getId()).append(" ");
+                    .append(getFilename()).append(" ").append(parent.getId())
+                    .append(" ");
 
             if (feature != null) {
                 buf.append(feature.getName()).append("\n");
@@ -396,7 +398,7 @@ public class ExecutionNode {
                 printedLine = true;
             }
 
-            appendMethodInfo(buf);
+            appendMethodInfo("  -  ", buf);
 
             if (printedLine) {
                 buf.append("\n");
@@ -414,12 +416,22 @@ public class ExecutionNode {
     }
 
 
+    public void appendMethodInfo(final StringBuilder buf) {
+        appendMethodInfo(null, buf);
+    }
+
+
     /**
      * @param buf
      */
-    public void appendMethodInfo(final StringBuilder buf) {
+    public void appendMethodInfo(final String prefix, final StringBuilder buf) {
         if (targetClass != null && targetMethod != null) {
-            buf.append("  -  ").append(targetClass.getSimpleName()).append(".")
+
+            if (prefix != null) {
+                buf.append(prefix);
+            }
+
+            buf.append(targetClass.getSimpleName()).append(".")
                     .append(targetMethod.getName()).append("(");
 
             if (methodArgs != null) {
@@ -550,7 +562,8 @@ public class ExecutionNode {
      */
     public boolean isStep() {
 
-        return depth == 3 && !isOutlineScenario() || depth == 4 && parent.isOutlineScenario();
+        return depth == 3 && !isOutlineScenario() || depth == 4
+                && parent.isOutlineScenario();
     }
 
 
@@ -605,7 +618,7 @@ public class ExecutionNode {
             filename = parent.getFilename();
             return filename;
         } else {
-            filename = "unknown";
+            filename = "";
         }
 
         return filename;
@@ -634,6 +647,8 @@ public class ExecutionNode {
             rtn = "Scenario Outline";
         } else if (isStep()) {
             rtn = "Step";
+        } else if (targetMethod != null) {
+            rtn = "Step Implementation";
         }
         return rtn;
 
@@ -700,19 +715,21 @@ public class ExecutionNode {
         // TODO - how should we handle background or setup and tear down
         // failures ?
 
-        final List<ExecutionNode> failed = filterNodes(children, new Predicate<ExecutionNode>() {
+        final List<ExecutionNode> failed = filterNodes(children,
+                new Predicate<ExecutionNode>() {
 
-            public boolean apply(final ExecutionNode input) {
+                    public boolean apply(final ExecutionNode input) {
 
-                return input.hasFailed();
-            }
-        });
+                        return input.hasFailed();
+                    }
+                });
 
         return failed;
     }
 
 
-    private List<ExecutionNode> filterNodes(final List<ExecutionNode> sourceList,
+    private List<ExecutionNode> filterNodes(
+            final List<ExecutionNode> sourceList,
             final Predicate<ExecutionNode> predicate) {
 
         List<ExecutionNode> filtered = null;
@@ -741,7 +758,8 @@ public class ExecutionNode {
         // this node's state is failed, or any of this node's children's state
         // has failed
         // TODO include backgrounds
-        return result.getResult() == ExecutionResult.FAILED || getFailedChildNodes() != null;
+        return result.getResult() == ExecutionResult.FAILED
+                || getFailedChildNodes() != null;
     }
 
 

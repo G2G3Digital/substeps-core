@@ -29,8 +29,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -52,6 +56,7 @@ import sun.net.www.protocol.file.FileURLConnection;
 
 import com.google.common.io.Files;
 import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.ExecutionResult;
 
 /**
  * @author ian
@@ -65,10 +70,28 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     public static final String JSON_DATA_FILENAME = "report_data.json";
     public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.json";
 
+    private static final String JSON_STATS_DATA_FILENAME = "susbteps-stats.js";
+
+    private static Map<ExecutionResult, String> resultToImageMap = new HashMap<ExecutionResult, String>();
+
+    static {
+
+        resultToImageMap.put(ExecutionResult.PASSED, "imgP");
+        resultToImageMap.put(ExecutionResult.NOT_RUN, "imgNR");
+        resultToImageMap.put(ExecutionResult.PARSE_FAILURE, "imgPF");
+        resultToImageMap.put(ExecutionResult.FAILED, "imgF");
+
+    }
+
     /**
      * @parameter default-value = ${project.build.directory}
      */
     private File outputDirectory;
+
+    /**
+     * @parameter default-value = "Substeps report"
+     */
+    private String reportTitle;
 
 
     public DefaultExecutionReportBuilder() {
@@ -113,19 +136,113 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             copyStaticResources(reportDir);
 
             buildMainReport(data, reportDir);
-            // buildDetailReports(data, reportDir);
+
             buildTreeJSON(data, reportDir);
 
             buildDetailJSON(data, reportDir);
+
+            buildStatsJSON(data, reportDir);
 
         } catch (final IOException ex) {
             log.error("IOException: ", ex);
         } catch (final URISyntaxException ex) {
             log.error("URISyntaxException: ", ex);
         }
+    }
 
-        // go through the flattened list and write out any exception stack
-        // traces
+
+    /**
+     * @param data
+     * @param reportDir
+     */
+    private void buildStatsJSON(final ReportData data, final File reportDir)
+            throws IOException {
+
+        final File jsonFile = new File(reportDir, JSON_STATS_DATA_FILENAME);
+
+        final ExecutionStats stats = new ExecutionStats();
+        stats.buildStats(data);
+
+        final BufferedWriter writer = Files.newWriter(jsonFile,
+                Charset.defaultCharset());
+        try {
+            buildStatsJSON(stats, writer);
+        } finally {
+            writer.close();
+        }
+
+    }
+
+
+    /**
+     * @param stats
+     * @param writer
+     */
+    private void buildStatsJSON(final ExecutionStats stats,
+            final BufferedWriter writer) throws IOException {
+
+        writer.append("var featureStatsData = [");
+        boolean first = true;
+
+        for (final TestCounterSet stat : stats.getSortedList()) {
+
+            if (!first) {
+                writer.append(",\n");
+            }
+            writer.append("[\"").append(stat.getTag()).append("\",");
+            writer.append("\"")
+                    .append(Integer.toString(stat.getFeatureStats().getCount()))
+                    .append("\",");
+            writer.append("\"")
+                    .append(Integer.toString(stat.getFeatureStats().getRun()))
+                    .append("\",");
+            writer.append("\"")
+                    .append(Integer
+                            .toString(stat.getFeatureStats().getPassed()))
+                    .append("\",");
+            writer.append("\"")
+                    .append(Integer
+                            .toString(stat.getFeatureStats().getFailed()))
+                    .append("\",");
+            writer.append("\"")
+                    .append(Double.toString(stat.getFeatureStats()
+                            .getSuccessPc())).append("\"]");
+
+            first = false;
+        }
+
+        writer.append("];\n");
+
+        writer.append("var scenarioStatsData = [");
+        first = true;
+
+        for (final TestCounterSet stat : stats.getSortedList()) {
+
+            if (!first) {
+                writer.append(",\n");
+            }
+            writer.append("[\"").append(stat.getTag()).append("\",");
+            writer.append("\"")
+                    .append(Integer
+                            .toString(stat.getScenarioStats().getCount()))
+                    .append("\",");
+            writer.append("\"")
+                    .append(Integer.toString(stat.getScenarioStats().getRun()))
+                    .append("\",");
+            writer.append("\"")
+                    .append(Integer.toString(stat.getScenarioStats()
+                            .getPassed())).append("\",");
+            writer.append("\"")
+                    .append(Integer.toString(stat.getScenarioStats()
+                            .getFailed())).append("\",");
+            writer.append("\"")
+                    .append(Double.toString(stat.getScenarioStats()
+                            .getSuccessPc())).append("\"").append("]");
+
+            first = false;
+        }
+
+        writer.append("];\n");
 
     }
 
@@ -177,10 +294,10 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
                 if (rootNodeInError) {
 
-                    writer.append("\"icon\" : \"img/FAILED.png\"}, \"children\" : [");
+                    writer.append("\"icon\" : imgF, \"state\" : \"open\"}, \"children\" : [");
 
                 } else {
-                    writer.append("\"icon\" : \"img/PASSED.png\"}, \"children\" : [");
+                    writer.append("\"icon\" : imgP}, \"children\" : [");
                 }
 
                 boolean first = true;
@@ -282,8 +399,28 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             stackTrace = "";
         }
 
-        writer.append("\",\"stacktrace\": \"" + stackTrace
-                + "\",\"children\": [");
+        writer.append("\",\"stacktrace\": \"" + stackTrace + "\"");
+
+        writer.append(",\"method\": \"");
+        final StringBuilder buf = new StringBuilder();
+        node.appendMethodInfo(buf);
+
+        String methodInfo = buf.toString();
+        if (methodInfo.contains("\"")) {
+            methodInfo = methodInfo.replace("\"", "\\\"");
+        }
+
+        writer.append(replaceNewLines(methodInfo));
+
+        writer.append("\"");
+
+        writer.append(",\"desc\": \"");
+        writer.append(replaceNewLines(StringEscapeUtils.escapeHtml4(node
+                .getDescription().trim())));
+
+        writer.append("\"");
+
+        writer.append(",\"children\": [");
 
         boolean first = true;
         if (node.getChildren() != null) {
@@ -326,9 +463,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         writer.append(Long.toString(node.getId()));
         writer.append("\" }");
 
-        writer.append(", \"icon\" : \"");
+        writer.append(", \"icon\" : ");
         writer.append(getNodeImage(node));
-        writer.append("\"");
 
         writer.append("}");
         /***** END: Data object *****/
@@ -354,15 +490,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     }
 
 
-    private void buildDetailReports(final ReportData reporData,
-            final File reportDir) throws IOException {
-        log.debug("Building detail report partials.");
-        for (final ExecutionNode node : reporData.getRootNodes()) {
-            buildDetailReport(node, reportDir);
-        }
-    }
-
-
     /**
      * @param reportDir
      * @throws IOException
@@ -382,33 +509,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
     }
 
 
-    /**
-     * @param node
-     * @param reportDir
-     * @throws IOException
-     */
-    private void buildDetailReport(final ExecutionNode node,
-            final File reportDir) throws IOException {
-
-        final VelocityContext vCtx = new VelocityContext();
-
-        vCtx.put("node", node);
-
-        final String vml = "detail.vm";
-
-        renderAndWriteToFile(reportDir, vCtx, vml, node.getId()
-                + "-details.html");
-
-        if (node.hasChildren()) {
-            for (final ExecutionNode child : node.getChildren()) {
-                buildDetailReport(child, reportDir);
-            }
-        }
-    }
-
-
     private String getNodeImage(final ExecutionNode node) {
-        return "img/" + node.getResult().getResult() + ".png";
+        return resultToImageMap.get(node.getResult().getResult());
     }
 
 
@@ -483,7 +585,13 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         final ExecutionStats stats = new ExecutionStats();
         stats.buildStats(data);
 
+        final SimpleDateFormat sdf = new SimpleDateFormat(
+                "EEE dd MMM yyyy HH:mm");
+        final String dateTimeStr = sdf.format(new Date());
+
         vCtx.put("stats", stats);
+        vCtx.put("dateTimeStr", dateTimeStr);
+        vCtx.put("reportTitle", reportTitle);
 
         renderAndWriteToFile(reportDir, vCtx, vml, "report_frame.html");
 
