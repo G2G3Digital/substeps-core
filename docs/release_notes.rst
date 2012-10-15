@@ -3,7 +3,7 @@ Substeps Core - Release Notes
 
 - A list of changes per release 
 
-0.0.9
+1.0.0
 -----
 - Further improvements around the reporting, better layout, tables of failed tags, layout etc, tag data now externalised.
 
