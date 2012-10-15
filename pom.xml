@@ -3,7 +3,7 @@
 
     <groupId>com.technophobia.substeps</groupId>
     <artifactId>substeps-core</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <!-- for OSS hosting -->
@@ -360,6 +360,7 @@
         <connection>${substeps-core.scm}</connection>
         <developerConnection>${substeps-core.scm}</developerConnection>
         <url>${substeps-core.scm.url}</url>
-    </scm>
+      <tag>substeps-core-1.0.0</tag>
+  </scm>
 
 </project>
