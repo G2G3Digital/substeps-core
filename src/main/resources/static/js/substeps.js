@@ -39,7 +39,7 @@ $(document).ready(function() {
 			     					return oObj.aData[5] +' %';
 			     				},
 			     				"aTargets": [ 5 ]
-			     			}
+			     			}]
 		} );
 	
 	
@@ -75,7 +75,7 @@ $(document).ready(function() {
 			     					return oObj.aData[5] +' %';
 			     				},
 			     				"aTargets": [ 5 ]
-			     			}
+			     			}]
 		} );		
 	
 	
