@@ -3,6 +3,10 @@ Substeps Core - Release Notes
 
 - A list of changes per release 
 
+1.0.1
+-----
+- Bug in substeps.js used for the reports.
+
 1.0.0
 -----
 - Further improvements around the reporting, better layout, tables of failed tags, layout etc, tag data now externalised.
