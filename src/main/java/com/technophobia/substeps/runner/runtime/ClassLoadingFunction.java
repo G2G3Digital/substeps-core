@@ -55,6 +55,9 @@ public class ClassLoadingFunction implements Function<File, Class<?>> {
         } catch (final ClassNotFoundException ex) {
             log.warn("Could not load class " + file.getAbsolutePath() + ", returning null", ex);
             return null;
+        } catch (final NoClassDefFoundError ex) {
+            log.warn("Could not load class " + file.getAbsolutePath() + ", returning null", ex);
+            return null;
         }
     }
 
@@ -62,8 +65,8 @@ public class ClassLoadingFunction implements Function<File, Class<?>> {
     private String toClassName(final String filePath) throws ClassNotFoundException {
 
         if (filePath.startsWith(classesDirectory) && filePath.endsWith(".class")) {
-            return filePath.substring(classesDirectory.length() + 1, filePath.length() - 6)
-                    .replace(File.separatorChar, '.');
+            return filePath.substring(classesDirectory.length() + 1, filePath.length() - 6).replace(File.separatorChar,
+                    '.');
         }
         throw new ClassNotFoundException("Could not find class with path " + filePath);
     }
@@ -73,8 +76,7 @@ public class ClassLoadingFunction implements Function<File, Class<?>> {
         try {
             return new URL("file:///" + ensureDirectoryFormat(classesDirectory));
         } catch (final MalformedURLException ex) {
-            throw new IllegalStateException("Could not create url for directory "
-                    + classesDirectory, ex);
+            throw new IllegalStateException("Could not create url for directory " + classesDirectory, ex);
         }
     }
 

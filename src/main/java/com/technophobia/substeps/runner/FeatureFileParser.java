@@ -50,10 +50,15 @@ public class FeatureFileParser {
 
     private static Map<String, Directive> directiveMap = new HashMap<String, Directive>();
 
+    private List<String> currentFeatureFileLines = null;
+
 
     public FeatureFile loadFeatureFile(final File featureFile) {
         // IM - this is a little clumsy, feature file created, passed around and
         // if invalid, discarded..
+
+        // rest our current set of lines
+        this.currentFeatureFileLines = null;
 
         final FeatureFile ff = new FeatureFile();
         ff.setSourceFile(featureFile);
@@ -61,7 +66,9 @@ public class FeatureFileParser {
         Assert.assertTrue("Feature file: " + featureFile.getAbsolutePath()
                 + " does not exist!", featureFile.exists());
 
-        final String deCommented = stripCommentsAndBlankLines(featureFile);
+        this.currentFeatureFileLines = readFile(featureFile);
+
+        final String deCommented = stripCommentsAndBlankLines(this.currentFeatureFileLines);
 
         chunkUpFeatureFile(deCommented, ff);
 
@@ -71,22 +78,40 @@ public class FeatureFileParser {
 
                 for (final Scenario sc : ff.getScenarios()) {
                     buildScenario(sc, featureFile);
+
                 }
 
                 cascadeTags(ff);
 
                 return ff;
             } else {
-                log.debug("discarding feature " + featureFile.getName()
+                this.log.debug("discarding feature " + featureFile.getName()
                         + "as no scenarios");
                 return null;
             }
         } else {
-            log.debug("discarding feature " + featureFile.getName()
+            this.log.debug("discarding feature " + featureFile.getName()
                     + "as no feature description");
             return null;
         }
 
+    }
+
+
+    /**
+     * @param featureFile
+     * @return
+     */
+    private List<String> readFile(final File featureFile) {
+
+        List<String> lines = null;
+        try {
+            lines = Files.readLines(featureFile, Charset.forName("UTF-8"));
+
+        } catch (final IOException e) {
+            this.log.error(e.getMessage(), e);
+        }
+        return lines;
     }
 
 
@@ -173,7 +198,11 @@ public class FeatureFileParser {
                     }
 
                 } else {
-                    sc.addStep(new Step(line, file));
+
+                    final int lineNumber = this.currentFeatureFileLines
+                            .indexOf(line);
+
+                    sc.addStep(new Step(line, file, lineNumber));
                 }
             }
         }
@@ -181,7 +210,11 @@ public class FeatureFileParser {
         if (sc.hasBackground()) {
             final String[] bLines = sc.getBackgroundRawText().split("\n");
             for (int i = 1; i < bLines.length; i++) {
-                sc.addBackgroundStep(new Step(bLines[i], file));
+
+                final int lineNumber = this.currentFeatureFileLines
+                        .indexOf(bLines[i]);
+
+                sc.addBackgroundStep(new Step(bLines[i], file, lineNumber));
             }
         }
     }
@@ -210,7 +243,7 @@ public class FeatureFileParser {
             for (final String sc : topLevelFeatureElements) {
                 // what's the nature of this split?
                 if (!Strings.isNullOrEmpty(sc)) {
-                    log.trace("topLevelElement:\n" + sc);
+                    this.log.trace("topLevelElement:\n" + sc);
 
                     // grab the identifer
 
@@ -256,7 +289,7 @@ public class FeatureFileParser {
                             break;
                         }
                         default: {
-                            log.error("unknown directive");
+                            this.log.error("unknown directive");
                             break;
                         }
                         }
@@ -357,34 +390,19 @@ public class FeatureFileParser {
      * @param featureFile
      * @return
      */
-    private String stripCommentsAndBlankLines(final File featureFile) {
+    private String stripCommentsAndBlankLines(final List<String> lines) {
 
         final StringBuilder buf = new StringBuilder();
-        try {
-            final List<String> lines = Files.readLines(featureFile,
-                    Charset.forName("UTF-8"));
 
-            for (final String s : lines) {
+        for (final String s : lines) {
 
-                final String trimmed = stripComments(s);
+            final String trimmed = stripComments(s);
 
-                // final int idx = s.indexOf("#");
-                // if (idx >= 0) {
-                // trimmed = s.substring(0, idx).trim();
-                // } else {
-                // trimmed = s.trim();
-                // }
-
-                if (!Strings.isNullOrEmpty(trimmed)) {
-                    // up for inclusion
-                    buf.append(trimmed);
-                    buf.append("\n");
-                }
+            if (!Strings.isNullOrEmpty(trimmed)) {
+                // up for inclusion
+                buf.append(trimmed);
+                buf.append("\n");
             }
-
-        } catch (final IOException e) {
-            log.error(e.getMessage(), e);
-
         }
 
         return buf.toString();
