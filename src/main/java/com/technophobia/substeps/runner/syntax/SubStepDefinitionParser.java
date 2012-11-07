@@ -61,39 +61,41 @@ public class SubStepDefinitionParser {
 
 
     private void parseSubStepFile(final File substepFile) {
-        currentFile = substepFile;
+        this.currentFile = substepFile;
         try {
             final List<String> lines = Files.readLines(substepFile,
                     Charset.forName("UTF-8"));
 
-            for (final String line : lines) {
-                log.trace("substep line[" + substepFile.getName() + "]: "
+            for (int i = 0; i < lines.size(); i++) {
+                // for (final String line : lines) {
+                final String line = lines.get(i);
+                this.log.trace("substep line[" + substepFile.getName() + "]: "
                         + line);
-                processLine(line, substepFile);
+                processLine(line, substepFile, i + 1);
             }
 
-            if (currentParentStep != null) {
+            if (this.currentParentStep != null) {
                 // add the last scenario in, but only if it has some steps
 
-                if (currentParentStep.getSteps() != null
-                        && !currentParentStep.getSteps().isEmpty()) {
-                    storeParentStepForPattern(currentParentStep.getParent()
-                            .getPattern(), currentParentStep);
+                if (this.currentParentStep.getSteps() != null
+                        && !this.currentParentStep.getSteps().isEmpty()) {
+                    storeParentStepForPattern(this.currentParentStep
+                            .getParent().getPattern(), this.currentParentStep);
                 } else {
 
-                    log.warn("Ignoring substep definition ["
-                            + currentParentStep.getParent().getLine()
+                    this.log.warn("Ignoring substep definition ["
+                            + this.currentParentStep.getParent().getLine()
                             + "] as it has no steps");
                 }
                 // we're moving on to another file, so set this to null.
                 // TODO - pass this around rather than stash the state
-                currentParentStep = null;
+                this.currentParentStep = null;
             }
         } catch (final FileNotFoundException e) {
-            log.error(e.getMessage(), e);
+            this.log.error(e.getMessage(), e);
         } catch (final IOException e) {
 
-            log.error(e.getMessage(), e);
+            this.log.error(e.getMessage(), e);
         }
     }
 
@@ -107,11 +109,12 @@ public class SubStepDefinitionParser {
             parseSubStepFile(f);
         }
 
-        return parentMap;
+        return this.parentMap;
     }
 
 
-    private void processLine(final String line, final File source) {
+    private void processLine(final String line, final File source,
+            final int lineNumber) {
 
         if (line != null && line.length() > 0) {
             // does this line begin with any of annotation values that we're
@@ -120,14 +123,15 @@ public class SubStepDefinitionParser {
             // pick out the first word
             final String trimmed = line.trim();
             if (trimmed.length() > 0 && !trimmed.startsWith("#")) {
-                processTrimmedLine(trimmed, source);
+                processTrimmedLine(trimmed, source, lineNumber);
             }
 
         }
     }
 
 
-    private void processTrimmedLine(final String trimmed, final File source) {
+    private void processTrimmedLine(final String trimmed, final File source,
+            final int lineNumber) {
 
         // TODO convert <> into regex wildcards
 
@@ -143,51 +147,53 @@ public class SubStepDefinitionParser {
             if (d != null) {
                 final String trimmedRemainder = remainder.trim();
                 if (!Strings.isNullOrEmpty(trimmedRemainder)) {
-                    processDirective(d, remainder, source);
+                    processDirective(d, remainder, source, lineNumber);
                     lineProcessed = true;
                 }
             }
         }
 
         if (!lineProcessed) {
-            if (currentParentStep != null) {
+            if (this.currentParentStep != null) {
                 // no context at the mo
-                currentParentStep.addStep(new Step(trimmed, true, source));
+                this.currentParentStep.addStep(new Step(trimmed, true, source,
+                        lineNumber));
             }
         }
     }
 
 
     private void processDirective(final Directive d, final String remainder,
-            final File source) {
-        currentDirective = d;
+            final File source, final int lineNumber) {
+        this.currentDirective = d;
 
-        switch (currentDirective) {
+        switch (this.currentDirective) {
 
         case DEFINITION: {
 
             // build up a Step from the remainder
 
-            final Step parent = new Step(remainder, true, source);
+            final Step parent = new Step(remainder, true, source, lineNumber);
 
-            if (currentParentStep != null) {
-                final String newPattern = currentParentStep.getParent()
+            if (this.currentParentStep != null) {
+                final String newPattern = this.currentParentStep.getParent()
                         .getPattern();
                 // check for existing values
-                if (parentMap.containsPattern(newPattern)) {
-                    final ParentStep otherValue = parentMap
+                if (this.parentMap.containsPattern(newPattern)) {
+                    final ParentStep otherValue = this.parentMap
                             .getValueForPattern(newPattern);
 
-                    log.error("duplicate patterns detected: " + newPattern
+                    this.log.error("duplicate patterns detected: " + newPattern
                             + " in : " + otherValue.getSubStepFile() + " and "
-                            + currentParentStep.getSubStepFile());
+                            + this.currentParentStep.getSubStepFile());
 
                 }
 
-                storeParentStepForPattern(newPattern, currentParentStep);
+                storeParentStepForPattern(newPattern, this.currentParentStep);
             }
 
-            currentParentStep = new ParentStep(parent, currentFile.getName());
+            this.currentParentStep = new ParentStep(parent,
+                    this.currentFile.getName());
 
             break;
         }
@@ -198,12 +204,12 @@ public class SubStepDefinitionParser {
     private void storeParentStepForPattern(final String newPattern,
             final ParentStep parentStep) {
         try {
-            parentMap.put(newPattern, parentStep);
+            this.parentMap.put(newPattern, parentStep);
         } catch (final DuplicatePatternException ex) {
-            if (failOnDuplicateSubsteps) {
+            if (this.failOnDuplicateSubsteps) {
                 throw ex;
             } else {
-                log.warn("Encountered duplicate substep " + newPattern, ex);
+                this.log.warn("Encountered duplicate substep " + newPattern, ex);
             }
         }
     }
