@@ -35,7 +35,7 @@ public class ParentStep {
 
     private final Step parent;
     private List<Step> substeps;
-    private Map<String, String> paramValueMap;
+    private ExampleParameter paramValueMap;
 
     public static final ParentStepNameComparator PARENT_STEP_COMPARATOR = new ParentStepNameComparator();
 
@@ -80,41 +80,39 @@ public class ParentStep {
      */
     // only called by tests
     public void initialiseParamValues(final Step step) {
-        this.paramValueMap = new HashMap<String, String>();
+        final HashMap<String, String> map = new HashMap<String, String>();
 
-        final String[] paramValues = Util.getArgs(this.parent.getPattern(),
-                step.getLine());
+        final String[] paramValues = Util.getArgs(this.parent.getPattern(), step.getLine());
 
         if (paramValues != null) {
             for (int i = 0; i < paramValues.length; i++) {
-                this.paramValueMap.put(this.parent.getParamNames().get(i),
-                        paramValues[i]);
+                map.put(this.parent.getParamNames().get(i), paramValues[i]);
             }
         }
+        this.paramValueMap = new ExampleParameter(step.getSourceLineNumber(), map);
     }
 
 
     /**
      * @param step
      */
-    public void initialiseParamValues(final String line) {
+    public void initialiseParamValues(final int lineNumber, final String line) {
 
-        final String[] paramValues = Util.getArgs(this.parent.getPattern(),
-                line);
+        final String[] paramValues = Util.getArgs(this.parent.getPattern(), line);
 
         if (paramValues != null) {
 
-            this.paramValueMap = new HashMap<String, String>();
+            final Map<String, String> map = new HashMap<String, String>();
 
             for (int i = 0; i < paramValues.length; i++) {
-                this.paramValueMap.put(this.parent.getParamNames().get(i),
-                        paramValues[i]);
+                map.put(this.parent.getParamNames().get(i), paramValues[i]);
             }
+            this.paramValueMap = new ExampleParameter(lineNumber, map);
         }
     }
 
 
-    public Map<String, String> getParamValueMap() {
+    public ExampleParameter getParamValueMap() {
         return this.paramValueMap;
     }
 
@@ -129,8 +127,7 @@ public class ParentStep {
      * @return
      */
     public ParentStep cloneWithAltLine(final String altLine) {
-        final ParentStep clone = new ParentStep(
-                this.parent.cloneWithAlternativeLine(altLine), this.subStepFile);
+        final ParentStep clone = new ParentStep(this.parent.cloneWithAlternativeLine(altLine), this.subStepFile);
         // clone.initialiseParamValues(clone.parent.getParameterLine());
 
         clone.substeps = this.substeps;

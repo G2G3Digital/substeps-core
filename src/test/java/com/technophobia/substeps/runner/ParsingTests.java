@@ -61,7 +61,7 @@ public class ParsingTests {
 
         parentStep.initialiseParamValues(topLevelStop);
 
-        final Map<String, String> paramValueMap = parentStep.getParamValueMap();
+        final Map<String, String> paramValueMap = parentStep.getParamValueMap().getParameters();
         Assert.assertNotNull(paramValueMap);
 
         Assert.assertThat(paramValueMap.size(), is(6));
@@ -196,15 +196,14 @@ public class ParsingTests {
         final Step aParentSubStep = new Step("Given", // "the usual with a <parameter>",
                 "Given the usual with a <parameter>", true);
 
-        final Step topLevelStepReDefinedInSubSteps = new Step(
-                "Given the usual with a \"fantastically tickety boo\"");
+        final Step topLevelStepReDefinedInSubSteps = new Step("Given the usual with a \"fantastically tickety boo\"");
 
         final ParentStep parentStep = new ParentStep(aParentSubStep, "aFile");
 
         parentStep.initialiseParamValues(topLevelStepReDefinedInSubSteps);
         // String[] paramValues = Util.getArgs(this.parent.pattern, step.param);
 
-        final Map<String, String> paramValueMap = parentStep.getParamValueMap();
+        final Map<String, String> paramValueMap = parentStep.getParamValueMap().getParameters();
         Assert.assertNotNull(paramValueMap);
 
         Assert.assertThat(paramValueMap.size(), is(1));

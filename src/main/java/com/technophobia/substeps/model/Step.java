@@ -85,8 +85,7 @@ public class Step {
     }
 
 
-    public Step(final String theLine, final boolean isSubStep,
-            final File source, final int lineNumber) {
+    public Step(final String theLine, final boolean isSubStep, final File source, final int lineNumber) {
         if (theLine == null || theLine.length() == 0) {
             throw new IllegalArgumentException("null or empty args");
         }
@@ -156,8 +155,7 @@ public class Step {
      */
     public String toDebugString() {
         if (this.keyword == null) {
-            this.log.debug("annot of step is null: "
-                    + this.getClass().getSimpleName());
+            this.log.debug("annot of step is null: " + this.getClass().getSimpleName());
         }
 
         return " [" + this.line + "]";
@@ -235,16 +233,14 @@ public class Step {
      * @return the inlineTable
      */
     public List<Map<String, String>> getSubstitutedInlineTable() {
-        return this.substitutedInlineTable != null ? this.substitutedInlineTable
-                : this.inlineTable;
+        return this.substitutedInlineTable != null ? this.substitutedInlineTable : this.inlineTable;
     }
 
 
     /**
      * @param replacedInlineTable
      */
-    public void setSubstitutedInlineTable(
-            final List<Map<String, String>> substitutedInlineTable) {
+    public void setSubstitutedInlineTable(final List<Map<String, String>> substitutedInlineTable) {
         this.substitutedInlineTable = substitutedInlineTable;
     }
 
@@ -278,7 +274,7 @@ public class Step {
     /**
      * @return the sourceLineNumber
      */
-    protected int getSourceLineNumber() {
+    public int getSourceLineNumber() {
         return this.sourceLineNumber;
     }
 
