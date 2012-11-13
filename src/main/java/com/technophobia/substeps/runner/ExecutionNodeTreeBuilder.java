@@ -161,8 +161,8 @@ public class ExecutionNodeTreeBuilder {
         if (scenario.hasBackground()) {
             log.debug("building scenario background steps");
 
-            processListOfSteps(scenario.getBackgroundSteps(), parameters.getSyntax().getSubStepsMap(), null, false,
-                    scenarioParameters, scenarioNode);
+            processListOfSteps(scenario.getBackground().getSteps(), parameters.getSyntax().getSubStepsMap(), null,
+                    false, scenarioParameters, scenarioNode);
         }
 
         if (scenario.getSteps() != null && !scenario.getSteps().isEmpty()) {

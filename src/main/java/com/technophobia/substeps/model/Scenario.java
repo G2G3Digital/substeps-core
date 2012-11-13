@@ -25,8 +25,6 @@ import java.util.Map;
 
 import org.junit.runner.Description;
 
-import com.google.common.base.Strings;
-
 public class Scenario extends RootFeature {
     @Override
     public String toString() {
@@ -34,10 +32,10 @@ public class Scenario extends RootFeature {
     }
 
     private String description;
+    private Background background = null;
     private List<Step> steps;
     private List<ExampleParameter> exampleParameters = null;
     private String[] paramNames = null;
-    private List<Step> backgroundSteps;
     private boolean outline;
 
     private int scenarioLineNumber;
@@ -45,19 +43,22 @@ public class Scenario extends RootFeature {
 
     private Description junitDescription;
 
-    private String backgroundRawText;
-
 
     /**
-     * @return the backgroundRawText
+     * @return the background
      */
-    public String getBackgroundRawText() {
-        return backgroundRawText;
+    public Background getBackground() {
+        return background;
+    }
+
+
+    public void setBackground(final Background background) {
+        this.background = background;
     }
 
 
     public boolean hasBackground() {
-        return !Strings.isNullOrEmpty(backgroundRawText);
+        return background != null;
     }
 
 
@@ -98,11 +99,6 @@ public class Scenario extends RootFeature {
     }
 
 
-    public List<Step> getBackgroundSteps() {
-        return backgroundSteps;
-    }
-
-
     public void setOutline(final boolean outline) {
         this.outline = outline;
     }
@@ -125,19 +121,6 @@ public class Scenario extends RootFeature {
 
     public void setExampleKeysLineNumber(final int exampleKeysLineNumber) {
         this.exampleKeysLineNumber = exampleKeysLineNumber;
-    }
-
-
-    /**
-     * @param background
-     */
-    public void addBackgroundStep(final Step background) {
-        if (background != null) {
-            if (backgroundSteps == null) {
-                backgroundSteps = new ArrayList<Step>();
-            }
-            backgroundSteps.add(background);
-        }
     }
 
 
@@ -181,13 +164,4 @@ public class Scenario extends RootFeature {
     public boolean isOutline() {
         return outline;
     }
-
-
-    /**
-     * @param currentBackground
-     */
-    public void setBackgroundRawText(final String backgroundRawText) {
-        this.backgroundRawText = backgroundRawText;
-    }
-
 }
