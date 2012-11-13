@@ -55,7 +55,7 @@ public class ParsingTests {
         final String parentDefinition = "Given two postcodes <s_outer_pc> <s_inner_pc>, <from_street>, <e_outer_pc> <e_inner_pc>, <to_street>";
 
         final Step theParentStep = new Step(parentDefinition, true);
-        final ParentStep parentStep = new ParentStep(theParentStep, "aFile");
+        final ParentStep parentStep = new ParentStep(theParentStep);
 
         final Step topLevelStop = new Step(topLevelStepFeature);
 
@@ -198,7 +198,7 @@ public class ParsingTests {
 
         final Step topLevelStepReDefinedInSubSteps = new Step("Given the usual with a \"fantastically tickety boo\"");
 
-        final ParentStep parentStep = new ParentStep(aParentSubStep, "aFile");
+        final ParentStep parentStep = new ParentStep(aParentSubStep);
 
         parentStep.initialiseParamValues(topLevelStepReDefinedInSubSteps);
         // String[] paramValues = Util.getArgs(this.parent.pattern, step.param);

@@ -84,7 +84,9 @@ public class ExecutionNodeTreeBuilder {
             final Feature feature = new Feature(ff.getName(), ff.getSourceFile().getName());
 
             final ExecutionNode featureNode = new ExecutionNode();
-            featureNode.setFilename(ff.getSourceFile().getName());
+            featureNode.setFileUri(ff.getSourceFile().getAbsolutePath());
+            // The start of the file seems an appropriate place. 
+            featureNode.setLineNumber(0);
             rootNode.addChild(featureNode);
 
             featureNode.setFeature(feature);
@@ -214,8 +216,9 @@ public class ExecutionNodeTreeBuilder {
                 final ExampleParameter parametersForSubSteps = substepsParent.getParamValueMap();
 
                 stepNode.setLine(substepsParent.getParent().getParameterLine());
-                stepNode.setFilename(substepsParent.getSubStepFile());
-
+                stepNode.setFileUri(substepsParent.getSubStepFileUri()); 
+                stepNode.setLineNumber(substepsParent.getSourceLineNumber());
+                		
                 final List<StepImplementation> list = parameters.getSyntax().checkForStepImplementations(
                         step.getKeyword(), step.getParameterLine());
 
@@ -327,6 +330,8 @@ public class ExecutionNodeTreeBuilder {
 
             stepNode.setTargetClass(execImpl.getImplementedIn());
             stepNode.setTargetMethod(execImpl.getMethod());
+            stepNode.setFileUri(step.getSource().getAbsolutePath());
+            stepNode.setLineNumber(step.getSourceLineNumber());
 
             try {
                 setMethodParameters(execImpl, step.getParameterLine(), parent, step.getSubstitutedInlineTable(),

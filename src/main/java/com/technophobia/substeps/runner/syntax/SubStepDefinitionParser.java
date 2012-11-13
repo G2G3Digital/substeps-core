@@ -42,7 +42,6 @@ public class SubStepDefinitionParser {
     private final Logger log = LoggerFactory.getLogger(SubStepDefinitionParser.class);
 
     private ParentStep currentParentStep;
-    private File currentFile;
 
     private final PatternMap<ParentStep> parentMap = new PatternMap<ParentStep>();
 
@@ -60,7 +59,6 @@ public class SubStepDefinitionParser {
 
 
     private void parseSubStepFile(final File substepFile) {
-        this.currentFile = substepFile;
         try {
             final List<String> lines = Files.readLines(substepFile, Charset.forName("UTF-8"));
 
@@ -178,7 +176,7 @@ public class SubStepDefinitionParser {
                 storeParentStepForPattern(newPattern, this.currentParentStep);
             }
 
-            this.currentParentStep = new ParentStep(parent, this.currentFile.getName());
+            this.currentParentStep = new ParentStep(parent);
 
             break;
         }
