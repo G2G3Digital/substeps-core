@@ -47,6 +47,9 @@ public class Scenario extends RootFeature {
 
     private String backgroundRawText;
 
+    private int sourceStartOffset = -1;
+    private int sourceStartLineNumber = -1;
+	private int sourceEndOffset = -1;
 
     /**
      * @return the backgroundRawText
@@ -189,5 +192,53 @@ public class Scenario extends RootFeature {
     public void setBackgroundRawText(final String backgroundRawText) {
         this.backgroundRawText = backgroundRawText;
     }
+
+
+	/**
+	 * @return the sourceStartOffset
+	 */
+	public int getSourceStartOffset() {
+		return sourceStartOffset;
+	}
+
+
+	/**
+	 * @param sourceStartOffset the sourceStartOffset to set
+	 */
+	public void setSourceStartOffset(final int sourceStartOffset) {
+		this.sourceStartOffset = sourceStartOffset;
+	}
+
+
+	/**
+	 * @return the sourceStartLineNumber
+	 */
+	public int getSourceStartLineNumber() {
+		return sourceStartLineNumber;
+	}
+
+
+	/**
+	 * @param sourceStartLineNumber the sourceStartLineNumber to set
+	 */
+	public void setSourceStartLineNumber(final int sourceStartLineNumber) {
+		this.sourceStartLineNumber = sourceStartLineNumber;
+	}
+
+
+	/**
+	 * @param end
+	 */
+	public void setSourceEndOffset(final int end) {
+		this.sourceEndOffset = end;
+	}
+
+
+	/**
+	 * @return the sourceEndOffset
+	 */
+	public int getSourceEndOffset() {
+		return sourceEndOffset;
+	}
 
 }
