@@ -32,14 +32,12 @@ public class SubstepDefinitionParserTest {
     @Test
     public void testEmptySubstepDefinitionsAreNotLoaded() {
 
-        final SubStepDefinitionParser parser = new SubStepDefinitionParser();
+        final SubStepDefinitionParser parser = new SubStepDefinitionParser(new DefaultSyntaxErrorReporter());
 
-        final PatternMap<ParentStep> loadedSubSteps = parser
-                .loadSubSteps(new File(
-                        "./target/test-classes/substeps/error.substeps"));
+        final PatternMap<ParentStep> loadedSubSteps = parser.loadSubSteps(new File(
+                "./target/test-classes/substeps/error.substeps"));
 
-        Assert.assertFalse(loadedSubSteps
-                .containsPattern("An empty substep definition"));
+        Assert.assertFalse(loadedSubSteps.containsPattern("An empty substep definition"));
     }
 
 }
