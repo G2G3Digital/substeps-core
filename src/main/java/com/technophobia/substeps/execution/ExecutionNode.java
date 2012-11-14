@@ -18,6 +18,7 @@
  */
 package com.technophobia.substeps.execution;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,9 +36,11 @@ import com.google.common.base.Strings;
  * @author ian
  * 
  */
-public class ExecutionNode {
+public class ExecutionNode implements Serializable{
 
-    private static AtomicLong counter = new AtomicLong(1);
+	private static final long serialVersionUID = 4981517213059529046L;
+
+	private static transient AtomicLong counter = new AtomicLong(1);
 
     private final long id; // for uniqueness
 
@@ -56,9 +59,11 @@ public class ExecutionNode {
 
     private ExecutionNode parent = null;
 
-    private Class<?> targetClass = null;
-    private Method targetMethod = null;
-    private Object[] methodArgs = null;
+    // TODO - do we need to serialize this info - because we can't serialize the method or potentially the methodargs!
+
+    private transient Class<?> targetClass = null;
+    private transient Method targetMethod = null;
+    private transient Object[] methodArgs = null;
 
     private String line;
     private boolean background = false;
@@ -69,6 +74,8 @@ public class ExecutionNode {
 
     private Set<String> tags; // used for analysis
 
+    // TODO - this needs to be set
+    private int sourceLineNumber;
 
     public ExecutionNode() {
         id = counter.getAndIncrement();

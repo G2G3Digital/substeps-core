@@ -18,6 +18,7 @@
  */
 package com.technophobia.substeps.runner;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,9 +34,14 @@ import com.technophobia.substeps.model.SubSteps.StepImplementations;
 /**
  * @author ian
  */
-public class ExecutionConfig {
+public class ExecutionConfig implements Serializable{
 
-    private final Logger log = LoggerFactory.getLogger(ExecutionConfig.class);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -6096151962497826502L;
+
+	private transient final Logger log = LoggerFactory.getLogger(ExecutionConfig.class);
 
     /**
      * 
@@ -279,7 +285,11 @@ public class ExecutionConfig {
 
         if (systemProperties != null) {
 
-            log.debug("Configuring system properties ["
+        	// TODO - don't want to serialise the logger - read resolve ?
+        	
+            //log.debug
+        	System.out.println
+            ("Configuring system properties ["
                     + systemProperties.size() + "] for execution");
             final Properties existing = System.getProperties();
             systemProperties.putAll(existing);
@@ -288,7 +298,8 @@ public class ExecutionConfig {
 
         determineInitialisationClasses();
 
-        log.debug(printParameters());
+//        log.debug
+        System.out.println(printParameters());
     }
 
 

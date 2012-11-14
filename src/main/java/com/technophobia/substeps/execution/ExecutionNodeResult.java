@@ -20,14 +20,18 @@
 package com.technophobia.substeps.execution;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 
 /**
  * @author ian
  * 
  */
-public class ExecutionNodeResult {
-    private ExecutionResult result = ExecutionResult.NOT_RUN;
+public class ExecutionNodeResult implements Serializable{
+
+	private static final long serialVersionUID = -1444083371334604179L;
+
+	private ExecutionResult result = ExecutionResult.NOT_RUN;
 
     private Throwable thrown = null;
 
