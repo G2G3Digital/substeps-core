@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -193,6 +194,10 @@ public class SubStepDefinitionParser {
             } else {
                 this.log.warn("Encountered duplicate substep " + newPattern, ex);
             }
+        } catch (final PatternSyntaxException ex) {
+            this.log.warn("Encountered PatternSyntaxException trying to add " + newPattern + " for step "
+                    + parentStep.getParent().getLine() + " on line " + parentStep.getSourceLineNumber() + " of file "
+                    + parentStep.getSubStepFile(), ex);
         }
     }
 
