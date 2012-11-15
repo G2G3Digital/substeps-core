@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
+import com.technophobia.substeps.model.Background;
 import com.technophobia.substeps.model.FeatureFile;
 import com.technophobia.substeps.model.Scenario;
 import com.technophobia.substeps.model.Step;
@@ -304,16 +305,6 @@ public class FeatureFileParser {
                 }
             }
         }
-
-        if (sc.hasBackground()) {
-            final String[] bLines = sc.getBackgroundRawText().split("\n");
-            for (int i = 1; i < bLines.length; i++) {
-
-                final int lineNumber = this.currentFeatureFileLines.indexOf(bLines[i]);
-
-                sc.addBackgroundStep(new Step(bLines[i], file, lineNumber));
-            }
-        }
     }
 
     private static final Pattern DIRECTIVE_PATTERN = Pattern.compile("([\\w ]*):");
@@ -428,9 +419,20 @@ public class FeatureFileParser {
         ff.addScenario(scenario);
 
         if (currentBackground != null) {
-            scenario.setBackgroundRawText(currentBackground);
+            scenario.setBackground(new Background(backgroundLineNumber(), currentBackground, ff.getSourceFile()));
 
         }
+    }
+
+
+    private int backgroundLineNumber() {
+        for (int i = 0; i < currentFeatureFileLines.size(); i++) {
+            if (currentFeatureFileLines.get(i).startsWith("Background:")) {
+                return i;
+            }
+
+        }
+        return 0;
     }
 
 
