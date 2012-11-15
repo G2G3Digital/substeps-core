@@ -21,7 +21,6 @@ package com.technophobia.substeps.runner;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +34,7 @@ import junit.framework.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
 import com.google.common.io.Files;
 import com.technophobia.substeps.model.Background;
 import com.technophobia.substeps.model.FeatureFile;
@@ -55,6 +52,9 @@ public class FeatureFileParser {
     private static Map<String, Directive> directiveMap = new HashMap<String, Directive>();
 
     private List<String> currentFeatureFileLines = null;
+	private String currentOriginalFileContents = null;
+
+	private int[] currentFileOffsets = null;
 
 
     public FeatureFile loadFeatureFile(final File featureFile) {
@@ -68,9 +68,11 @@ public class FeatureFileParser {
         ff.setSourceFile(featureFile);
 
         Assert.assertTrue("Feature file: " + featureFile.getAbsolutePath() + " does not exist!", featureFile.exists());
+        
+        readFeatureFile(featureFile);
+        
 
-        this.currentFeatureFileLines = readFile(featureFile);
-
+        
         final String deCommented = stripCommentsAndBlankLines(this.currentFeatureFileLines);
 
         chunkUpFeatureFile(deCommented, ff);
@@ -86,6 +88,8 @@ public class FeatureFileParser {
 
                 cascadeTags(ff);
 
+                cleanup();
+                
                 return ff;
             } else {
                 this.log.debug("discarding feature " + featureFile.getName() + "as no scenarios");
@@ -98,27 +102,80 @@ public class FeatureFileParser {
 
     }
 
-
     /**
-     * @param featureFile
-     * @return
-     */
-    private List<String> readFile(final File featureFile) {
+	 * 
+	 */
+	private void cleanup() {
+        this.currentOriginalFileContents = null;
+        this.currentFeatureFileLines = null;
+        this.currentFileOffsets = null;
+	}
 
-        List<String> lines = null;
+	/**
+	 * @param featureFile
+	 */
+	private void readFeatureFile(final File featureFile) {
+        
+		this.currentFeatureFileLines = null;
+
         try {
-            lines = new ArrayList<String>(Collections2.transform(
-                    Files.readLines(featureFile, Charset.forName("UTF-8")), new Function<String, String>() {
-                        public String apply(final String input) {
-                            return input.trim();
-                        }
-                    }));
+        	currentFeatureFileLines = Files.readLines(featureFile, Charset.forName("UTF-8"));
+        	
+        	// TODO - is this trim still required now we have line numbers ?
+        	
+//        			new ArrayList<String>(Collections2.transform(
+//                    Files.readLines(featureFile, Charset.forName("UTF-8")), new Function<String, String>() {
+//                        public String apply(final String input) {
+//                            return input.trim();
+//                        }
+//                    }));
 
+			this.currentOriginalFileContents = Files.toString(featureFile, Charset.forName("UTF-8"));
+        	
+			this.currentFileOffsets
+				= new int[currentFeatureFileLines.size()];
+			 
+			int lastOffset = 0;
+			for (int i = 0; i < currentFeatureFileLines.size(); i++) {
+
+				final String s = currentFeatureFileLines.get(i);
+				
+				this.currentFileOffsets[i] = 
+						this.currentOriginalFileContents.indexOf(s, lastOffset);
+				lastOffset = this.currentFileOffsets[i] + s.length();
+			}
+        	
         } catch (final IOException e) {
-            this.log.error(e.getMessage(), e);
+            this.log.error("failed to load feature file: " + e.getMessage(), e);
         }
-        return lines;
-    }
+	}
+
+
+	/**
+	 * @param element
+	 * @return
+	 */
+	private String convertElementToPattern(final String element) {
+
+		final StringBuilder buf = new StringBuilder();
+		final String[] lines = element.split("\n");
+		// add a wildcard to allow # comments on the end of the line and
+		// also tab / space formatting
+
+		boolean first = true;
+		buf.append("(");
+		for (final String s : lines) {
+
+			if (!first) {
+				buf.append(".*");
+			}
+			first = false;
+			buf.append(Pattern.quote(s));
+		}
+		buf.append(")");
+		return buf.toString();
+	}    
+
 
 
     /**
@@ -169,6 +226,31 @@ public class FeatureFileParser {
         return valid;
     }
 
+    private int getSourceLineNumber(final String line, final int offset){
+    	
+    	int lineNumber = -1;
+    	// find the line from the offset
+    	final int idx = this.currentOriginalFileContents.indexOf(line);
+    	
+    	if (idx != -1 ){
+    		// what's the line number of this offset ?
+    		lineNumber = getSourceLineNumberForOffset(offset);
+    	}
+    	return lineNumber;
+    }
+    
+    private int getSourceLineNumberForOffset(final int offset){
+
+    	int lineNumber = -1;
+		lineNumber = 0;
+    	for (; lineNumber < this.currentFileOffsets.length; lineNumber++){
+    		
+    		if (this.currentFileOffsets[lineNumber] > offset){
+    			break;
+    		}
+    	}
+    	return lineNumber;
+    }
 
     /**
      * @param sc
@@ -180,10 +262,24 @@ public class FeatureFileParser {
         final String[] lines = raw.split("\n");
 
         boolean collectExamples = false;
-
+        
+        int lastOffset = sc.getSourceStartOffset();
+        
+        sc.setSourceStartLineNumber(getSourceLineNumberForOffset(lastOffset));
+        
         for (int i = 0; i < lines.length; i++) {
             final String line = lines[i];
-            final int lineNumber = this.currentFeatureFileLines.indexOf(line);
+            
+            // need to find the line number using an offset.  move the offset as we progress through the lines, that way we can take into account duplicates
+            
+            final int lineNumber = this.getSourceLineNumber(line, lastOffset);
+            if (lineNumber+1 < this.currentFileOffsets.length){
+            	lastOffset = this.currentFileOffsets[lineNumber+1] -1;
+            }
+            else {
+            	lastOffset = this.currentOriginalFileContents.length();
+            }
+            	
             if (i == 0) {
                 // first line, description is everything after the :
                 final int idx = line.indexOf(':');
@@ -230,14 +326,28 @@ public class FeatureFileParser {
         if (topLevelFeatureElements != null) {
             String currentBackground = null;
 
-            for (final String sc : topLevelFeatureElements) {
-                // what's the nature of this split?
-                if (!Strings.isNullOrEmpty(sc)) {
-                    this.log.trace("topLevelElement:\n" + sc);
+            for (final String element : topLevelFeatureElements) {
+            	
+            	final String pattern = convertElementToPattern(element);
+            	
+            	final Pattern finderPattern = Pattern.compile(pattern, Pattern.DOTALL);
+            	
+            	final Matcher matcher = finderPattern.matcher(this.currentOriginalFileContents);
+            	int start = -1;
+            	int end = -1;
+            	if (matcher.find()){
+            		start = matcher.start(0);
+            		end = matcher.end(0);
+            		// start and end offsets of this elem into the original file
+            	}
+
+            	
+                if (!Strings.isNullOrEmpty(element)) {
+                    this.log.trace("topLevelElement:\n" + element);
 
                     // grab the identifer
 
-                    final Matcher m = DIRECTIVE_PATTERN.matcher(sc);
+                    final Matcher m = DIRECTIVE_PATTERN.matcher(element);
                     if (m.lookingAt()) {
                         final Directive directive = directiveMap.get(m.group(1));
 
@@ -246,11 +356,11 @@ public class FeatureFileParser {
                             if (currentTags == null) {
                                 currentTags = new HashSet<String>();
                             }
-                            processTags(currentTags, sc);
+                            processTags(currentTags, element);
                             break;
                         }
                         case FEATURE: {
-                            ff.setRawText(sc);
+                            ff.setRawText(element);
                             if (currentTags != null) {
                                 ff.setTags(currentTags);
                             }
@@ -260,17 +370,17 @@ public class FeatureFileParser {
                         }
                         case BACKGROUND: {
                             // stash
-                            currentBackground = sc;
+                            currentBackground = element;
                             break;
                         }
                         case SCENARIO: {
-                            processScenarioDirective(ff, currentTags, currentBackground, sc, false);
+                            processScenarioDirective(ff, currentTags, currentBackground, element, false, start, end);
 
                             currentTags = null;
                             break;
                         }
                         case SCENARIO_OUTLINE: {
-                            processScenarioDirective(ff, currentTags, currentBackground, sc, true);
+                            processScenarioDirective(ff, currentTags, currentBackground, element, true, start, end);
 
                             currentTags = null;
                             break;
@@ -297,12 +407,14 @@ public class FeatureFileParser {
      * @return
      */
     private void processScenarioDirective(final FeatureFile ff, final Set<String> currentTags,
-            final String currentBackground, final String sc, final boolean outline) {
+            final String currentBackground, final String sc, final boolean outline, final int start, final int end) {
         final Scenario scenario = new Scenario();
 
         scenario.setRawText(sc);
         scenario.setTags(currentTags);
         scenario.setOutline(outline);
+        scenario.setSourceStartOffset(start);
+        scenario.setSourceEndOffset(end);
 
         ff.addScenario(scenario);
 
