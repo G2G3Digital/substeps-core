@@ -21,6 +21,7 @@ package com.technophobia.substeps.runner;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,8 +35,11 @@ import junit.framework.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.io.Files;
+import com.technophobia.substeps.model.Background;
 import com.technophobia.substeps.model.FeatureFile;
 import com.technophobia.substeps.model.Scenario;
 import com.technophobia.substeps.model.Step;
@@ -50,18 +54,24 @@ public class FeatureFileParser {
 
     private static Map<String, Directive> directiveMap = new HashMap<String, Directive>();
 
+    private List<String> currentFeatureFileLines = null;
+
 
     public FeatureFile loadFeatureFile(final File featureFile) {
         // IM - this is a little clumsy, feature file created, passed around and
         // if invalid, discarded..
 
+        // rest our current set of lines
+        this.currentFeatureFileLines = null;
+
         final FeatureFile ff = new FeatureFile();
         ff.setSourceFile(featureFile);
 
-        Assert.assertTrue("Feature file: " + featureFile.getAbsolutePath() + " does not exist!",
-                featureFile.exists());
+        Assert.assertTrue("Feature file: " + featureFile.getAbsolutePath() + " does not exist!", featureFile.exists());
 
-        final String deCommented = stripCommentsAndBlankLines(featureFile);
+        this.currentFeatureFileLines = readFile(featureFile);
+
+        final String deCommented = stripCommentsAndBlankLines(this.currentFeatureFileLines);
 
         chunkUpFeatureFile(deCommented, ff);
 
@@ -71,20 +81,43 @@ public class FeatureFileParser {
 
                 for (final Scenario sc : ff.getScenarios()) {
                     buildScenario(sc, featureFile);
+
                 }
 
                 cascadeTags(ff);
 
                 return ff;
             } else {
-                log.debug("discarding feature " + featureFile.getName() + "as no scenarios");
+                this.log.debug("discarding feature " + featureFile.getName() + "as no scenarios");
                 return null;
             }
         } else {
-            log.debug("discarding feature " + featureFile.getName() + "as no feature description");
+            this.log.debug("discarding feature " + featureFile.getName() + "as no feature description");
             return null;
         }
 
+    }
+
+
+    /**
+     * @param featureFile
+     * @return
+     */
+    private List<String> readFile(final File featureFile) {
+
+        List<String> lines = null;
+        try {
+            lines = new ArrayList<String>(Collections2.transform(
+                    Files.readLines(featureFile, Charset.forName("UTF-8")), new Function<String, String>() {
+                        public String apply(final String input) {
+                            return input.trim();
+                        }
+                    }));
+
+        } catch (final IOException e) {
+            this.log.error(e.getMessage(), e);
+        }
+        return lines;
     }
 
 
@@ -150,10 +183,12 @@ public class FeatureFileParser {
 
         for (int i = 0; i < lines.length; i++) {
             final String line = lines[i];
+            final int lineNumber = this.currentFeatureFileLines.indexOf(line);
             if (i == 0) {
                 // first line, description is everything after the :
                 final int idx = line.indexOf(':');
                 sc.setDescription(line.substring(idx + 1).trim());
+                sc.setScenarioLineNumber(lineNumber);
             } else if (line.startsWith(Directive.EXAMPLES.val)) {
                 collectExamples = true;
             } else {
@@ -161,7 +196,7 @@ public class FeatureFileParser {
 
                     if (collectExamples) {
                         // we're now onto the examples
-                        parseExamples(line, sc);
+                        parseExamples(lineNumber, line, sc);
                     } else {
                         // this is an inline table
                         final Step last = sc.getSteps().get(sc.getSteps().size() - 1);
@@ -170,15 +205,8 @@ public class FeatureFileParser {
                     }
 
                 } else {
-                    sc.addStep(new Step(line, file));
+                    sc.addStep(new Step(line, file, lineNumber));
                 }
-            }
-        }
-
-        if (sc.hasBackground()) {
-            final String[] bLines = sc.getBackgroundRawText().split("\n");
-            for (int i = 1; i < bLines.length; i++) {
-                sc.addBackgroundStep(new Step(bLines[i], file));
             }
         }
     }
@@ -205,7 +233,7 @@ public class FeatureFileParser {
             for (final String sc : topLevelFeatureElements) {
                 // what's the nature of this split?
                 if (!Strings.isNullOrEmpty(sc)) {
-                    log.trace("topLevelElement:\n" + sc);
+                    this.log.trace("topLevelElement:\n" + sc);
 
                     // grab the identifer
 
@@ -248,7 +276,7 @@ public class FeatureFileParser {
                             break;
                         }
                         default: {
-                            log.error("unknown directive");
+                            this.log.error("unknown directive");
                             break;
                         }
                         }
@@ -279,9 +307,20 @@ public class FeatureFileParser {
         ff.addScenario(scenario);
 
         if (currentBackground != null) {
-            scenario.setBackgroundRawText(currentBackground);
+            scenario.setBackground(new Background(backgroundLineNumber(), currentBackground, ff.getSourceFile()));
 
         }
+    }
+
+
+    private int backgroundLineNumber() {
+        for (int i = 0; i < currentFeatureFileLines.size(); i++) {
+            if (currentFeatureFileLines.get(i).startsWith("Background:")) {
+                return i;
+            }
+
+        }
+        return 0;
     }
 
 
@@ -309,36 +348,36 @@ public class FeatureFileParser {
     public static String stripComments(final String line) {
         String trimmed = null;
         if (line != null) {
-        	
-	        final int idx = line.trim().indexOf("#");
-	        if (idx >= 0) {
-	            // is the # inside matched quotes
-	
-	            boolean doTrim = false;
-	
-	            if (idx == 0) {
-	                // first char
-	                doTrim = true;
-	            }
-	
-	            final String[] splitByQuotes = line.split("\"[^\"]*\"|'[^']*'");
-	            // this will find parts of the string not in quotes
-	            for (final String split : splitByQuotes) {
-	                if (split.indexOf("#") > 0) {
-	                    // hash exists not in a matching pair of quotes
-	                    doTrim = true;
-	                    break;
-	                }
-	            }
-	
-	            if (doTrim) {
-	                trimmed = line.substring(0, idx).trim();
-	            } else {
-	                trimmed = line.trim();
-	            }
-	        } else {
-	            trimmed = line.trim();
-	        }
+
+            final int idx = line.trim().indexOf("#");
+            if (idx >= 0) {
+                // is the # inside matched quotes
+
+                boolean doTrim = false;
+
+                if (idx == 0) {
+                    // first char
+                    doTrim = true;
+                }
+
+                final String[] splitByQuotes = line.split("\"[^\"]*\"|'[^']*'");
+                // this will find parts of the string not in quotes
+                for (final String split : splitByQuotes) {
+                    if (split.indexOf("#") > 0) {
+                        // hash exists not in a matching pair of quotes
+                        doTrim = true;
+                        break;
+                    }
+                }
+
+                if (doTrim) {
+                    trimmed = line.trim().substring(0, idx).trim();
+                } else {
+                    trimmed = line.trim();
+                }
+            } else {
+                trimmed = line.trim();
+            }
         }
         return trimmed;
     }
@@ -348,33 +387,19 @@ public class FeatureFileParser {
      * @param featureFile
      * @return
      */
-    private String stripCommentsAndBlankLines(final File featureFile) {
+    private String stripCommentsAndBlankLines(final List<String> lines) {
 
         final StringBuilder buf = new StringBuilder();
-        try {
-            final List<String> lines = Files.readLines(featureFile, Charset.forName("UTF-8"));
 
-            for (final String s : lines) {
-            	
-                final String trimmed = stripComments(s);
-                
-//                final int idx = s.indexOf("#");
-//                if (idx >= 0) {
-//                    trimmed = s.substring(0, idx).trim();
-//                } else {
-//                    trimmed = s.trim();
-//                }
+        for (final String s : lines) {
 
-                if (!Strings.isNullOrEmpty(trimmed)) {
-                    // up for inclusion
-                    buf.append(trimmed);
-                    buf.append("\n");
-                }
+            final String trimmed = stripComments(s);
+
+            if (!Strings.isNullOrEmpty(trimmed)) {
+                // up for inclusion
+                buf.append(trimmed);
+                buf.append("\n");
             }
-
-        } catch (final IOException e) {
-            log.error(e.getMessage(), e);
-
         }
 
         return buf.toString();
@@ -384,14 +409,14 @@ public class FeatureFileParser {
     /**
      * @param trimmed
      */
-    private void parseExamples(final String trimmed, final Scenario sc) {
+    private void parseExamples(final int lineNumber, final String trimmed, final Scenario sc) {
         final String[] split = trimmed.split("\\|");
 
         if (sc.getExampleParameters() == null) {
-
             sc.addExampleKeys(split);
+            sc.setExampleKeysLineNumber(lineNumber);
         } else {
-            sc.addExampleValues(split);
+            sc.addExampleValues(lineNumber, split);
         }
 
     }

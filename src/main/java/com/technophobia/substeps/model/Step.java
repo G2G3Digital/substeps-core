@@ -30,218 +30,261 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Step {
-	private final Logger log = LoggerFactory.getLogger(Step.class);
+    private final Logger log = LoggerFactory.getLogger(Step.class);
 
-	// eg Given, When, Then
-	private String keyword;
+    // eg Given, When, Then
+    private String keyword;
 
-	private List<String> paramNames = null;
+    private List<String> paramNames = null;
 
-	// this only gets set for Steps which are defined as sub steps
-	private String pattern;
+    // this only gets set for Steps which are defined as sub steps
+    private String pattern;
 
-	// the whole original line, eg Given blah blah
-	private final String line;
+    // the whole original line, eg Given blah blah
+    private final String line;
 
-	// the remainder of the line, eg blah blah
-	// private final String param;
+    // the remainder of the line, eg blah blah
+    // private final String param;
 
-	// a string that can be manipulated for variable substituion
-	private String parameterLine;
+    // a string that can be manipulated for variable substituion
+    private String parameterLine;
 
-	private List<Map<String, String>> inlineTable = null;
+    private List<Map<String, String>> inlineTable = null;
 
-	private String[] tableHeadings = null;
-	
-	private List<Map<String, String>> substitutedInlineTable = null;
+    private String[] tableHeadings = null;
 
-	private File source;
-	
-	/**
-	 * @return the line
-	 */
-	public String getLine() {
-		return line;
-	}
+    private List<Map<String, String>> substitutedInlineTable = null;
 
-	public Step(final String line) {
-		this(line, false, null);
-	}
-	
-	public Step(final String line, final File source) {
-		this(line, false, source);
-	}
+    private File source;
 
-	public Step(final String theLine, final boolean isSubStep) {
-		this(theLine, isSubStep, null);
-	}
-	
-	public Step(final String theLine, final boolean isSubStep, final File source) {
-		if (theLine == null || theLine.length() == 0) {
-			throw new IllegalArgumentException("null or empty args");
-		}
-		
-		this.source = source;
-		
-		// pick out the first word
-		line = theLine.trim();
-
-		// TODO - change to use a reg expression and a capture?
-
-		final int last = line.indexOf(' ');
-		if (last > 0) {
-
-			keyword = line.substring(0, last);
-
-			// TODO no need to to do if no parameter to the annotation..?
-			if (isSubStep) {
-				setParamAndParamNames();
-			}
-
-		} else if (line.length() > 0) {
-			// we've got just an annotation with no parameter
-			keyword = line;
-		} 
-	}
-
-	// only used in tests
-	public Step(final String keyword, final String line, final boolean isSubStep) {
-		this.keyword = keyword;
-		this.line = line;
-
-		if (isSubStep) {
-			setParamAndParamNames();
-		}
-	}
-
-	private void setParamAndParamNames() {
-		// do we have any params in the string that we need to swap for regex
-		// expressions?
-
-		// look for params
-		final Pattern p = Pattern.compile("(<([^>]*)>)");
-		final Matcher matcher = p.matcher(line);
-
-		int findIdx = 0;
-		while (matcher.find(findIdx)) {
-			if (paramNames == null) {
-				paramNames = new ArrayList<String>();
-			}
-
-			paramNames.add(matcher.group(2));
-			findIdx = matcher.end(2);
-		}
-
-		// replace the params with a reg ex, a quoted and non quoted variant
-
-		pattern = line.replaceAll("(<[^>]*>)", "\"?([^\"]*)\"?");
-	}
-
-	/**
-	 * @return
-	 */
-	public String toDebugString() {
-		if (keyword == null) {
-			log.debug("annot of step is null: " + this.getClass().getSimpleName());
-		}
-
-		return " [" + line + "]";
-	}
-
-	@Override
-	public String toString() {
-		return toDebugString();
-	}
-
-	/**
-	 * @return the annotationName
-	 */
-	public String getKeyword() {
-		return keyword;
-	}
-
-	public String getPattern() {
-		return pattern;
-	}
-
-	public List<String> getParamNames() {
-		return paramNames;
-	}
-
-	/**
-	 * @param data
-	 */
-	public void addTableData(final String[] data) {
-
-		if (tableHeadings == null) {
-			tableHeadings = data;
-		} else {
-
-			if (inlineTable == null) {
-				inlineTable = new ArrayList<Map<String, String>>();
-			}
-			final Map<String, String> map = new HashMap<String, String>();
-			inlineTable.add(map);
-
-			for (int i = 1; i < tableHeadings.length; i++) {
-
-				map.put(tableHeadings[i].trim(), data[i].trim());
-			}
-		}
-
-	}
-
-	public String getParameterLine() {
-		return parameterLine != null ? parameterLine : line;
-
-	}
-
-	public void setParameterLine(final String parameterLine) {
-		this.parameterLine = parameterLine;
-	}
+    private int sourceLineNumber = -1;
 
 
-	/**
-	 * @return the inlineTable
-	 */
-	public List<Map<String, String>> getInlineTable() {
-		return inlineTable;
-	}
+    /**
+     * @return the line
+     */
+    public String getLine() {
+        return this.line;
+    }
 
-	/**
-	 * @return the inlineTable
-	 */
-	public List<Map<String, String>> getSubstitutedInlineTable() {
-		return substitutedInlineTable != null ? substitutedInlineTable : inlineTable;
-	}
-	
-	/**
-	 * @param replacedInlineTable
-	 */
-	public void setSubstitutedInlineTable(final List<Map<String, String>> substitutedInlineTable)
-	{
-		this.substitutedInlineTable = substitutedInlineTable;
-	}
 
-	/**
-	 * @return the source
-	 */
-	public File getSource()
-	{
-		return source;
-	}
-	
-	public Step cloneWithAlternativeLine(final String alt){
-		final Step step = new Step(alt, this.pattern !=null);
-		
-		step.inlineTable = this.inlineTable;
-				
-		step.tableHeadings = this.tableHeadings;
-		
-		step.substitutedInlineTable = this.substitutedInlineTable;
+    // tests
+    public Step(final String line) {
+        this(line, false, null, -1);
+    }
 
-		step.source= this.source ;
-		
-		return step;
-	}
+
+    public Step(final String line, final File source, final int lineNumber) {
+        this(line, false, source, lineNumber);
+    }
+
+
+    // called by tests and clone
+    public Step(final String theLine, final boolean isSubStep) {
+        this(theLine, isSubStep, null, -1);
+    }
+
+
+    public Step(final String theLine, final boolean isSubStep, final File source, final int lineNumber) {
+        if (theLine == null || theLine.length() == 0) {
+            throw new IllegalArgumentException("null or empty args");
+        }
+
+        this.source = source;
+        this.sourceLineNumber = lineNumber;
+
+        // pick out the first word
+        this.line = theLine.trim();
+
+        // TODO - change to use a reg expression and a capture?
+
+        final int last = this.line.indexOf(' ');
+        if (last > 0) {
+
+            this.keyword = this.line.substring(0, last);
+
+            // TODO no need to to do if no parameter to the annotation..?
+            if (isSubStep) {
+                setParamAndParamNames();
+            }
+
+        } else if (this.line.length() > 0) {
+            // we've got just an annotation with no parameter
+            this.keyword = this.line;
+        }
+    }
+
+
+    // only used in tests
+    public Step(final String keyword, final String line, final boolean isSubStep) {
+        this.keyword = keyword;
+        this.line = line;
+
+        if (isSubStep) {
+            setParamAndParamNames();
+        }
+    }
+
+
+    private void setParamAndParamNames() {
+        // do we have any params in the string that we need to swap for regex
+        // expressions?
+
+        // look for params
+        final Pattern p = Pattern.compile("(<([^>]*)>)");
+        final Matcher matcher = p.matcher(this.line);
+
+        int findIdx = 0;
+        while (matcher.find(findIdx)) {
+            if (this.paramNames == null) {
+                this.paramNames = new ArrayList<String>();
+            }
+
+            this.paramNames.add(matcher.group(2));
+            findIdx = matcher.end(2);
+        }
+
+        // replace the params with a reg ex, a quoted and non quoted variant
+
+        this.pattern = this.line.replaceAll("(<[^>]*>)", "\"?([^\"]*)\"?");
+    }
+
+
+    /**
+     * @return
+     */
+    public String toDebugString() {
+        if (this.keyword == null) {
+            this.log.debug("annot of step is null: " + this.getClass().getSimpleName());
+        }
+
+        return " [" + this.line + "]";
+    }
+
+
+    @Override
+    public String toString() {
+        return toDebugString();
+    }
+
+
+    /**
+     * @return the annotationName
+     */
+    public String getKeyword() {
+        return this.keyword;
+    }
+
+
+    public String getPattern() {
+        return this.pattern;
+    }
+
+
+    public List<String> getParamNames() {
+        return this.paramNames;
+    }
+
+
+    /**
+     * @param data
+     */
+    public void addTableData(final String[] data) {
+
+        if (this.tableHeadings == null) {
+            this.tableHeadings = data;
+        } else {
+
+            if (this.inlineTable == null) {
+                this.inlineTable = new ArrayList<Map<String, String>>();
+            }
+            final Map<String, String> map = new HashMap<String, String>();
+            this.inlineTable.add(map);
+
+            for (int i = 1; i < this.tableHeadings.length; i++) {
+
+                map.put(this.tableHeadings[i].trim(), data[i].trim());
+            }
+        }
+
+    }
+
+
+    public String getParameterLine() {
+        return this.parameterLine != null ? this.parameterLine : this.line;
+
+    }
+
+
+    public void setParameterLine(final String parameterLine) {
+        this.parameterLine = parameterLine;
+    }
+
+
+    /**
+     * @return the inlineTable
+     */
+    public List<Map<String, String>> getInlineTable() {
+        return this.inlineTable;
+    }
+
+
+    /**
+     * @return the inlineTable
+     */
+    public List<Map<String, String>> getSubstitutedInlineTable() {
+        return this.substitutedInlineTable != null ? this.substitutedInlineTable : this.inlineTable;
+    }
+
+
+    /**
+     * @param replacedInlineTable
+     */
+    public void setSubstitutedInlineTable(final List<Map<String, String>> substitutedInlineTable) {
+        this.substitutedInlineTable = substitutedInlineTable;
+    }
+
+
+    /**
+     * @return the source
+     */
+    public File getSource() {
+        return this.source;
+    }
+
+
+    public Step cloneWithAlternativeLine(final String alt) {
+        final Step step = new Step(alt, this.pattern != null);
+
+        step.inlineTable = this.inlineTable;
+
+        step.tableHeadings = this.tableHeadings;
+
+        step.substitutedInlineTable = this.substitutedInlineTable;
+
+        step.source = this.source;
+
+        // same line number
+        step.sourceLineNumber = this.sourceLineNumber;
+
+        return step;
+    }
+
+
+    /**
+     * @return the sourceLineNumber
+     */
+    public int getSourceLineNumber() {
+        return this.sourceLineNumber;
+    }
+
+
+    /**
+     * @param sourceLineNumber
+     *            the sourceLineNumber to set
+     */
+    protected void setSourceLineNumber(final int sourceLineNumber) {
+        this.sourceLineNumber = sourceLineNumber;
+    }
+
 }

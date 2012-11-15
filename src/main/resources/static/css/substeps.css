@@ -1,0 +1,80 @@
+body {
+    padding-top: 50px;
+}
+
+#feature-tree {
+    background: white;
+}
+
+#feature-tree li {
+    min-height: 32px;
+    line-height: 32px;
+}
+
+#feature-tree a {
+    line-height: 30px;
+    height: 30px;
+}
+
+#feature-tree a ins {
+    height: 30px;
+    width: 30px;
+    background-position: -56px -17px;
+}
+
+#feature-tree a {
+    white-space: normal !important;
+    height: auto;
+    padding: 1px 2px;
+}
+
+#feature-tree li > ins {
+    vertical-align: middle;
+}
+
+#feature-tree .jstree-hovered, #feature-tree .jstree-clicked {
+    border: 0;
+}
+
+div.stacktrace{
+	
+	overflow-x:auto;
+    overflow-y:hidden;
+}
+
+div.affix {
+    position: fixed; 
+    top: 50px; 
+    left: 107px;
+ 
+}
+
+pre.stacktracepre{
+background-color: transparent;
+    border: none;
+  white-space: pre;
+    word-break: normal;
+    word-wrap: normal;
+}
+
+#detail-div-container {
+    position: relative;
+}
+
+#feature-detail {
+    position:absolute;
+    top: 0px;
+    left: 0px;
+}
+
+tr.error_row{
+    background-color: #FFDDDD;
+}
+
+tr.error_row td{
+    background-color: #FFDDDD;
+}
+
+.table-striped tbody tr:nth-child(2n+1).error_row td, .table-striped tbody tr:nth-child(2n+1).error_row th {
+    background-color: #FFB7B7;
+}

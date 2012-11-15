@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<antlib>
+
+	<taskdef name="substeps" classname="com.technophobia.substeps.ant.SubStepsTask" />
+	<typedef name="executionConfig" classname="com.technophobia.substeps.ant.AntExecutionConfig" />
+
+</antlib>

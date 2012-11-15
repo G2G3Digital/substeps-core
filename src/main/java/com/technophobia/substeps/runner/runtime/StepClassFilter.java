@@ -21,19 +21,40 @@ package com.technophobia.substeps.runner.runtime;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Predicate;
 import com.technophobia.substeps.model.SubSteps;
 
 public class StepClassFilter implements Predicate<Class<?>> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(StepClassFilter.class);
+
+
     public boolean apply(final Class<?> clazz) {
-        if (hasAnnotation(clazz, SubSteps.AdditionalStepImplementations.class)) {
-            return true;
-        }
-        for (final Method method : clazz.getMethods()) {
-            if (hasAnnotation(method, SubSteps.Step.class)) {
+        LOG.debug("Checking if " + clazz.getName() + " has step methods");
+        try {
+            if (hasAnnotation(clazz, SubSteps.AdditionalStepImplementations.class)) {
+                LOG.debug("Class " + clazz + " has " + SubSteps.AdditionalStepImplementations.class.getName()
+                        + " annotation, returning true");
                 return true;
             }
+            for (final Method method : clazz.getMethods()) {
+                if (hasAnnotation(method, SubSteps.Step.class)) {
+                    LOG.debug("Class " + clazz + " has method" + method.getName() + " annotated with the "
+                            + SubSteps.AdditionalStepImplementations.class.getName() + " annotation, returning true");
+                    return true;
+                }
+            }
+
+            LOG.debug("Class " + clazz + " does not appear to be a step class");
+        } catch (final Exception ex) {
+            LOG.warn("Encountered exception " + ex.getClass().getName() + " while trying to determine if class "
+                    + clazz + " is a step class. This is probably because eclipse hasn't loaded this class yet.");
+        } catch (final LinkageError err) {
+            LOG.warn("Encountered error " + err.getClass().getName() + " while trying to determine if class " + clazz
+                    + " is a step class. This is probably because eclipse hasn't loaded this class yet.");
         }
         return false;
     }
@@ -45,7 +66,14 @@ public class StepClassFilter implements Predicate<Class<?>> {
 
 
     private boolean hasAnnotation(final Class<?> clazz, final Class<?> annotationClass) {
-        return hasAnnotation(clazz.getAnnotations(), annotationClass);
+        try {
+            return hasAnnotation(clazz.getAnnotations(), annotationClass);
+        } catch (final ArrayStoreException ex) {
+            LOG.warn("ArrayStoreException encountered when querying "
+                    + clazz.getName()
+                    + ".getAnnotations(). This usually implies the classes annotations are not on the build path - is this class compiling? Returning false for now");
+            return false;
+        }
     }
 
 
