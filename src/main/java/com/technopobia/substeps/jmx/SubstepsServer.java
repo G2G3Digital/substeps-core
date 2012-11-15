@@ -22,12 +22,17 @@ package com.technopobia.substeps.jmx;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import javax.management.AttributeChangeNotification;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.runner.ExecutionConfig;
 import com.technophobia.substeps.runner.ExecutionNodeRunner;
+import com.technophobia.substeps.runner.INotifier;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 
 
@@ -35,8 +40,10 @@ import com.technophobia.substeps.runner.SubstepExecutionFailure;
  * @author ian
  *
  */
-public class SubstepsServer implements SubstepsServerMBean{
-	Logger log = LoggerFactory.getLogger(SubstepsServer.class);
+public class SubstepsServer extends NotificationBroadcasterSupport 
+	implements SubstepsServerMBean, INotifier{
+
+	private final Logger log = LoggerFactory.getLogger(SubstepsServer.class);
 	
 	private ExecutionNodeRunner nodeRunner = null;
 	private final CountDownLatch shutdownSignal;
@@ -67,8 +74,82 @@ public class SubstepsServer implements SubstepsServerMBean{
 		
 		// attach a result listener to broadcast
 		
+		nodeRunner.addNotifier(this);
+		
 		return nodeRunner.run();
 	}
 
+	private void doNotification(final ExecutionNode node){
+		
+		// TODO - should use the object name as the source of the notification rather than this object
+		// extend notification instead - apparently not !
+		// http://stackoverflow.com/questions/5554529/best-practice-for-emitting-jmx-notifications
+		
+		final Notification n =
+			    new AttributeChangeNotification(this,
+							    sequenceNumber++,
+							    System.currentTimeMillis(),
+							    "a bean method called",
+							    "attribName",
+							    "String",
+							    "oldVal",
+							    "newVal");
 
+			/* Now send the notification using the sendNotification method
+			   inherited from the parent class NotificationBroadcasterSupport. */
+			sendNotification(n);
+		
+	}
+
+
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
+	 * .substeps.execution.ExecutionNode, java.lang.Throwable)
+	 */
+	public void notifyNodeFailed(final ExecutionNode node, final Throwable cause) {
+
+		doNotification(node);
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
+	 * .substeps.execution.ExecutionNode)
+	 */
+	public void notifyNodeStarted(final ExecutionNode node) {
+
+		doNotification(node);
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
+	 * technophobia.substeps.execution.ExecutionNode)
+	 */
+	public void notifyNodeFinished(final ExecutionNode node) {
+
+		doNotification(node);
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
+	 * .substeps.execution.ExecutionNode)
+	 */
+	public void notifyNodeIgnored(final ExecutionNode node) {
+
+		doNotification(node);
+	}
 }
