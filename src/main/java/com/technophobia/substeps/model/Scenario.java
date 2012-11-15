@@ -44,6 +44,9 @@ public class Scenario extends RootFeature {
     private Description junitDescription;
 
 
+    private int sourceStartOffset = -1;
+    private int sourceStartLineNumber = -1;
+	private int sourceEndOffset = -1;
     /**
      * @return the background
      */
@@ -164,4 +167,52 @@ public class Scenario extends RootFeature {
     public boolean isOutline() {
         return outline;
     }
+
+	/**
+	 * @return the sourceStartOffset
+	 */
+	public int getSourceStartOffset() {
+		return sourceStartOffset;
+	}
+
+
+	/**
+	 * @param sourceStartOffset the sourceStartOffset to set
+	 */
+	public void setSourceStartOffset(final int sourceStartOffset) {
+		this.sourceStartOffset = sourceStartOffset;
+	}
+
+
+	/**
+	 * @return the sourceStartLineNumber
+	 */
+	public int getSourceStartLineNumber() {
+		return sourceStartLineNumber;
+	}
+
+
+	/**
+	 * @param sourceStartLineNumber the sourceStartLineNumber to set
+	 */
+	public void setSourceStartLineNumber(final int sourceStartLineNumber) {
+		this.sourceStartLineNumber = sourceStartLineNumber;
+	}
+
+
+	/**
+	 * @param end
+	 */
+	public void setSourceEndOffset(final int end) {
+		this.sourceEndOffset = end;
+	}
+
+
+	/**
+	 * @return the sourceEndOffset
+	 */
+	public int getSourceEndOffset() {
+		return sourceEndOffset;
+	}
+
 }
