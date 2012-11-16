@@ -28,7 +28,7 @@ import org.junit.runner.Description;
 public class Scenario extends RootFeature {
     @Override
     public String toString() {
-        return "Scenario: " + description;
+        return "Scenario: " + this.description;
     }
 
     private String description;
@@ -43,15 +43,16 @@ public class Scenario extends RootFeature {
 
     private Description junitDescription;
 
-
     private int sourceStartOffset = -1;
     private int sourceStartLineNumber = -1;
-	private int sourceEndOffset = -1;
+    private final int sourceEndOffset = -1;
+
+
     /**
      * @return the background
      */
     public Background getBackground() {
-        return background;
+        return this.background;
     }
 
 
@@ -61,7 +62,7 @@ public class Scenario extends RootFeature {
 
 
     public boolean hasBackground() {
-        return background != null;
+        return this.background != null;
     }
 
 
@@ -69,7 +70,7 @@ public class Scenario extends RootFeature {
      * @return the junitDescription
      */
     public Description getJunitDescription() {
-        return junitDescription;
+        return this.junitDescription;
     }
 
 
@@ -83,7 +84,7 @@ public class Scenario extends RootFeature {
 
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
 
@@ -93,12 +94,12 @@ public class Scenario extends RootFeature {
 
 
     public List<Step> getSteps() {
-        return steps;
+        return this.steps;
     }
 
 
     public List<ExampleParameter> getExampleParameters() {
-        return exampleParameters;
+        return this.exampleParameters;
     }
 
 
@@ -108,12 +109,12 @@ public class Scenario extends RootFeature {
 
 
     public int getScenarioLineNumber() {
-        return scenarioLineNumber;
+        return this.scenarioLineNumber;
     }
 
 
     public int getExampleKeysLineNumber() {
-        return exampleKeysLineNumber;
+        return this.exampleKeysLineNumber;
     }
 
 
@@ -132,10 +133,10 @@ public class Scenario extends RootFeature {
      */
     public void addStep(final Step cukeArg) {
         if (cukeArg != null) {
-            if (steps == null) {
-                steps = new ArrayList<Step>();
+            if (this.steps == null) {
+                this.steps = new ArrayList<Step>();
             }
-            steps.add(cukeArg);
+            this.steps.add(cukeArg);
         }
     }
 
@@ -144,8 +145,8 @@ public class Scenario extends RootFeature {
      * @param split
      */
     public void addExampleKeys(final String[] split) {
-        paramNames = split;
-        exampleParameters = new ArrayList<ExampleParameter>();
+        this.paramNames = split;
+        this.exampleParameters = new ArrayList<ExampleParameter>();
 
     }
 
@@ -155,9 +156,9 @@ public class Scenario extends RootFeature {
         // all your columns of data, so we'll do the same
         final Map<String, String> row = new HashMap<String, String>();
         for (int i = 1; i < split.length; i++) {
-            row.put(paramNames[i].trim(), split[i].trim());
+            row.put(this.paramNames[i].trim(), split[i].trim());
         }
-        exampleParameters.add(new ExampleParameter(lineNumber, row));
+        this.exampleParameters.add(new ExampleParameter(lineNumber, row));
     }
 
 
@@ -165,54 +166,41 @@ public class Scenario extends RootFeature {
      * @return
      */
     public boolean isOutline() {
-        return outline;
+        return this.outline;
     }
 
-	/**
-	 * @return the sourceStartOffset
-	 */
-	public int getSourceStartOffset() {
-		return sourceStartOffset;
-	}
+
+    /**
+     * @return the sourceStartOffset
+     */
+    public int getSourceStartOffset() {
+        return this.sourceStartOffset;
+    }
 
 
-	/**
-	 * @param sourceStartOffset the sourceStartOffset to set
-	 */
-	public void setSourceStartOffset(final int sourceStartOffset) {
-		this.sourceStartOffset = sourceStartOffset;
-	}
+    /**
+     * @param sourceStartOffset
+     *            the sourceStartOffset to set
+     */
+    public void setSourceStartOffset(final int sourceStartOffset) {
+        this.sourceStartOffset = sourceStartOffset;
+    }
 
 
-	/**
-	 * @return the sourceStartLineNumber
-	 */
-	public int getSourceStartLineNumber() {
-		return sourceStartLineNumber;
-	}
+    /**
+     * @return the sourceStartLineNumber
+     */
+    public int getSourceStartLineNumber() {
+        return this.sourceStartLineNumber;
+    }
 
 
-	/**
-	 * @param sourceStartLineNumber the sourceStartLineNumber to set
-	 */
-	public void setSourceStartLineNumber(final int sourceStartLineNumber) {
-		this.sourceStartLineNumber = sourceStartLineNumber;
-	}
-
-
-	/**
-	 * @param end
-	 */
-	public void setSourceEndOffset(final int end) {
-		this.sourceEndOffset = end;
-	}
-
-
-	/**
-	 * @return the sourceEndOffset
-	 */
-	public int getSourceEndOffset() {
-		return sourceEndOffset;
-	}
+    /**
+     * @param sourceStartLineNumber
+     *            the sourceStartLineNumber to set
+     */
+    public void setSourceStartLineNumber(final int sourceStartLineNumber) {
+        this.sourceStartLineNumber = sourceStartLineNumber;
+    }
 
 }
