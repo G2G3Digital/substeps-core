@@ -70,7 +70,7 @@ public class ExecutionNode implements Serializable{
 
     private boolean outline = false;
 
-    private final ExecutionNodeResult result = new ExecutionNodeResult();
+    private final ExecutionNodeResult result;
 
     private Set<String> tags; // used for analysis
 
@@ -79,6 +79,7 @@ public class ExecutionNode implements Serializable{
 
     public ExecutionNode() {
         id = counter.getAndIncrement();
+        result = new ExecutionNodeResult(id);
     }
 
 

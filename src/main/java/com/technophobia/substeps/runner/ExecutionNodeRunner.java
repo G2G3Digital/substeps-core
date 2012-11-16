@@ -163,7 +163,6 @@ public class ExecutionNodeRunner {
 
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
         
-        notificationDistributor.notifyNodeStarted(node);
 
         // node may have parsing error, in which case, bail immediately
         if (node.hasError()) {
@@ -173,6 +172,7 @@ public class ExecutionNodeRunner {
         }
         else {
             node.getResult().setStarted();
+            notificationDistributor.notifyNodeStarted(node);
 
             // run setup if necessary for this depth and step
             // if this fails then we bail & mark as failed
@@ -276,9 +276,11 @@ public class ExecutionNodeRunner {
 
 	        if (failures.isEmpty()) {
 	            log.debug("node success");
+                node.getResult().setFinished();
+
+	            
 	            notificationDistributor.notifyNodeFinished(node);
 	
-	            node.getResult().setFinished();
 	
 	        } 
 	        else {
@@ -286,10 +288,11 @@ public class ExecutionNodeRunner {
 	            log.debug("node failures");
 	            // just notify on the last one in..?
 	            final Throwable lastException = failures.get(failures.size()-1).getCause();
-	            notificationDistributor.notifyNodeFailed(node, lastException);
 	
 	            // TODO should this have been set earlier...?
 	                node.getResult().setFailed(lastException);
+                notificationDistributor.notifyNodeFailed(node, lastException);
+
 	        }
         }
         return failures;

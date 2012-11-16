@@ -22,7 +22,6 @@ package com.technopobia.substeps.jmx;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import javax.management.AttributeChangeNotification;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
@@ -78,7 +77,9 @@ public class SubstepsServer extends NotificationBroadcasterSupport
 		
 		return nodeRunner.run();
 	}
-
+	
+	private long notificationSequenceNumber = 1;
+	
 	private void doNotification(final ExecutionNode node){
 		
 		// TODO - should use the object name as the source of the notification rather than this object
@@ -86,15 +87,15 @@ public class SubstepsServer extends NotificationBroadcasterSupport
 		// http://stackoverflow.com/questions/5554529/best-practice-for-emitting-jmx-notifications
 		
 		final Notification n =
-			    new AttributeChangeNotification(this,
-							    sequenceNumber++,
-							    System.currentTimeMillis(),
-							    "a bean method called",
-							    "attribName",
-							    "String",
-							    "oldVal",
-							    "newVal");
+			    new Notification("type", this,
+			            notificationSequenceNumber);
 
+		System.out.println("sending notification: seq: " + notificationSequenceNumber + " node id: " + node.getId() + " result: " + node.getResult().getResult());
+		
+		notificationSequenceNumber++;		        
+		        
+		n.setUserData(node.getResult());
+		
 			/* Now send the notification using the sendNotification method
 			   inherited from the parent class NotificationBroadcasterSupport. */
 			sendNotification(n);

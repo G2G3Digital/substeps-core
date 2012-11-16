@@ -21,12 +21,16 @@ package com.technopobia.substeps.jmx;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -36,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.ExecutionNodeResult;
 import com.technophobia.substeps.runner.ExecutionConfig;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 
@@ -43,10 +48,12 @@ import com.technophobia.substeps.runner.SubstepExecutionFailure;
  * @author ian
  *
  */
-public class SubstepsJMXClient {
+public class SubstepsJMXClient implements NotificationListener{
 	Logger log = LoggerFactory.getLogger(SubstepsJMXClient.class);
 	private SubstepsServerMBean mbean;
-
+	
+	
+	private final Map<Long, ExecutionNode> nodeMap = new HashMap<Long, ExecutionNode>();
 	
 	
 	public void init(){
@@ -65,12 +72,14 @@ public class SubstepsJMXClient {
 			// Obtain a "stub" for the remote MBeanServer
 			final MBeanServerConnection mbsc = cntor.getMBeanServerConnection();
 
-			
 			final ObjectName objectName = new ObjectName(SubstepsJMXServer.SUBSTEPS_JMX_MBEAN_NAME);
 			this.mbean = MBeanServerInvocationHandler.newProxyInstance(mbsc,
 				objectName,
 				SubstepsServerMBean.class,
 				false);
+			
+			// register this as a listener
+	         mbsc.addNotificationListener(objectName, this, null, null);
 
 		
 		} catch (final MalformedURLException e) {
@@ -84,13 +93,39 @@ public class SubstepsJMXClient {
 		} catch (final NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
+		} catch (final InstanceNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 	}
 	
 	public ExecutionNode prepareExceutionConfig(final ExecutionConfig cfg){
 		
-		return mbean.prepareExecutionConfig(cfg);
+	    final ExecutionNode rootNode = mbean.prepareExecutionConfig(cfg);
+	    
+	    if (rootNode != null){
+	        populateNodeMap(rootNode);
+	    }
+		return rootNode;
+	}
+	
+	private void populateNodeMap(final ExecutionNode node){
+	    
+	    if (node != null){
+            nodeMap.put(node.getLongId(), node);
+            
+            if (node.getBackgrounds() != null){
+                for (final ExecutionNode n: node.getBackgrounds()){
+                    populateNodeMap(n);
+                }
+            }
+    	    
+            if (node.getChildren() != null) {
+                for (final ExecutionNode n: node.getChildren()){
+                    populateNodeMap(n);
+                }
+            }
+	    }
 	}
 	
 	public List<SubstepExecutionFailure> run(){
@@ -103,6 +138,27 @@ public class SubstepsJMXClient {
 	public void shutdown(){
 		mbean.shutdown();
 	}
+
+    /* (non-Javadoc)
+     * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
+     */
+    public void handleNotification(final Notification notification, final Object handback) {
+
+        final ExecutionNodeResult newResult = (ExecutionNodeResult)notification.getUserData();
+
+        log.debug("received notification seq: " + notification.getSequenceNumber() + " nodeid: " +
+        newResult.getExecutionNodeId() + " result: " + newResult.getResult());
+
+        
+        // update the results
+        final ExecutionNode executionNode = nodeMap.get(Long.valueOf(newResult.getExecutionNodeId()));
+        
+        final ExecutionNodeResult origResult = executionNode.getResult();
+        
+        origResult.setResult(newResult.getResult());
+        origResult.setThrown(newResult.getThrown());
+        
+    }
 	
 
 }

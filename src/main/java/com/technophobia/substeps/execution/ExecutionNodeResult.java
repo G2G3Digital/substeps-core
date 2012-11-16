@@ -34,8 +34,13 @@ public class ExecutionNodeResult implements Serializable{
 	private ExecutionResult result = ExecutionResult.NOT_RUN;
 
     private Throwable thrown = null;
+    
+    private final long executionNodeId;
 
-
+    public ExecutionNodeResult(final long id){
+        this.executionNodeId = id;
+    }
+    
     public String getStackTrace() {
         if (thrown != null) {
             final StringWriter sw = new StringWriter();
@@ -126,6 +131,15 @@ public class ExecutionNodeResult implements Serializable{
     public void setSetupTearFailure(final Throwable t) {
         result = ExecutionResult.SETUP_TEARDOWN_FAILURE;
         thrown = t;
+    }
+
+
+
+    /**
+     * @return the executionNodeId
+     */
+    public long getExecutionNodeId() {
+        return executionNodeId;
     }
 
 }
