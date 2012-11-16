@@ -19,8 +19,10 @@
 package com.technophobia.substeps.runner;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,25 +41,80 @@ import com.technophobia.substeps.model.Step;
  */
 public class FeatureFileParserTest {
 
+
     @Test
-    public void testFeatureFileParsingWithLeadingAndTrailingApaces() {
+    public void testLineNumbersAndParsing(){
+    	
         final FeatureFileParser parser = new FeatureFileParser();
 
-        final String trimmed = FeatureFileParser
-                .stripComments("    |sknight-93@technophobia.com|G0   |(5QH) 190195 0004|Showing 1-2 of 2 items| # gds");
+    	final String featureFile = "./target/test-classes/features/lineNumbers.feature";
 
+        final FeatureFile feature = parser.loadFeatureFile(new File(featureFile));
+    
+        Assert.assertNotNull(feature);
+        
+        final List<Scenario> scenarios = feature.getScenarios();
+    
+        Assert.assertThat(scenarios.size(),is(4));
+        
+        final Scenario sc1 = scenarios.get(0);
+        
+        Assert.assertThat(sc1.getSourceStartOffset(), is(not(-1)));
+        Assert.assertThat(sc1.getSourceEndOffset(), is(not(-1)));
+
+        Assert.assertThat(sc1.getSourceStartLineNumber(), is(13));
+
+        final List<Step> steps = sc1.getSteps();
+        Assert.assertThat(steps.size(), is(7));
+        
+        final Step s1 = steps.get(0);
+        Assert.assertThat(s1.getSourceLineNumber(), is(14));
+        final Step s2 = steps.get(1);
+        Assert.assertThat(s2.getSourceLineNumber(), is(15));
+
+        final Step s3 = steps.get(2);
+        Assert.assertThat(s3.getSourceLineNumber(), is(16));
+
+        final Step s4 = steps.get(3);
+        Assert.assertThat(s4.getSourceLineNumber(), is(17));
+
+        final Step s5 = steps.get(4);
+        Assert.assertThat(s5.getSourceLineNumber(), is(18));
+
+        final Step s6 = steps.get(5);
+        Assert.assertThat(s6.getSourceLineNumber(), is(19));
+
+        final Step s7 = steps.get(6);
+        Assert.assertThat(s7.getSourceLineNumber(), is(20));
+
+        
+        final Scenario sc2 = scenarios.get(1);
+
+        Assert.assertThat(sc2.getSourceStartLineNumber(), is(23));
+
+        
         Assert.assertThat(
-                trimmed,
-                is("|sknight-93@technophobia.com|G0   |(5QH) 190195 0004|Showing 1-2 of 2 items|"));
+        sc2.getSteps().get(0).getSourceLineNumber(), is(24));
+
+
+        final Scenario sc3 = scenarios.get(2);
+        Assert.assertThat(sc3.getSourceStartLineNumber(), is(30));
+        
+        final Scenario sc4 = scenarios.get(3);
+        	
+        Assert.assertThat(sc4.getSteps().get(3).getSourceLineNumber(), is(56));
     }
+   
+    
 
+    
+    
 
-    @Test
+	@Test
     public void testFeatureFileParsing() {
         final FeatureFileParser parser = new FeatureFileParser();
 
-        final FeatureFile ff = parser.loadFeatureFile(new File(
-                "./target/test-classes/features/example2.feature"));
+        final FeatureFile ff = parser.loadFeatureFile(new File("./target/test-classes/features/example2.feature"));
 
         Assert.assertNotNull(ff);
         Assert.assertNotNull(ff.getName());
@@ -68,13 +125,11 @@ public class FeatureFileParserTest {
 
         final Scenario sc1 = ff.getScenarios().get(1);
         Assert.assertTrue(sc1.hasBackground());
-        Assert.assertThat(sc1.getBackgroundSteps().size(), is(1));
+        Assert.assertThat(sc1.getBackground().getSteps().size(), is(1));
         Assert.assertThat(sc1.getSteps().size(), is(4));
 
-        final Step withEmailAddress = ff.getScenarios().get(0).getSteps()
-                .get(0);
-        Assert.assertThat(withEmailAddress.getLine(),
-                is("Given something with an@emailaddress.com"));
+        final Step withEmailAddress = ff.getScenarios().get(0).getSteps().get(0);
+        Assert.assertThat(withEmailAddress.getLine(), is("Given something with an@emailaddress.com"));
 
         final Scenario sc2 = ff.getScenarios().get(2);
         Assert.assertTrue(sc2.isOutline());
@@ -88,8 +143,7 @@ public class FeatureFileParserTest {
         final Step step = sc3.getSteps().get(2);
         Assert.assertThat(step.getInlineTable().size(), is(1));
 
-        final Map<String, String> inlineTableRow0 = step.getInlineTable()
-                .get(0);
+        final Map<String, String> inlineTableRow0 = step.getInlineTable().get(0);
 
         Assert.assertThat(inlineTableRow0.size(), is(4));
 
@@ -124,28 +178,21 @@ public class FeatureFileParserTest {
 
         final String line8 = " 'hello' this is a non 'quoted' #' hash";
 
-        Assert.assertThat(FeatureFileParser.stripComments(line1),
-                is("hello this is a test with no comments"));
+        Assert.assertThat(FeatureFileParser.stripComments(line1), is("hello this is a test with no comments"));
 
         Assert.assertThat(FeatureFileParser.stripComments(line2), is(""));
 
-        Assert.assertThat(FeatureFileParser.stripComments(line3),
-                is("hello this is a"));
+        Assert.assertThat(FeatureFileParser.stripComments(line3), is("hello this is a"));
 
-        Assert.assertThat(FeatureFileParser.stripComments(line4),
-                is("\"hello\" this is an unquoted"));
+        Assert.assertThat(FeatureFileParser.stripComments(line4), is("\"hello\" this is an unquoted"));
 
-        Assert.assertThat(FeatureFileParser.stripComments(line5),
-                is("hello this is a quoted \" # \"hash"));
+        Assert.assertThat(FeatureFileParser.stripComments(line5), is("hello this is a quoted \" # \"hash"));
 
-        Assert.assertThat(FeatureFileParser.stripComments(line6),
-                is("hello this is a quoted '#' hash"));
+        Assert.assertThat(FeatureFileParser.stripComments(line6), is("hello this is a quoted '#' hash"));
 
-        Assert.assertThat(FeatureFileParser.stripComments(line7),
-                is("\"hello\" this is a quoted '#' hash"));
+        Assert.assertThat(FeatureFileParser.stripComments(line7), is("\"hello\" this is a quoted '#' hash"));
 
-        Assert.assertThat(FeatureFileParser.stripComments(line8),
-                is("'hello' this is a non 'quoted'"));
+        Assert.assertThat(FeatureFileParser.stripComments(line8), is("'hello' this is a non 'quoted'"));
 
     }
 

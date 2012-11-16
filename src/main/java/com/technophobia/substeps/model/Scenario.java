@@ -25,130 +25,194 @@ import java.util.Map;
 
 import org.junit.runner.Description;
 
-import com.google.common.base.Strings;
-
 public class Scenario extends RootFeature {
-	@Override
-	public String toString() {
-		return "Scenario: " + description;
-	}
+    @Override
+    public String toString() {
+        return "Scenario: " + description;
+    }
 
-	private String description;
-	private List<Step> steps;
-	private List<Map<String, String>> exampleParameters = null;
-	private String[] paramNames = null;
-	private List<Step> backgroundSteps;
-	private boolean outline;
+    private String description;
+    private Background background = null;
+    private List<Step> steps;
+    private List<ExampleParameter> exampleParameters = null;
+    private String[] paramNames = null;
+    private boolean outline;
 
-	private Description junitDescription;
+    private int scenarioLineNumber;
+    private int exampleKeysLineNumber;
 
-	private String backgroundRawText;
+    private Description junitDescription;
+
+
+    private int sourceStartOffset = -1;
+    private int sourceStartLineNumber = -1;
+	private int sourceEndOffset = -1;
+    /**
+     * @return the background
+     */
+    public Background getBackground() {
+        return background;
+    }
+
+
+    public void setBackground(final Background background) {
+        this.background = background;
+    }
+
+
+    public boolean hasBackground() {
+        return background != null;
+    }
+
+
+    /**
+     * @return the junitDescription
+     */
+    public Description getJunitDescription() {
+        return junitDescription;
+    }
+
+
+    /**
+     * @param junitDescription
+     *            the junitDescription to set
+     */
+    public void setJunitDescription(final Description junitDescription) {
+        this.junitDescription = junitDescription;
+    }
+
+
+    public String getDescription() {
+        return description;
+    }
+
+
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
+
+    public List<Step> getSteps() {
+        return steps;
+    }
+
+
+    public List<ExampleParameter> getExampleParameters() {
+        return exampleParameters;
+    }
+
+
+    public void setOutline(final boolean outline) {
+        this.outline = outline;
+    }
+
+
+    public int getScenarioLineNumber() {
+        return scenarioLineNumber;
+    }
+
+
+    public int getExampleKeysLineNumber() {
+        return exampleKeysLineNumber;
+    }
+
+
+    public void setScenarioLineNumber(final int scenarioLineNumber) {
+        this.scenarioLineNumber = scenarioLineNumber;
+    }
+
+
+    public void setExampleKeysLineNumber(final int exampleKeysLineNumber) {
+        this.exampleKeysLineNumber = exampleKeysLineNumber;
+    }
+
+
+    /**
+     * @param cukeArg
+     */
+    public void addStep(final Step cukeArg) {
+        if (cukeArg != null) {
+            if (steps == null) {
+                steps = new ArrayList<Step>();
+            }
+            steps.add(cukeArg);
+        }
+    }
+
+
+    /**
+     * @param split
+     */
+    public void addExampleKeys(final String[] split) {
+        paramNames = split;
+        exampleParameters = new ArrayList<ExampleParameter>();
+
+    }
+
+
+    public void addExampleValues(final int lineNumber, final String[] split) {
+        // Cucumber compatibility - with cuke you can get away with not defining
+        // all your columns of data, so we'll do the same
+        final Map<String, String> row = new HashMap<String, String>();
+        for (int i = 1; i < split.length; i++) {
+            row.put(paramNames[i].trim(), split[i].trim());
+        }
+        exampleParameters.add(new ExampleParameter(lineNumber, row));
+    }
+
+
+    /**
+     * @return
+     */
+    public boolean isOutline() {
+        return outline;
+    }
 
 	/**
-	 * @return the backgroundRawText
+	 * @return the sourceStartOffset
 	 */
-	public String getBackgroundRawText() {
-		return backgroundRawText;
+	public int getSourceStartOffset() {
+		return sourceStartOffset;
 	}
 
-	public boolean hasBackground() {
-		return !Strings.isNullOrEmpty(backgroundRawText);
-	}
 
 	/**
-	 * @return the junitDescription
+	 * @param sourceStartOffset the sourceStartOffset to set
 	 */
-	public Description getJunitDescription() {
-		return junitDescription;
+	public void setSourceStartOffset(final int sourceStartOffset) {
+		this.sourceStartOffset = sourceStartOffset;
 	}
+
 
 	/**
-	 * @param junitDescription
-	 *            the junitDescription to set
+	 * @return the sourceStartLineNumber
 	 */
-	public void setJunitDescription(final Description junitDescription) {
-		this.junitDescription = junitDescription;
+	public int getSourceStartLineNumber() {
+		return sourceStartLineNumber;
 	}
 
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(final String description) {
-		this.description = description;
-	}
-
-	public List<Step> getSteps() {
-		return steps;
-	}
-
-	public List<Map<String, String>> getExampleParameters() {
-		return exampleParameters;
-	}
-
-	public List<Step> getBackgroundSteps() {
-		return backgroundSteps;
-	}
-
-	public void setOutline(final boolean outline) {
-		this.outline = outline;
-	}
 
 	/**
-	 * @param background
+	 * @param sourceStartLineNumber the sourceStartLineNumber to set
 	 */
-	public void addBackgroundStep(final Step background) {
-		if (background != null) {
-			if (backgroundSteps == null) {
-				backgroundSteps = new ArrayList<Step>();
-			}
-			backgroundSteps.add(background);
-		}
+	public void setSourceStartLineNumber(final int sourceStartLineNumber) {
+		this.sourceStartLineNumber = sourceStartLineNumber;
 	}
+
 
 	/**
-	 * @param cukeArg
+	 * @param end
 	 */
-	public void addStep(final Step cukeArg) {
-		if (cukeArg != null) {
-			if (steps == null) {
-				steps = new ArrayList<Step>();
-			}
-			steps.add(cukeArg);
-		}
+	public void setSourceEndOffset(final int end) {
+		this.sourceEndOffset = end;
 	}
+
 
 	/**
-	 * @param split
+	 * @return the sourceEndOffset
 	 */
-	public void addExampleKeys(final String[] split) {
-		paramNames = split;
-		exampleParameters = new ArrayList<Map<String, String>>();
-
-	}
-
-	public void addExampleValues(final String[] split) {
-		// Cucumber compatibility - with cuke you can get away with not defining
-		// all your columns of data, so we'll do the same
-		final Map<String, String> row = new HashMap<String, String>();
-		for (int i = 1; i < split.length; i++) {
-			row.put(paramNames[i].trim(), split[i].trim());
-		}
-		exampleParameters.add(row);
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean isOutline() {
-		return outline;
-	}
-
-	/**
-	 * @param currentBackground
-	 */
-	public void setBackgroundRawText(final String backgroundRawText) {
-		this.backgroundRawText = backgroundRawText;
+	public int getSourceEndOffset() {
+		return sourceEndOffset;
 	}
 
 }

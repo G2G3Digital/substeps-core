@@ -24,35 +24,35 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * @author ian
- *
+ * 
  */
-public class FileUtils
-{
-	public static List<File> getFiles(final File fFile, final String extension) {
+// TODO replace with commons io
+@Deprecated
+public class FileUtils {
+    public static List<File> getFiles(final File fFile, final String extension) {
 
         final List<File> files = new ArrayList<File>();
-		if (fFile.exists()) {
-			if (fFile.isDirectory()) {
-				final File[] children = fFile.listFiles(new FileFilter() {
-					public boolean accept(final File dir) {
-						return dir.isDirectory()
-								|| (dir.isFile() && dir.getName().endsWith(
-										extension));
-					}
+        if (fFile.exists()) {
+            if (fFile.isDirectory()) {
+                final File[] children = fFile.listFiles(new FileFilter() {
+                    public boolean accept(final File dir) {
+                        return dir.isDirectory()
+                                || (dir.isFile() && dir.getName().endsWith(
+                                        extension));
+                    }
 
-				});
-				if (children != null && children.length > 0) {
-					for (final File f : children) {
-						files.addAll(getFiles(f, extension));
-					}
-				}
-			} else {
-				files.add(fFile);
-			}
-		}
-		return files;
+                });
+                if (children != null && children.length > 0) {
+                    for (final File f : children) {
+                        files.addAll(getFiles(f, extension));
+                    }
+                }
+            } else {
+                files.add(fFile);
+            }
+        }
+        return files;
     }
 }
