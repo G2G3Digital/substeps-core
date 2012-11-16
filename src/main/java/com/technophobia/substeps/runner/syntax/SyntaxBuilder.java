@@ -69,7 +69,7 @@ public final class SyntaxBuilder {
             final boolean strict, final String[] nonStrictKeywordPrecedence, final ClassAnalyser classAnalyser,
             final boolean failOnDuplicateEntries) {
         return buildSyntax(stepImplementationClasses, subStepsFile, strict, nonStrictKeywordPrecedence, classAnalyser,
-                failOnDuplicateEntries, null);
+                failOnDuplicateEntries, new DefaultSyntaxErrorReporter());
     }
 
 

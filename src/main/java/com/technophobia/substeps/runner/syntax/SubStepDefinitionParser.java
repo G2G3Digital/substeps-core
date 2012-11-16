@@ -76,7 +76,8 @@ public class SubStepDefinitionParser {
                 // add the last scenario in, but only if it has some steps
 
                 if (this.currentParentStep.getSteps() != null && !this.currentParentStep.getSteps().isEmpty()) {
-                    storeParentStepForPattern(this.currentParentStep.getParent().getPattern(), this.currentParentStep);
+                    storeForPatternOrReportFailure(substepFile, this.currentParentStep.getParent().getPattern(),
+                            this.currentParentStep);
                 } else {
 
                     this.log.warn("Ignoring substep definition [" + this.currentParentStep.getParent().getLine()
@@ -176,13 +177,7 @@ public class SubStepDefinitionParser {
 
                 }
 
-                try {
-                    storeParentStepForPattern(newPattern, this.currentParentStep);
-                } catch (final RuntimeException ex) {
-                    syntaxErrorReporter.reportSubstepsError(source,
-                            currentParentStep.getParent().getSourceLineNumber(), "Could not process directive "
-                                    + newPattern, ex);
-                }
+                storeForPatternOrReportFailure(source, newPattern, this.currentParentStep);
             }
 
             this.currentParentStep = new ParentStep(parent);
@@ -193,15 +188,24 @@ public class SubStepDefinitionParser {
     }
 
 
+    private void storeForPatternOrReportFailure(final File source, final String newPattern, final ParentStep parentStep) {
+        try {
+            storeParentStepForPattern(newPattern, parentStep);
+        } catch (final RuntimeException ex) {
+            syntaxErrorReporter.reportSubstepsError(source, parentStep.getParent().getLine(), parentStep.getParent()
+                    .getSourceLineNumber(), ex.getMessage(), ex);
+        }
+    }
+
+
     private void storeParentStepForPattern(final String newPattern, final ParentStep parentStep) {
         try {
             this.parentMap.put(newPattern, parentStep);
         } catch (final DuplicatePatternException ex) {
             if (this.failOnDuplicateSubsteps) {
                 throw ex;
-            } else {
-                this.log.warn("Encountered duplicate substep " + newPattern, ex);
             }
+            this.log.warn("Encountered duplicate substep " + newPattern, ex);
         }
     }
 
