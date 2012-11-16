@@ -46,119 +46,130 @@ import com.technophobia.substeps.runner.SubstepExecutionFailure;
 
 /**
  * @author ian
- *
+ * 
  */
-public class SubstepsJMXClient implements NotificationListener{
-	Logger log = LoggerFactory.getLogger(SubstepsJMXClient.class);
-	private SubstepsServerMBean mbean;
-	
-	
-	private final Map<Long, ExecutionNode> nodeMap = new HashMap<Long, ExecutionNode>();
-	
-	
-	public void init(){
+public class SubstepsJMXClient implements NotificationListener {
+    Logger log = LoggerFactory.getLogger(SubstepsJMXClient.class);
+    private SubstepsServerMBean mbean;
 
-		final String url = "service:jmx:rmi:///jndi/rmi://:9999/jmxrmi";
+    private final Map<Long, ExecutionNode> nodeMap = new HashMap<Long, ExecutionNode>();
 
-		// The address of the connector server
-		try {
-			final JMXServiceURL serviceURL = new JMXServiceURL(url);
 
-			final Map<String,?> environment = null;
+    public void init(final int portNumber) {
 
-			// Create the JMXCconnectorServer
-			final JMXConnector cntor = JMXConnectorFactory.connect(serviceURL, environment);
+        final String url = "service:jmx:rmi:///jndi/rmi://:" + portNumber
+                + "/jmxrmi";
 
-			// Obtain a "stub" for the remote MBeanServer
-			final MBeanServerConnection mbsc = cntor.getMBeanServerConnection();
+        // The address of the connector server
+        try {
+            final JMXServiceURL serviceURL = new JMXServiceURL(url);
 
-			final ObjectName objectName = new ObjectName(SubstepsJMXServer.SUBSTEPS_JMX_MBEAN_NAME);
-			this.mbean = MBeanServerInvocationHandler.newProxyInstance(mbsc,
-				objectName,
-				SubstepsServerMBean.class,
-				false);
-			
-			// register this as a listener
-	         mbsc.addNotificationListener(objectName, this, null, null);
+            final Map<String, ?> environment = null;
 
-		
-		} catch (final MalformedURLException e) {
-			e.printStackTrace();
-		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (final MalformedObjectNameException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (final NullPointerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (final InstanceNotFoundException e) {
+            // Create the JMXCconnectorServer
+            final JMXConnector cntor = JMXConnectorFactory.connect(serviceURL,
+                    environment);
+
+            // Obtain a "stub" for the remote MBeanServer
+            final MBeanServerConnection mbsc = cntor.getMBeanServerConnection();
+
+            final ObjectName objectName = new ObjectName(
+                    SubstepsJMXServer.SUBSTEPS_JMX_MBEAN_NAME);
+            this.mbean = MBeanServerInvocationHandler.newProxyInstance(mbsc,
+                    objectName, SubstepsServerMBean.class, false);
+
+            // register this as a listener
+            mbsc.addNotificationListener(objectName, this, null, null);
+
+        } catch (final MalformedURLException e) {
+            e.printStackTrace();
+        } catch (final IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (final MalformedObjectNameException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (final NullPointerException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (final InstanceNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-	}
-	
-	public ExecutionNode prepareExceutionConfig(final ExecutionConfig cfg){
-		
-	    final ExecutionNode rootNode = mbean.prepareExecutionConfig(cfg);
-	    
-	    if (rootNode != null){
-	        populateNodeMap(rootNode);
-	    }
-		return rootNode;
-	}
-	
-	private void populateNodeMap(final ExecutionNode node){
-	    
-	    if (node != null){
-            nodeMap.put(node.getLongId(), node);
-            
-            if (node.getBackgrounds() != null){
-                for (final ExecutionNode n: node.getBackgrounds()){
+    }
+
+
+    public ExecutionNode prepareExceutionConfig(final ExecutionConfig cfg) {
+
+        final ExecutionNode rootNode = this.mbean.prepareExecutionConfig(cfg);
+
+        if (rootNode != null) {
+            populateNodeMap(rootNode);
+        }
+        return rootNode;
+    }
+
+
+    private void populateNodeMap(final ExecutionNode node) {
+
+        if (node != null) {
+            this.nodeMap.put(node.getLongId(), node);
+
+            if (node.getBackgrounds() != null) {
+                for (final ExecutionNode n : node.getBackgrounds()) {
                     populateNodeMap(n);
                 }
             }
-    	    
+
             if (node.getChildren() != null) {
-                for (final ExecutionNode n: node.getChildren()){
+                for (final ExecutionNode n : node.getChildren()) {
                     populateNodeMap(n);
                 }
             }
-	    }
-	}
-	
-	public List<SubstepExecutionFailure> run(){
-		
-		return mbean.run();
-		
-		// TODO listener interface to upade the root node hierarchy
-	}
-	
-	public void shutdown(){
-		mbean.shutdown();
-	}
+        }
+    }
 
-    /* (non-Javadoc)
-     * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
+
+    public List<SubstepExecutionFailure> run() {
+
+        return this.mbean.run();
+
+        // TODO listener interface to upade the root node hierarchy
+    }
+
+
+    public void shutdown() {
+        this.mbean.shutdown();
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.management.NotificationListener#handleNotification(javax.management
+     * .Notification, java.lang.Object)
      */
-    public void handleNotification(final Notification notification, final Object handback) {
+    public void handleNotification(final Notification notification,
+            final Object handback) {
 
-        final ExecutionNodeResult newResult = (ExecutionNodeResult)notification.getUserData();
+        final ExecutionNodeResult newResult = (ExecutionNodeResult) notification
+                .getUserData();
 
-        log.debug("received notification seq: " + notification.getSequenceNumber() + " nodeid: " +
-        newResult.getExecutionNodeId() + " result: " + newResult.getResult());
+        this.log.debug("received notification seq: "
+                + notification.getSequenceNumber() + " nodeid: "
+                + newResult.getExecutionNodeId() + " result: "
+                + newResult.getResult());
 
-        
         // update the results
-        final ExecutionNode executionNode = nodeMap.get(Long.valueOf(newResult.getExecutionNodeId()));
-        
+        final ExecutionNode executionNode = this.nodeMap.get(Long
+                .valueOf(newResult.getExecutionNodeId()));
+
         final ExecutionNodeResult origResult = executionNode.getResult();
-        
+
         origResult.setResult(newResult.getResult());
         origResult.setThrown(newResult.getThrown());
-        
+
     }
-	
 
 }
