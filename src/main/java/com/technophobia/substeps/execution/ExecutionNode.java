@@ -18,6 +18,7 @@
  */
 package com.technophobia.substeps.execution;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -36,18 +37,28 @@ import com.google.common.base.Strings;
  * @author ian
  * 
  */
-public class ExecutionNode implements Serializable{
+public class ExecutionNode implements Serializable {
 
-	private static final long serialVersionUID = 4981517213059529046L;
+    private static final long serialVersionUID = 4981517213059529046L;
 
-	private static transient AtomicLong counter = new AtomicLong(1);
+    private static transient AtomicLong counter = new AtomicLong(1);
 
     private final long id; // for uniqueness
 
     private Feature feature = null;
 
-    // could be null or the name of feature or the substeps file
-    private String filename;
+    /**
+     * An {@link ExecutionNode} can be seen as compiled substeps code - ready to
+     * run. We include the fileUri and line number to tie this back to the
+     * substeps source - the files from which the compiled substeps were
+     * generated. This information could be seen as debug information - however
+     * it is useful in other places - for example in editor plugins where we
+     * have the compiled code but need to show where it came from to the user.
+     * Note that these values won't always exist, for example the root node.
+     * 
+     */
+    private String fileUri;
+    private int lineNumber;
 
     private String scenarioName = null;
 
@@ -59,7 +70,8 @@ public class ExecutionNode implements Serializable{
 
     private ExecutionNode parent = null;
 
-    // TODO - do we need to serialize this info - because we can't serialize the method or potentially the methodargs!
+    // TODO - do we need to serialize this info - because we can't serialize the
+    // method or potentially the methodargs!
 
     private transient Class<?> targetClass = null;
     private transient Method targetMethod = null;
@@ -74,34 +86,32 @@ public class ExecutionNode implements Serializable{
 
     private Set<String> tags; // used for analysis
 
-    // TODO - this needs to be set
-    private int sourceLineNumber;
 
     public ExecutionNode() {
-        id = counter.getAndIncrement();
-        result = new ExecutionNodeResult(id);
+        this.id = counter.getAndIncrement();
+        this.result = new ExecutionNodeResult(this.id);
     }
 
 
     public void addChild(final ExecutionNode child) {
         child.setParent(this);
-        child.setDepth(depth + 1);
+        child.setDepth(this.depth + 1);
 
-        if (children == null) {
-            children = new ArrayList<ExecutionNode>();
+        if (this.children == null) {
+            this.children = new ArrayList<ExecutionNode>();
         }
-        children.add(child);
+        this.children.add(child);
     }
 
 
     public void addBackground(final ExecutionNode backgroundNode) {
-        if (backgrounds == null) {
-            backgrounds = new ArrayList<ExecutionNode>();
+        if (this.backgrounds == null) {
+            this.backgrounds = new ArrayList<ExecutionNode>();
         }
         backgroundNode.background = true;
-        backgrounds.add(backgroundNode);
+        this.backgrounds.add(backgroundNode);
 
-        backgroundNode.setDepth(depth + 1);
+        backgroundNode.setDepth(this.depth + 1);
 
     }
 
@@ -110,7 +120,7 @@ public class ExecutionNode implements Serializable{
      * @return the feature
      */
     public Feature getFeature() {
-        return feature;
+        return this.feature;
     }
 
 
@@ -127,7 +137,7 @@ public class ExecutionNode implements Serializable{
      * @return the depth
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
 
@@ -144,7 +154,7 @@ public class ExecutionNode implements Serializable{
      * @return the rowNumber
      */
     public int getRowNumber() {
-        return rowNumber;
+        return this.rowNumber;
     }
 
 
@@ -161,7 +171,7 @@ public class ExecutionNode implements Serializable{
      * @return the parent
      */
     public ExecutionNode getParent() {
-        return parent;
+        return this.parent;
     }
 
 
@@ -183,7 +193,7 @@ public class ExecutionNode implements Serializable{
      * @return the id
      */
     public long getId() {
-        return id;
+        return this.id;
     }
 
 
@@ -191,7 +201,7 @@ public class ExecutionNode implements Serializable{
      * @return the targetClass
      */
     public Class<?> getTargetClass() {
-        return targetClass;
+        return this.targetClass;
     }
 
 
@@ -208,7 +218,7 @@ public class ExecutionNode implements Serializable{
      * @return the methodArgs
      */
     public Object[] getMethodArgs() {
-        return methodArgs;
+        return this.methodArgs;
     }
 
 
@@ -225,7 +235,7 @@ public class ExecutionNode implements Serializable{
      * @return the scenarioName
      */
     public String getScenarioName() {
-        return scenarioName;
+        return this.scenarioName;
     }
 
 
@@ -242,7 +252,7 @@ public class ExecutionNode implements Serializable{
      * @return the line
      */
     public String getLine() {
-        return line;
+        return this.line;
     }
 
 
@@ -259,7 +269,7 @@ public class ExecutionNode implements Serializable{
      * @return the targetMethod
      */
     public Method getTargetMethod() {
-        return targetMethod;
+        return this.targetMethod;
     }
 
 
@@ -276,7 +286,7 @@ public class ExecutionNode implements Serializable{
      * @return the children
      */
     public List<ExecutionNode> getChildren() {
-        return children;
+        return this.children;
     }
 
 
@@ -284,7 +294,7 @@ public class ExecutionNode implements Serializable{
      * @return the backgrounds
      */
     public List<ExecutionNode> getBackgrounds() {
-        return backgrounds;
+        return this.backgrounds;
     }
 
 
@@ -296,8 +306,8 @@ public class ExecutionNode implements Serializable{
 
         buf.append(toDebugString()).append("\n");
 
-        if (children != null) {
-            for (final ExecutionNode child : children) {
+        if (this.children != null) {
+            for (final ExecutionNode child : this.children) {
                 buf.append(child.toDebugString());
             }
         }
@@ -308,7 +318,7 @@ public class ExecutionNode implements Serializable{
 
     @Override
     public String toString() {
-        return id + ":" + getDescription() + " children size: "
+        return this.id + ":" + getDescription() + " children size: "
                 + getChildrenSize();
     }
 
@@ -322,7 +332,7 @@ public class ExecutionNode implements Serializable{
 
             for (final ExecutionNode child : getChildren()) {
 
-                buf.append(Strings.repeat("\t", depth));
+                buf.append(Strings.repeat("\t", this.depth));
                 buf.append(child.treeToString());
                 buf.append("\n");
             }
@@ -335,28 +345,28 @@ public class ExecutionNode implements Serializable{
     public String getDebugStringForThisNode() {
         final StringBuilder buf = new StringBuilder();
 
-        buf.append(id);
+        buf.append(this.id);
 
-        if (parent != null) {
-            buf.append(Strings.repeat("\t", depth));
+        if (this.parent != null) {
+            buf.append(Strings.repeat("\t", this.depth));
 
-            if (feature != null) {
-                buf.append(feature.getName()).append(" in ")
-                        .append(feature.getFilename()).append("\n");
-            } else if (scenarioName != null) {
-                buf.append(scenarioName).append("\n");
+            if (this.feature != null) {
+                buf.append(this.feature.getName()).append(" in ")
+                        .append(this.feature.getFilename()).append("\n");
+            } else if (this.scenarioName != null) {
+                buf.append(this.scenarioName).append("\n");
             }
 
-            if (rowNumber > -1) {
-                buf.append("outline #: ").append(rowNumber).append("\n");
+            if (this.rowNumber > -1) {
+                buf.append("outline #: ").append(this.rowNumber).append("\n");
             }
 
-            if (background) {
+            if (this.background) {
                 buf.append("BACKGROUND\n");
             }
 
-            if (line != null) {
-                buf.append(line);
+            if (this.line != null) {
+                buf.append(this.line);
             }
 
             appendMethodInfo("  -  ", buf);
@@ -374,35 +384,35 @@ public class ExecutionNode implements Serializable{
     public String toDebugString() {
         final StringBuilder buf = new StringBuilder();
 
-        if (parent != null) {
+        if (this.parent != null) {
 
-            buf.append(id).append(Strings.repeat("\t", depth)).append("file: ")
-                    .append(getFilename()).append(" ").append(parent.getId())
-                    .append(" ");
+            buf.append(this.id).append(Strings.repeat("\t", this.depth))
+                    .append("file: ").append(getFilename()).append(" ")
+                    .append(this.parent.getId()).append(" ");
 
-            if (feature != null) {
-                buf.append(feature.getName()).append("\n");
-            } else if (scenarioName != null) {
-                buf.append(scenarioName).append("\n");
+            if (this.feature != null) {
+                buf.append(this.feature.getName()).append("\n");
+            } else if (this.scenarioName != null) {
+                buf.append(this.scenarioName).append("\n");
             }
 
-            if (rowNumber > -1) {
-                buf.append(" outline #: ").append(rowNumber).append("\n");
+            if (this.rowNumber > -1) {
+                buf.append(" outline #: ").append(this.rowNumber).append("\n");
             }
 
-            if (background) {
+            if (this.background) {
                 buf.append("BACKGROUND\n");
             }
 
-            if (backgrounds != null) {
-                for (final ExecutionNode backgroundNode : backgrounds) {
+            if (this.backgrounds != null) {
+                for (final ExecutionNode backgroundNode : this.backgrounds) {
                     buf.append(backgroundNode.toDebugString());
                 }
             }
 
             boolean printedLine = false;
-            if (line != null) {
-                buf.append(line);
+            if (this.line != null) {
+                buf.append(this.line);
                 printedLine = true;
             }
 
@@ -413,8 +423,8 @@ public class ExecutionNode implements Serializable{
             }
         }
 
-        if (children != null) {
-            for (final ExecutionNode child : children) {
+        if (this.children != null) {
+            for (final ExecutionNode child : this.children) {
                 buf.append(child.toDebugString());
             }
         }
@@ -433,18 +443,18 @@ public class ExecutionNode implements Serializable{
      * @param buf
      */
     public void appendMethodInfo(final String prefix, final StringBuilder buf) {
-        if (targetClass != null && targetMethod != null) {
+        if (this.targetClass != null && this.targetMethod != null) {
 
             if (prefix != null) {
                 buf.append(prefix);
             }
 
-            buf.append(targetClass.getSimpleName()).append(".")
-                    .append(targetMethod.getName()).append("(");
+            buf.append(this.targetClass.getSimpleName()).append(".")
+                    .append(this.targetMethod.getName()).append("(");
 
-            if (methodArgs != null) {
+            if (this.methodArgs != null) {
                 boolean commaRequired = false;
-                for (final Object arg : methodArgs) {
+                for (final Object arg : this.methodArgs) {
                     if (commaRequired) {
                         buf.append(", ");
                     }
@@ -471,7 +481,7 @@ public class ExecutionNode implements Serializable{
      * @return
      */
     public boolean isOutlineScenario() {
-        return outline;
+        return this.outline;
     }
 
 
@@ -479,7 +489,7 @@ public class ExecutionNode implements Serializable{
      * @param b
      */
     public void setOutline(final boolean isOutline) {
-        outline = isOutline;
+        this.outline = isOutline;
 
     }
 
@@ -488,7 +498,7 @@ public class ExecutionNode implements Serializable{
      * @return
      */
     public boolean hasBackground() {
-        return backgrounds != null && !backgrounds.isEmpty();
+        return this.backgrounds != null && !this.backgrounds.isEmpty();
     }
 
 
@@ -504,7 +514,7 @@ public class ExecutionNode implements Serializable{
      * @return
      */
     public boolean hasChildren() {
-        return children != null && !children.isEmpty();
+        return this.children != null && !this.children.isEmpty();
     }
 
 
@@ -512,7 +522,7 @@ public class ExecutionNode implements Serializable{
      * @return
      */
     public Long getLongId() {
-        return Long.valueOf(id);
+        return Long.valueOf(this.id);
     }
 
 
@@ -528,7 +538,7 @@ public class ExecutionNode implements Serializable{
      * @return
      */
     public boolean isScenario() {
-        return scenarioName != null;
+        return this.scenarioName != null;
     }
 
 
@@ -536,7 +546,7 @@ public class ExecutionNode implements Serializable{
      * @return
      */
     public boolean isFeature() {
-        return feature != null;
+        return this.feature != null;
     }
 
 
@@ -544,7 +554,7 @@ public class ExecutionNode implements Serializable{
      * @return the result
      */
     public ExecutionNodeResult getResult() {
-        return result;
+        return this.result;
     }
 
 
@@ -552,7 +562,7 @@ public class ExecutionNode implements Serializable{
      * @return the tags
      */
     public Set<String> getTags() {
-        return tags;
+        return this.tags;
     }
 
 
@@ -570,8 +580,8 @@ public class ExecutionNode implements Serializable{
      */
     public boolean isStep() {
 
-        return depth == 3 && !isOutlineScenario() || depth == 4
-                && parent.isOutlineScenario();
+        return this.depth == 3 && !isOutlineScenario() || this.depth == 4
+                && this.parent.isOutlineScenario();
     }
 
 
@@ -584,7 +594,7 @@ public class ExecutionNode implements Serializable{
     public int hashCode() {
         final int prime = 31;
         int res = 1;
-        res = prime * res + (int) (id ^ (id >>> 32));
+        res = prime * res + (int) (this.id ^ (this.id >>> 32));
         return res;
     }
 
@@ -606,7 +616,7 @@ public class ExecutionNode implements Serializable{
             return false;
         }
         final ExecutionNode other = (ExecutionNode) obj;
-        if (id != other.id) {
+        if (this.id != other.id) {
             return false;
         }
         return true;
@@ -617,35 +627,45 @@ public class ExecutionNode implements Serializable{
      * @return the filename
      */
     public String getFilename() {
-        // use this filename if specified, or go up through the tree till we get
-        // an answer
-
-        if (filename != null) {
-            return filename;
-        } else if (parent != null) {
-            filename = parent.getFilename();
-            return filename;
-        } else {
-            filename = "";
-        }
-
-        return filename;
+        return new File(getFileUri()).getName();
     }
 
 
-    /**
-     * @param filename
-     *            the filename to set
-     */
-    public void setFilename(final String filename) {
-        this.filename = filename;
+    public String getFileUri() {
+        // Use this filename if specified, or go up through the tree till we get
+        // an answer
+        if (this.fileUri != null) {
+            return this.fileUri;
+        } else if (this.parent != null) {
+            this.fileUri = this.parent.getFileUri();
+            return this.fileUri;
+        } else {
+            this.fileUri = "";
+        }
+
+        return this.fileUri;
+    }
+
+
+    public void setFileUri(final String fileUri) {
+        this.fileUri = fileUri;
+    }
+
+
+    public int getLineNumber() {
+        return this.lineNumber;
+    }
+
+
+    public void setLineNumber(final int lineNumber) {
+        this.lineNumber = lineNumber;
     }
 
 
     public String getType() {
 
         String rtn = null;
-        if (parent == null) {
+        if (this.parent == null) {
             rtn = "Root node";
         } else if (isFeature()) {
             rtn = "Feature";
@@ -655,7 +675,7 @@ public class ExecutionNode implements Serializable{
             rtn = "Scenario Outline";
         } else if (isStep()) {
             rtn = "Step";
-        } else if (targetMethod != null) {
+        } else if (this.targetMethod != null) {
             rtn = "Step Implementation";
         }
         return rtn;
@@ -668,17 +688,17 @@ public class ExecutionNode implements Serializable{
         // return a string that represents what this is
         String rtn = null;
 
-        if (line != null) {
-            rtn = line;
+        if (this.line != null) {
+            rtn = this.line;
         } else {
             if (isFeature()) {
 
-                rtn = feature.getName();
+                rtn = this.feature.getName();
             } else if (isScenario()) {
 
-                rtn = scenarioName;
-            } else if (parent != null && parent.isOutlineScenario()) {
-                rtn = parent.scenarioName + " [" + rowNumber + "]";
+                rtn = this.scenarioName;
+            } else if (this.parent != null && this.parent.isOutlineScenario()) {
+                rtn = this.parent.scenarioName + " [" + this.rowNumber + "]";
             }
         }
         return rtn;
@@ -686,13 +706,13 @@ public class ExecutionNode implements Serializable{
 
 
     public boolean hasError() {
-        return result.getResult() == ExecutionResult.FAILED
-                || result.getResult() == ExecutionResult.PARSE_FAILURE;
+        return this.result.getResult() == ExecutionResult.FAILED
+                || this.result.getResult() == ExecutionResult.PARSE_FAILURE;
     }
 
 
     public boolean hasPassed() {
-        return result.getResult() == ExecutionResult.PASSED;
+        return this.result.getResult() == ExecutionResult.PASSED;
     }
 
 
@@ -723,7 +743,7 @@ public class ExecutionNode implements Serializable{
         // TODO - how should we handle background or setup and tear down
         // failures ?
 
-        final List<ExecutionNode> failed = filterNodes(children,
+        final List<ExecutionNode> failed = filterNodes(this.children,
                 new Predicate<ExecutionNode>() {
 
                     public boolean apply(final ExecutionNode input) {
@@ -766,7 +786,7 @@ public class ExecutionNode implements Serializable{
         // this node's state is failed, or any of this node's children's state
         // has failed
         // TODO include backgrounds
-        return result.getResult() == ExecutionResult.FAILED
+        return this.result.getResult() == ExecutionResult.FAILED
                 || getFailedChildNodes() != null;
     }
 
@@ -776,8 +796,8 @@ public class ExecutionNode implements Serializable{
      */
     public ExecutionNode getChild(final int i) {
         ExecutionNode rtn = null;
-        if (children != null && children.size() > i) {
-            rtn = children.get(i);
+        if (this.children != null && this.children.size() > i) {
+            rtn = this.children.get(i);
         }
         return rtn;
     }
@@ -789,8 +809,8 @@ public class ExecutionNode implements Serializable{
     public int getChildrenSize() {
         int rtn = 0;
 
-        if (children != null) {
-            rtn = children.size();
+        if (this.children != null) {
+            rtn = this.children.size();
         }
 
         return rtn;

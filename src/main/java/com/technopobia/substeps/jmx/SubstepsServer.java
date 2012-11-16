@@ -34,123 +34,127 @@ import com.technophobia.substeps.runner.ExecutionNodeRunner;
 import com.technophobia.substeps.runner.INotifier;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 
-
 /**
  * @author ian
- *
+ * 
  */
-public class SubstepsServer extends NotificationBroadcasterSupport 
-	implements SubstepsServerMBean, INotifier{
+public class SubstepsServer extends NotificationBroadcasterSupport implements
+        SubstepsServerMBean, INotifier {
 
-	private final Logger log = LoggerFactory.getLogger(SubstepsServer.class);
-	
-	private ExecutionNodeRunner nodeRunner = null;
-	private final CountDownLatch shutdownSignal;
-	/**
-	 * @param shutdownSignal
-	 */
-	public SubstepsServer(final CountDownLatch shutdownSignal) {
-		this.shutdownSignal = shutdownSignal;
-	}
-	
-	public void shutdown(){
-		this.shutdownSignal.countDown();
-	}
+    private final Logger log = LoggerFactory.getLogger(SubstepsServer.class);
 
-	/* (non-Javadoc)
-	 * @see com.technopobia.substeps.jmx.SubstepsMBean#prepareExecutionConfig(com.technophobia.substeps.runner.ExecutionConfig)
-	 */
-	public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig) {
-		// TODO - synchronise around the init call ?
-		nodeRunner = new ExecutionNodeRunner();
-		return nodeRunner.prepareExecutionConfig(theConfig);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.technopobia.substeps.jmx.SubstepsMBean#run()
-	 */
-	public List<SubstepExecutionFailure> run() {
-		
-		// attach a result listener to broadcast
-		
-		nodeRunner.addNotifier(this);
-		
-		return nodeRunner.run();
-	}
-	
-	private long notificationSequenceNumber = 1;
-	
-	private void doNotification(final ExecutionNode node){
-		
-		// TODO - should use the object name as the source of the notification rather than this object
-		// extend notification instead - apparently not !
-		// http://stackoverflow.com/questions/5554529/best-practice-for-emitting-jmx-notifications
-		
-		final Notification n =
-			    new Notification("type", this,
-			            notificationSequenceNumber);
-
-		System.out.println("sending notification: seq: " + notificationSequenceNumber + " node id: " + node.getId() + " result: " + node.getResult().getResult());
-		
-		notificationSequenceNumber++;		        
-		        
-		n.setUserData(node.getResult());
-		
-			/* Now send the notification using the sendNotification method
-			   inherited from the parent class NotificationBroadcasterSupport. */
-			sendNotification(n);
-		
-	}
+    private ExecutionNodeRunner nodeRunner = null;
+    private final CountDownLatch shutdownSignal;
 
 
+    /**
+     * @param shutdownSignal
+     */
+    public SubstepsServer(final CountDownLatch shutdownSignal) {
+        this.shutdownSignal = shutdownSignal;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
-	 * .substeps.execution.ExecutionNode, java.lang.Throwable)
-	 */
-	public void notifyNodeFailed(final ExecutionNode node, final Throwable cause) {
 
-		doNotification(node);
+    public void shutdown() {
+        this.shutdownSignal.countDown();
+    }
 
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
-	 * .substeps.execution.ExecutionNode)
-	 */
-	public void notifyNodeStarted(final ExecutionNode node) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technopobia.substeps.jmx.SubstepsMBean#prepareExecutionConfig(com
+     * .technophobia.substeps.runner.ExecutionConfig)
+     */
+    public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig) {
+        // TODO - synchronise around the init call ?
+        this.nodeRunner = new ExecutionNodeRunner();
+        return this.nodeRunner.prepareExecutionConfig(theConfig);
+    }
 
-		doNotification(node);
 
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.technopobia.substeps.jmx.SubstepsMBean#run()
+     */
+    public List<SubstepExecutionFailure> run() {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
-	 * technophobia.substeps.execution.ExecutionNode)
-	 */
-	public void notifyNodeFinished(final ExecutionNode node) {
+        // attach a result listener to broadcast
 
-		doNotification(node);
+        this.nodeRunner.addNotifier(this);
 
-	}
+        return this.nodeRunner.run();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
-	 * .substeps.execution.ExecutionNode)
-	 */
-	public void notifyNodeIgnored(final ExecutionNode node) {
+    private long notificationSequenceNumber = 1;
 
-		doNotification(node);
-	}
+
+    private void doNotification(final ExecutionNode node) {
+
+        final Notification n = new Notification("ExNode", this,
+                this.notificationSequenceNumber);
+
+        this.notificationSequenceNumber++;
+
+        n.setUserData(node.getResult());
+
+        sendNotification(n);
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
+     * .substeps.execution.ExecutionNode, java.lang.Throwable)
+     */
+    public void notifyNodeFailed(final ExecutionNode node, final Throwable cause) {
+
+        doNotification(node);
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
+     * .substeps.execution.ExecutionNode)
+     */
+    public void notifyNodeStarted(final ExecutionNode node) {
+
+        doNotification(node);
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
+     * technophobia.substeps.execution.ExecutionNode)
+     */
+    public void notifyNodeFinished(final ExecutionNode node) {
+
+        doNotification(node);
+
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
+     * .substeps.execution.ExecutionNode)
+     */
+    public void notifyNodeIgnored(final ExecutionNode node) {
+
+        doNotification(node);
+    }
 }

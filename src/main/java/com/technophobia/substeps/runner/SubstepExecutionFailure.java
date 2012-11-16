@@ -19,99 +19,109 @@
 
 package com.technophobia.substeps.runner;
 
+import java.io.Serializable;
+
 import com.technophobia.substeps.execution.ExecutionNode;
 
 /**
- * represents the failure of an execution - could be a step method, or a setup method, may or may not be critical
+ * represents the failure of an execution - could be a step method, or a setup
+ * method, may or may not be critical
+ * 
  * @author ian
- *
+ * 
  */
-public class SubstepExecutionFailure {
+public class SubstepExecutionFailure implements Serializable {
 
-	private final Throwable cause;
-	private ExecutionNode execcutionNode;
-	private boolean setupOrTearDown = false;
-	private boolean nonCritical = false;
-	
-	
-	public SubstepExecutionFailure(final Throwable cause) {
-        
-		this.cause = cause;
+    private static final long serialVersionUID = 4981517213059529046L;
+
+    private final Throwable cause;
+    private ExecutionNode execcutionNode;
+    private boolean setupOrTearDown = false;
+    private boolean nonCritical = false;
+
+
+    public SubstepExecutionFailure(final Throwable cause) {
+
+        this.cause = cause;
     }
 
 
-	/**
-	 * @param targetException
-	 * @param node
-	 */
-	public SubstepExecutionFailure(final Throwable targetException, final ExecutionNode node) {
-		this.cause = targetException;
-		this.execcutionNode = node;
-	}
+    /**
+     * @param targetException
+     * @param node
+     */
+    public SubstepExecutionFailure(final Throwable targetException,
+            final ExecutionNode node) {
+        this.cause = targetException;
+        this.execcutionNode = node;
+    }
 
 
-	public SubstepExecutionFailure(final Throwable targetException, final ExecutionNode node, final boolean setupOrTearDown) {
+    public SubstepExecutionFailure(final Throwable targetException,
+            final ExecutionNode node, final boolean setupOrTearDown) {
 
-		this.cause = targetException;
-		this.execcutionNode = node;
-		this.setupOrTearDown = setupOrTearDown; 
-	}
-
-
-	/**
-	 * @return the execcutionNode
-	 */
-	public ExecutionNode getExeccutionNode() {
-		return execcutionNode;
-	}
+        this.cause = targetException;
+        this.execcutionNode = node;
+        this.setupOrTearDown = setupOrTearDown;
+    }
 
 
-	/**
-	 * @param execcutionNode the execcutionNode to set
-	 */
-	public void setExeccutionNode(final ExecutionNode execcutionNode) {
-		this.execcutionNode = execcutionNode;
-	}
+    /**
+     * @return the execcutionNode
+     */
+    public ExecutionNode getExeccutionNode() {
+        return this.execcutionNode;
+    }
 
 
-	/**
-	 * @return the setupOrTearDown
-	 */
-	public boolean isSetupOrTearDown() {
-		return setupOrTearDown;
-	}
+    /**
+     * @param execcutionNode
+     *            the execcutionNode to set
+     */
+    public void setExeccutionNode(final ExecutionNode execcutionNode) {
+        this.execcutionNode = execcutionNode;
+    }
 
 
-	/**
-	 * @param setupOrTearDown the setupOrTearDown to set
-	 */
-	public void setSetupOrTearDown(final boolean setupOrTearDown) {
-		this.setupOrTearDown = setupOrTearDown;
-	}
+    /**
+     * @return the setupOrTearDown
+     */
+    public boolean isSetupOrTearDown() {
+        return this.setupOrTearDown;
+    }
 
 
-	/**
-	 * @return the cause
-	 */
-	public Throwable getCause() {
-		return cause;
-	}
+    /**
+     * @param setupOrTearDown
+     *            the setupOrTearDown to set
+     */
+    public void setSetupOrTearDown(final boolean setupOrTearDown) {
+        this.setupOrTearDown = setupOrTearDown;
+    }
 
 
-	/**
-	 * @param b
-	 */
-	public void setNonCritical(final boolean isNonCritical) {
-		this.nonCritical = isNonCritical;
-		
-	}
+    /**
+     * @return the cause
+     */
+    public Throwable getCause() {
+        return this.cause;
+    }
 
 
-	/**
-	 * @return the nonCritical
-	 */
-	public boolean isNonCritical() {
-		return nonCritical;
-	}
+    /**
+     * @param b
+     */
+    public void setNonCritical(final boolean isNonCritical) {
+        this.nonCritical = isNonCritical;
+
+    }
+
+
+    /**
+     * @return the nonCritical
+     */
+    public boolean isNonCritical() {
+        return this.nonCritical;
+    }
 
 }

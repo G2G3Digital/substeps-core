@@ -20,10 +20,14 @@
 package com.technopobia.substeps.jmx;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
@@ -41,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionNodeResult;
+import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.runner.ExecutionConfig;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 
@@ -53,6 +58,8 @@ public class SubstepsJMXClient implements NotificationListener {
     private SubstepsServerMBean mbean;
 
     private final Map<Long, ExecutionNode> nodeMap = new HashMap<Long, ExecutionNode>();
+    private Set<Long> nodesNotRun = null;
+    private int totalNodesToRun;
 
 
     public void init(final int portNumber) {
@@ -106,6 +113,10 @@ public class SubstepsJMXClient implements NotificationListener {
         if (rootNode != null) {
             populateNodeMap(rootNode);
         }
+
+        this.nodesNotRun = new HashSet<Long>();
+        this.nodesNotRun.addAll(this.nodeMap.keySet());
+        this.totalNodesToRun = this.nodesNotRun.size();
         return rootNode;
     }
 
@@ -156,14 +167,29 @@ public class SubstepsJMXClient implements NotificationListener {
         final ExecutionNodeResult newResult = (ExecutionNodeResult) notification
                 .getUserData();
 
-        this.log.debug("received notification seq: "
+        this.log.trace("received notification seq: "
                 + notification.getSequenceNumber() + " nodeid: "
                 + newResult.getExecutionNodeId() + " result: "
                 + newResult.getResult());
 
+        final Long id = Long.valueOf(newResult.getExecutionNodeId());
         // update the results
-        final ExecutionNode executionNode = this.nodeMap.get(Long
-                .valueOf(newResult.getExecutionNodeId()));
+        final ExecutionNode executionNode = this.nodeMap.get(id);
+
+        if (newResult.getResult() == ExecutionResult.RUNNING) {
+
+            this.nodesNotRun.remove(id);
+
+        }
+
+        final int numberRun = this.totalNodesToRun - this.nodesNotRun.size();
+
+        final BigDecimal percentComplete = BigDecimal.valueOf(numberRun)
+                .divide(BigDecimal.valueOf(this.totalNodesToRun))
+                .setScale(3, RoundingMode.HALF_DOWN);
+
+        System.out.println(percentComplete.toString() + " % complete: run: "
+                + numberRun + " not run: " + this.nodesNotRun);
 
         final ExecutionNodeResult origResult = executionNode.getResult();
 
