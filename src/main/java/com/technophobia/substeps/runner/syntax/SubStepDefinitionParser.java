@@ -29,16 +29,22 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
-import com.technophobia.substeps.model.DuplicatePatternException;
 import com.technophobia.substeps.model.ParentStep;
 import com.technophobia.substeps.model.PatternMap;
 import com.technophobia.substeps.model.Step;
+import com.technophobia.substeps.model.exception.DuplicatePatternException;
 
 /**
  * @author ian
  * 
+ *         TODO: failOnDuplicateSubsteps is used inconsistently between
+ *         processDirective and parseSubStepFile. It's also being interpreted as
+ *         'fail-fast' when it was intended to mean
+ *         parse-and-(run|don't-run)-on-error.
+ * 
  */
 public class SubStepDefinitionParser {
+
     private final Logger log = LoggerFactory.getLogger(SubStepDefinitionParser.class);
 
     private ParentStep currentParentStep;
@@ -49,17 +55,14 @@ public class SubStepDefinitionParser {
 
     private final SyntaxErrorReporter syntaxErrorReporter;
 
-
     public SubStepDefinitionParser(final SyntaxErrorReporter syntaxErrorReporter) {
         this(true, syntaxErrorReporter);
     }
-
 
     public SubStepDefinitionParser(final boolean failOnDuplicateSubsteps, final SyntaxErrorReporter syntaxErrorReporter) {
         this.failOnDuplicateSubsteps = failOnDuplicateSubsteps;
         this.syntaxErrorReporter = syntaxErrorReporter;
     }
-
 
     private void parseSubStepFile(final File substepFile) {
         try {
@@ -76,8 +79,18 @@ public class SubStepDefinitionParser {
                 // add the last scenario in, but only if it has some steps
 
                 if (this.currentParentStep.getSteps() != null && !this.currentParentStep.getSteps().isEmpty()) {
-                    storeForPatternOrReportFailure(substepFile, this.currentParentStep.getParent().getPattern(),
-                            this.currentParentStep);
+                    try {
+                        storeForPatternOrThrowException(this.currentParentStep.getParent().getPattern(),
+                                this.currentParentStep);
+                    } catch (final DuplicatePatternException ex) {
+                        syntaxErrorReporter.reportSubstepsError(ex);
+
+                        // TODO: wouldn't we want to parse all the files first,
+                        // then fail if there are errors?
+                        if (failOnDuplicateSubsteps) {
+                            throw ex;
+                        }
+                    }
                 } else {
 
                     this.log.warn("Ignoring substep definition [" + this.currentParentStep.getParent().getLine()
@@ -95,7 +108,6 @@ public class SubStepDefinitionParser {
         }
     }
 
-
     public PatternMap<ParentStep> loadSubSteps(final File definitions) {
 
         final List<File> substepsFiles = FileUtils.getFiles(definitions, ".substeps");
@@ -106,7 +118,6 @@ public class SubStepDefinitionParser {
 
         return this.parentMap;
     }
-
 
     private void processLine(final String line, final File source, final int lineNumber) {
 
@@ -122,7 +133,6 @@ public class SubStepDefinitionParser {
 
         }
     }
-
 
     private void processTrimmedLine(final String trimmed, final File source, final int lineNumber) {
 
@@ -154,59 +164,45 @@ public class SubStepDefinitionParser {
         }
     }
 
-
     private void processDirective(final Directive d, final String remainder, final File source, final int lineNumber) {
         this.currentDirective = d;
 
         switch (this.currentDirective) {
 
-        case DEFINITION: {
+            case DEFINITION: {
 
-            // build up a Step from the remainder
+                // build up a Step from the remainder
 
-            final Step parent = new Step(remainder, true, source, lineNumber);
+                final Step parent = new Step(remainder, true, source, lineNumber);
 
-            if (this.currentParentStep != null) {
-                final String newPattern = this.currentParentStep.getParent().getPattern();
-                // check for existing values
-                if (this.parentMap.containsPattern(newPattern)) {
-                    final ParentStep otherValue = this.parentMap.getValueForPattern(newPattern);
+                if (this.currentParentStep != null) {
+                    final String newPattern = this.currentParentStep.getParent().getPattern();
 
-                    this.log.error("duplicate patterns detected: " + newPattern + " in : "
-                            + otherValue.getSubStepFile() + " and " + this.currentParentStep.getSubStepFile());
-
+                    try {
+                        // XXX: we ignore the value of failOnDuplicateErrors
+                        // here... why?
+                        storeForPatternOrThrowException(newPattern, this.currentParentStep);
+                    } catch (final DuplicatePatternException ex) {
+                        syntaxErrorReporter.reportSubstepsError(ex);
+                    }
                 }
 
-                storeForPatternOrReportFailure(source, newPattern, this.currentParentStep);
+                this.currentParentStep = new ParentStep(parent);
+
+                break;
             }
-
-            this.currentParentStep = new ParentStep(parent);
-
-            break;
-        }
         }
     }
 
+    private void storeForPatternOrThrowException(final String newPattern, final ParentStep parentStep)
+            throws DuplicatePatternException {
 
-    private void storeForPatternOrReportFailure(final File source, final String newPattern, final ParentStep parentStep) {
-        try {
-            storeParentStepForPattern(newPattern, parentStep);
-        } catch (final RuntimeException ex) {
-            syntaxErrorReporter.reportSubstepsError(source, parentStep.getParent().getLine(), parentStep.getParent()
-                    .getSourceLineNumber(), ex.getMessage(), ex);
-        }
-    }
-
-
-    private void storeParentStepForPattern(final String newPattern, final ParentStep parentStep) {
-        try {
+        if (!this.parentMap.containsPattern(newPattern)) {
             this.parentMap.put(newPattern, parentStep);
-        } catch (final DuplicatePatternException ex) {
-            if (this.failOnDuplicateSubsteps) {
-                throw ex;
-            }
-            this.log.warn("Encountered duplicate substep " + newPattern, ex);
+        } else if (failOnDuplicateSubsteps) {
+            throw new DuplicatePatternException(newPattern, parentMap.getValueForPattern(newPattern), parentStep);
         }
+
     }
 
     private static enum Directive {
@@ -223,7 +219,6 @@ public class SubStepDefinitionParser {
     }
 
     private Directive currentDirective = null;
-
 
     private Directive isDirective(final String word) {
 

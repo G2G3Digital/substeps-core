@@ -26,11 +26,11 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.technophobia.substeps.model.DuplicatePatternException;
 import com.technophobia.substeps.model.ParentStep;
 import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.StepImplementation;
 import com.technophobia.substeps.model.Syntax;
+import com.technophobia.substeps.model.exception.DuplicatePatternException;
 import com.technophobia.substeps.stepimplementations.DuplicateStepImplementations;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import com.technophobia.substeps.stepimplementations.MockStepImplementationsContainer;

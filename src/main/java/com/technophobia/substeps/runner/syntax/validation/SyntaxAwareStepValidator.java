@@ -17,14 +17,11 @@ public class SyntaxAwareStepValidator implements StepValidator {
     private final PatternMap<StepImplementation> stepImplMap;
     private final Syntax syntax;
 
-
     public SyntaxAwareStepValidator(final Syntax syntax) {
         this.syntax = syntax;
         this.stepImplMap = createStepImplMap();
     }
 
-
-    @Override
     public void validateFeatureFile(final FeatureFile featureFile, final SyntaxErrorReporter syntaxErrorReporter) {
         final List<Scenario> scenarios = featureFile.getScenarios();
         if (scenarios != null) {
@@ -34,8 +31,6 @@ public class SyntaxAwareStepValidator implements StepValidator {
         }
     }
 
-
-    @Override
     public void validateSubstep(final ParentStep substep, final SyntaxErrorReporter syntaxErrorReporter) {
         final List<Step> steps = substep.getSteps();
         if (steps != null) {
@@ -44,7 +39,6 @@ public class SyntaxAwareStepValidator implements StepValidator {
             }
         }
     }
-
 
     protected void validate(final Scenario scenario, final File sourceFile,
             final SyntaxErrorReporter syntaxErrorReporter) {
@@ -56,14 +50,12 @@ public class SyntaxAwareStepValidator implements StepValidator {
         }
     }
 
-
     protected void validate(final Step step, final File sourceFile, final SyntaxErrorReporter syntaxErrorReporter) {
         if (!isValid(step)) {
             syntaxErrorReporter.reportFeatureError(sourceFile, step.getLine(), step.getSourceLineNumber(), "Step \""
                     + step.getLine() + "\" is not defined");
         }
     }
-
 
     protected boolean isValid(final Step step) {
         final List<ParentStep> substeps = syntax.getSubStepsMap().get(step.getLine());
@@ -77,7 +69,6 @@ public class SyntaxAwareStepValidator implements StepValidator {
         }
         return false;
     }
-
 
     private PatternMap<StepImplementation> createStepImplMap() {
         final PatternMap<StepImplementation> results = new PatternMap<StepImplementation>();

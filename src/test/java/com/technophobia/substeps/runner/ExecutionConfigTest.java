@@ -28,8 +28,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.technophobia.substeps.model.SubStepConfigurationException;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 
 /**
  * @author ian
@@ -118,7 +118,7 @@ public class ExecutionConfigTest {
 		Assert.assertEquals(initialisationClasses[idx++], InitClass4.class);
 	}
 
-	@Test (expected=SubStepConfigurationException.class)
+	@Test (expected=SubstepsConfigurationException.class)
 	public void testIncompatibleDeterminInitialisationClasses(){
 		
 		final ExecutionConfig config = new ExecutionConfig();

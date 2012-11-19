@@ -27,6 +27,9 @@ import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.technophobia.substeps.model.exception.DuplicateStepImplementationException;
+import com.technophobia.substeps.model.exception.StepImplementationException;
+import com.technophobia.substeps.model.exception.UndefinedStepImplementationException;
 import com.technophobia.substeps.runner.syntax.DefaultSyntaxErrorReporter;
 import com.technophobia.substeps.runner.syntax.SyntaxErrorReporter;
 
@@ -37,6 +40,7 @@ import com.technophobia.substeps.runner.syntax.SyntaxErrorReporter;
  * 
  */
 public class Syntax {
+
     // These two will always be populated
     private final Map<String, PatternMap<StepImplementation>> stepImplementationMap = new HashMap<String, PatternMap<StepImplementation>>();
 
@@ -49,21 +53,17 @@ public class Syntax {
 
     private final SyntaxErrorReporter syntaxErrorReporter;
 
-
     public Syntax() {
         this(new DefaultSyntaxErrorReporter());
     }
-
 
     public Syntax(final SyntaxErrorReporter syntaxErrorReporter) {
         this.syntaxErrorReporter = syntaxErrorReporter;
     }
 
-
     public Map<String, PatternMap<StepImplementation>> getStepImplementationMap() {
         return stepImplementationMap;
     }
-
 
     public List<StepImplementation> getStepImplementations() {
         // build a list of the impls in the order of the annotations
@@ -88,7 +88,6 @@ public class Syntax {
         return allImpls;
     }
 
-
     /**
      * @param keyWord
      * @return
@@ -97,7 +96,6 @@ public class Syntax {
         return stepImplementationMap.get(keyWord);
     }
 
-
     /**
      * @param loadSubSteps
      */
@@ -105,11 +103,9 @@ public class Syntax {
         subStepsMap = loadSubSteps;
     }
 
-
     public PatternMap<ParentStep> getSubStepsMap() {
         return subStepsMap;
     }
-
 
     /**
      * @return
@@ -125,7 +121,6 @@ public class Syntax {
         return sortedList;
     }
 
-
     /**
      * @param impl
      * @param syntaxErrorReporter
@@ -139,17 +134,18 @@ public class Syntax {
             stepImplementationMap.put(impl.getKeyword(), patternMap);
         }
 
-        try {
-            patternMap.put(impl.getValue(), impl);
-        } catch (final DuplicatePatternException ex) {
+        final String pattern = impl.getValue();
+        if (!patternMap.containsPattern(pattern)) {
+            patternMap.put(pattern, impl);
+        } else {
+            final StepImplementationException ex = new DuplicateStepImplementationException(pattern,
+                    patternMap.getValueForPattern(pattern), impl);
+            syntaxErrorReporter.reportStepImplError(ex);
             if (failOnDuplicateStepImplementations) {
-                syntaxErrorReporter.reportStepImplError(impl.getImplementedIn(), impl.getMethod().getName(),
-                        "Duplicate pattern " + impl.getValue(), ex);
+                throw ex;
             }
-
         }
     }
-
 
     /**
      * @param strict
@@ -164,11 +160,9 @@ public class Syntax {
         }
     }
 
-
     public void setFailOnDuplicateStepImplementations(final boolean failOnDuplicateStepImplementations) {
         this.failOnDuplicateStepImplementations = failOnDuplicateStepImplementations;
     }
-
 
     /**
      * @param parameterLine
@@ -178,11 +172,9 @@ public class Syntax {
         return getStepImplementationsInternal(keyword, parameterLine, false);
     }
 
-
     public List<StepImplementation> checkForStepImplementations(final String keyword, final String parameterLine) {
         return getStepImplementationsInternal(keyword, parameterLine, true);
     }
-
 
     /**
      * @param keyword
@@ -216,7 +208,6 @@ public class Syntax {
         return list;
     }
 
-
     /**
      * @param keyword
      * @param parameterLine
@@ -234,8 +225,7 @@ public class Syntax {
         }
 
         else if (!okNotTofindAnything) {
-            throw new SubStepConfigurationException(parameterLine
-                    + " is not a recognised substep or step implementation");
+            throw new UndefinedStepImplementationException(parameterLine);
         }
 
         return list;
@@ -246,18 +236,14 @@ public class Syntax {
 
         private final String keyword;
 
-
         public CloneStepImplementationsWithNewKeywordFunction(final String keyword) {
             this.keyword = keyword;
         }
 
-
-        @Override
         public StepImplementation apply(final StepImplementation stepImplementation) {
             return stepImplementation.cloneWithKeyword(keyword);
         }
     }
-
 
     /**
      * @return the strict
@@ -265,7 +251,6 @@ public class Syntax {
     public boolean isStrict() {
         return strict;
     }
-
 
     /**
      * @return the nonStrictKeywordPrecedence
