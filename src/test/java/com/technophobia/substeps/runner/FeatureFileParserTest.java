@@ -42,14 +42,18 @@ import com.technophobia.substeps.model.Step;
 public class FeatureFileParserTest {
 
     @Test
-    public void testABigFeature() {
+    public void testABigishFeature() {
 
         final FeatureFileParser parser = new FeatureFileParser();
 
-        final String featureFile = "/home/imoore/projects/CapitaNHS/CapitaBSA_Portal/fp17-contracts-acceptance-tests/src/test/resources/bddfeatures/high/manageBankDetails.feature";
+        final String featureFile = "./target/test-classes/features/abigishfeature.feature";
 
         final FeatureFile feature = parser
                 .loadFeatureFile(new File(featureFile));
+
+        // not much of an assertion - feature file parsing covered elsewhere,
+        // this was to pick up a performance problem when calculating line
+        // numbers in large feature files
 
         Assert.assertNotNull(feature);
     }
