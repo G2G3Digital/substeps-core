@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +47,17 @@ public class SubStepDefinitionParser {
 
     private final boolean failOnDuplicateSubsteps;
 
+    private final SyntaxErrorReporter syntaxErrorReporter;
 
-    public SubStepDefinitionParser() {
-        this(true);
+
+    public SubStepDefinitionParser(final SyntaxErrorReporter syntaxErrorReporter) {
+        this(true, syntaxErrorReporter);
     }
 
 
-    public SubStepDefinitionParser(final boolean failOnDuplicateSubsteps) {
+    public SubStepDefinitionParser(final boolean failOnDuplicateSubsteps, final SyntaxErrorReporter syntaxErrorReporter) {
         this.failOnDuplicateSubsteps = failOnDuplicateSubsteps;
+        this.syntaxErrorReporter = syntaxErrorReporter;
     }
 
 
@@ -74,7 +76,8 @@ public class SubStepDefinitionParser {
                 // add the last scenario in, but only if it has some steps
 
                 if (this.currentParentStep.getSteps() != null && !this.currentParentStep.getSteps().isEmpty()) {
-                    storeParentStepForPattern(this.currentParentStep.getParent().getPattern(), this.currentParentStep);
+                    storeForPatternOrReportFailure(substepFile, this.currentParentStep.getParent().getPattern(),
+                            this.currentParentStep);
                 } else {
 
                     this.log.warn("Ignoring substep definition [" + this.currentParentStep.getParent().getLine()
@@ -174,7 +177,7 @@ public class SubStepDefinitionParser {
 
                 }
 
-                storeParentStepForPattern(newPattern, this.currentParentStep);
+                storeForPatternOrReportFailure(source, newPattern, this.currentParentStep);
             }
 
             this.currentParentStep = new ParentStep(parent);
@@ -185,19 +188,24 @@ public class SubStepDefinitionParser {
     }
 
 
+    private void storeForPatternOrReportFailure(final File source, final String newPattern, final ParentStep parentStep) {
+        try {
+            storeParentStepForPattern(newPattern, parentStep);
+        } catch (final RuntimeException ex) {
+            syntaxErrorReporter.reportSubstepsError(source, parentStep.getParent().getLine(), parentStep.getParent()
+                    .getSourceLineNumber(), ex.getMessage(), ex);
+        }
+    }
+
+
     private void storeParentStepForPattern(final String newPattern, final ParentStep parentStep) {
         try {
             this.parentMap.put(newPattern, parentStep);
         } catch (final DuplicatePatternException ex) {
             if (this.failOnDuplicateSubsteps) {
                 throw ex;
-            } else {
-                this.log.warn("Encountered duplicate substep " + newPattern, ex);
             }
-        } catch (final PatternSyntaxException ex) {
-            this.log.warn("Encountered PatternSyntaxException trying to add " + newPattern + " for step "
-                    + parentStep.getParent().getLine() + " on line " + parentStep.getSourceLineNumber() + " of file "
-                    + parentStep.getSubStepFile(), ex);
+            this.log.warn("Encountered duplicate substep " + newPattern, ex);
         }
     }
 

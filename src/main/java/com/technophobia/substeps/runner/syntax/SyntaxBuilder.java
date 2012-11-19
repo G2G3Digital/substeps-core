@@ -68,12 +68,21 @@ public final class SyntaxBuilder {
     public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile,
             final boolean strict, final String[] nonStrictKeywordPrecedence, final ClassAnalyser classAnalyser,
             final boolean failOnDuplicateEntries) {
+        return buildSyntax(stepImplementationClasses, subStepsFile, strict, nonStrictKeywordPrecedence, classAnalyser,
+                failOnDuplicateEntries, new DefaultSyntaxErrorReporter());
+    }
+
+
+    public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile,
+            final boolean strict, final String[] nonStrictKeywordPrecedence, final ClassAnalyser classAnalyser,
+            final boolean failOnDuplicateEntries, final SyntaxErrorReporter syntaxErrorReporter) {
         final Syntax syntax = buildBaseSyntax(stepImplementationClasses, classAnalyser, failOnDuplicateEntries);
 
         syntax.setStrict(strict, nonStrictKeywordPrecedence);
 
         if (subStepsFile != null) {
-            final SubStepDefinitionParser subStepParser = new SubStepDefinitionParser(failOnDuplicateEntries);
+            final SubStepDefinitionParser subStepParser = new SubStepDefinitionParser(failOnDuplicateEntries,
+                    syntaxErrorReporter);
             syntax.setSubStepsMap(subStepParser.loadSubSteps(subStepsFile));
         }
 
