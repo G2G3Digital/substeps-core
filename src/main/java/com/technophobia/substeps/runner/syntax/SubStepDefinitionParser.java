@@ -84,9 +84,6 @@ public class SubStepDefinitionParser {
                                 this.currentParentStep);
                     } catch (final DuplicatePatternException ex) {
                         syntaxErrorReporter.reportSubstepsError(ex);
-
-                        // TODO: wouldn't we want to parse all the files first,
-                        // then fail if there are errors?
                         if (failOnDuplicateSubsteps) {
                             throw ex;
                         }
@@ -179,11 +176,13 @@ public class SubStepDefinitionParser {
                     final String newPattern = this.currentParentStep.getParent().getPattern();
 
                     try {
-                        // XXX: we ignore the value of failOnDuplicateErrors
-                        // here... why?
                         storeForPatternOrThrowException(newPattern, this.currentParentStep);
                     } catch (final DuplicatePatternException ex) {
                         syntaxErrorReporter.reportSubstepsError(ex);
+
+                        if (failOnDuplicateSubsteps) {
+                            throw ex;
+                        }
                     }
                 }
 
