@@ -30,6 +30,11 @@ public class SubstepsConfigurationException extends SubstepsException {
         super(cause);
     }
 
+    /*
+     * TODO: The following probably shouldn't be required - but we use this
+     * exception a bit hap-hazzardly - review after error handling overhaul.
+     */
+
     public SubstepsConfigurationException() {
         super();
     }

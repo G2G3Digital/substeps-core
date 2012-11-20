@@ -28,10 +28,7 @@ import java.util.Map;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.technophobia.substeps.model.exception.DuplicateStepImplementationException;
-import com.technophobia.substeps.model.exception.StepImplementationException;
-import com.technophobia.substeps.model.exception.UndefinedStepImplementationException;
-import com.technophobia.substeps.runner.syntax.DefaultSyntaxErrorReporter;
-import com.technophobia.substeps.runner.syntax.SyntaxErrorReporter;
+import com.technophobia.substeps.model.exception.UnimplementedStepException;
 
 /**
  * 
@@ -123,7 +120,6 @@ public class Syntax {
 
     /**
      * @param impl
-     * @param syntaxErrorReporter
      */
     public void addStepImplementation(final StepImplementation impl) {
 
@@ -145,6 +141,7 @@ public class Syntax {
                 throw ex;
             }
         }
+
     }
 
     /**
@@ -225,7 +222,7 @@ public class Syntax {
         }
 
         else if (!okNotTofindAnything) {
-            throw new UndefinedStepImplementationException(parameterLine);
+            throw new UnimplementedStepException(parameterLine);
         }
 
         return list;

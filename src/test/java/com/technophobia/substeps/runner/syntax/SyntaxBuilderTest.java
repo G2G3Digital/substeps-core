@@ -31,6 +31,7 @@ import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.StepImplementation;
 import com.technophobia.substeps.model.Syntax;
 import com.technophobia.substeps.model.exception.DuplicatePatternException;
+import com.technophobia.substeps.model.exception.DuplicateStepImplementationException;
 import com.technophobia.substeps.stepimplementations.DuplicateStepImplementations;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import com.technophobia.substeps.stepimplementations.MockStepImplementationsContainer;
@@ -55,8 +56,7 @@ public class SyntaxBuilderTest {
         SyntaxBuilder.buildSyntax(stepImpls, new File("./target/test-classes/substeps/duplicates.substeps"));
     }
 
-
-    @Test(expected = DuplicatePatternException.class)
+    @Test(expected = DuplicateStepImplementationException.class)
     public void testDuplicateStepImplementaionsThrowError() {
         final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
         stepImplsList.add(TestStepImplementations.class);
@@ -67,7 +67,6 @@ public class SyntaxBuilderTest {
         SyntaxBuilder.buildSyntax(stepImpls, new File("./target/test-classes/substeps/simple.substeps"));
     }
 
-
     @Test
     public void testSyntaxBuilder() {
 
@@ -77,7 +76,6 @@ public class SyntaxBuilderTest {
         checkSyntaxBuilderWithStepImpls(stepImpls);
     }
 
-
     @Test
     public void testSyntaxBuilderWithDeferringStepImplementations() {
 
@@ -86,7 +84,6 @@ public class SyntaxBuilderTest {
 
         checkSyntaxBuilderWithStepImpls(stepImpls);
     }
-
 
     private void checkSyntaxBuilderWithStepImpls(final List<Class<?>> stepImpls) {
         final Syntax syntax = SyntaxBuilder.buildSyntax(stepImpls, new File(

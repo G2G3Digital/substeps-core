@@ -42,7 +42,7 @@ import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.execution.Feature;
 import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
-import com.technophobia.substeps.model.exception.UndefinedStepImplementationException;
+import com.technophobia.substeps.model.exception.UnimplementedStepException;
 import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.steps.TestStepImplementations;
@@ -75,12 +75,11 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
-        verify(notifier, times(1)).notifyNodeFailed(eq(scenarioNode),
-                argThat(any(UndefinedStepImplementationException.class)));
+        verify(notifier, times(1)).notifyNodeFailed(eq(scenarioNode), argThat(any(UnimplementedStepException.class)));
 
         Assert.assertThat(failures.size(), is(2));
 
-        Assert.assertThat(failures.get(0).getCause(), instanceOf(UndefinedStepImplementationException.class));
+        Assert.assertThat(failures.get(0).getCause(), instanceOf(UnimplementedStepException.class));
         Assert.assertThat(failures.get(0).getCause().getMessage(),
                 is("SingleWord is not a recognised step or substep implementation"));
 
