@@ -333,7 +333,6 @@ public class ExecutionNode {
             }
 
             appendMethodInfo("  -  ", buf);
-
         } else {
             buf.append(": Root");
         }
@@ -430,7 +429,7 @@ public class ExecutionNode {
                 }
             }
 
-            buf.append(")");
+            buf.append(")").append("\n");
         }
     }
 
