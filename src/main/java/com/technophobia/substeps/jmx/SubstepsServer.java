@@ -17,7 +17,7 @@
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.technopobia.substeps.jmx;
+package com.technophobia.substeps.jmx;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -84,8 +84,22 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
         // attach a result listener to broadcast
 
         this.nodeRunner.addNotifier(this);
+        final List<SubstepExecutionFailure> failures;
+        try {
+            failures = this.nodeRunner.run();
+        } finally {
+            // now send the final notification
 
-        return this.nodeRunner.run();
+            final Notification n = new Notification("ExecConfigComplete", this,
+                    this.notificationSequenceNumber);
+
+            this.log.trace("sending complete notification sequence: "
+                    + this.notificationSequenceNumber);
+
+            sendNotification(n);
+        }
+        return failures;
+
     }
 
     private long notificationSequenceNumber = 1;
@@ -99,6 +113,9 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
         this.notificationSequenceNumber++;
 
         n.setUserData(node.getResult());
+
+        this.log.trace("sending notification for node id: " + node.getId()
+                + " sequence: " + this.notificationSequenceNumber);
 
         sendNotification(n);
 

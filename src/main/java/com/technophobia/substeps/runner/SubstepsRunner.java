@@ -1,3 +1,9 @@
+package com.technophobia.substeps.runner;
+
+import java.util.List;
+
+import com.technophobia.substeps.execution.ExecutionNode;
+
 /*
  *	Copyright Technophobia Ltd 2012
  *
@@ -17,24 +23,13 @@
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.technopobia.substeps.jmx;
-
-import java.util.List;
-
-import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.runner.ExecutionConfig;
-import com.technophobia.substeps.runner.SubstepExecutionFailure;
-
-
 /**
- * @author ian
- *
+ * Common interface for Substeps runners, prepare, then run.
  */
-public interface SubstepsServerMBean {
+public interface SubstepsRunner {
 
-    public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig);
-	
-    public List<SubstepExecutionFailure> run();
-    
-    public void shutdown();
+    ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig);
+
+
+    List<SubstepExecutionFailure> run();
 }

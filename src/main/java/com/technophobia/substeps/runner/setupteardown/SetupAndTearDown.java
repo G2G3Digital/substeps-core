@@ -47,7 +47,7 @@ public class SetupAndTearDown {
 
 
     public String getLoggingConfigName() {
-        return loggingConfigName;
+        return this.loggingConfigName;
     }
 
 
@@ -56,9 +56,10 @@ public class SetupAndTearDown {
     }
 
 
-    public SetupAndTearDown(final Class<?>[] classes, final MethodExecutor methodExecutor) {
+    public SetupAndTearDown(final Class<?>[] classes,
+            final MethodExecutor methodExecutor) {
 
-        beforeAndAfterMethods = new BeforeAndAfterMethods(classes);
+        this.beforeAndAfterMethods = new BeforeAndAfterMethods(classes);
         this.methodExecutor = methodExecutor;
         this.methodExecutor.addImplementationClasses(classes);
     }
@@ -114,24 +115,24 @@ public class SetupAndTearDown {
 
     private void runAllMethods(final MethodState methodState) throws Throwable {
 
-        if (!dryRun) {
+        if (!this.dryRun) {
 
-            final List<Method> setupAndTearDownMethods = beforeAndAfterMethods
+            final List<Method> setupAndTearDownMethods = this.beforeAndAfterMethods
                     .getSetupAndTearDownMethods(methodState);
 
-            methodExecutor.executeMethods(setupAndTearDownMethods);
+            this.methodExecutor.executeMethods(setupAndTearDownMethods);
         }
     }
 
 
     private void prepareLoggingConfig() {
 
-        if (loggingConfigName == null) {
+        if (this.loggingConfigName == null) {
 
             MDC.put("className", "SubSteps");
-            log.info("no logging config name supplied, defaulting to Substeps");
+            this.log.info("no logging config name supplied, defaulting to Substeps");
         } else {
-            MDC.put("className", loggingConfigName);
+            MDC.put("className", this.loggingConfigName);
         }
     }
 
@@ -146,7 +147,7 @@ public class SetupAndTearDown {
      * @throws Throwable
      */
     public void runSetup(final Scope currentScope) throws Throwable {
-        log.debug("running setup for scope: " + currentScope);
+        this.log.trace("running setup for scope: " + currentScope);
 
         switch (currentScope) {
         case SUITE: {
@@ -174,7 +175,7 @@ public class SetupAndTearDown {
      * @param scope
      */
     public void runTearDown(final Scope currentScope) throws Throwable {
-        log.debug("runTearDown: " + currentScope);
+        this.log.trace("runTearDown: " + currentScope);
 
         // TODO could implement this as methods on Scope itself
         switch (currentScope) {
