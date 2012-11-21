@@ -17,37 +17,41 @@ public class FakeSyntaxErrorReporter implements SyntaxErrorReporter {
     }
 
 
-    @Override
-    public void reportFeatureError(final File file, final String line, final int lineNumber, final String description)
+    public void reportFeatureError(final File file, final String line,
+            final int lineNumber, final String description)
             throws RuntimeException {
-        errors.add(new SyntaxErrorData(true, file, line, lineNumber, description));
+        this.errors.add(new SyntaxErrorData(true, file, line, lineNumber,
+                description));
     }
 
 
-    @Override
-    public void reportFeatureError(final File file, final String line, final int lineNumber, final String description,
+    public void reportFeatureError(final File file, final String line,
+            final int lineNumber, final String description,
             final RuntimeException ex) throws RuntimeException {
-        errors.add(new SyntaxErrorData(true, file, line, lineNumber, description));
+        this.errors.add(new SyntaxErrorData(true, file, line, lineNumber,
+                description));
     }
 
 
-    @Override
-    public void reportSubstepsError(final File file, final String line, final int lineNumber, final String description)
+    public void reportSubstepsError(final File file, final String line,
+            final int lineNumber, final String description)
             throws RuntimeException {
-        errors.add(new SyntaxErrorData(false, file, line, lineNumber, description));
+        this.errors.add(new SyntaxErrorData(false, file, line, lineNumber,
+                description));
     }
 
 
-    @Override
-    public void reportSubstepsError(final File file, final String line, final int lineNumber, final String description,
+    public void reportSubstepsError(final File file, final String line,
+            final int lineNumber, final String description,
             final RuntimeException ex) throws RuntimeException {
-        errors.add(new SyntaxErrorData(false, file, line, lineNumber, description));
+        this.errors.add(new SyntaxErrorData(false, file, line, lineNumber,
+                description));
     }
 
 
     public List<SyntaxErrorData> errors() {
-        Collections.sort(errors);
-        return errors;
+        Collections.sort(this.errors);
+        return this.errors;
     }
 
     public static class SyntaxErrorData implements Comparable<SyntaxErrorData> {
@@ -58,7 +62,8 @@ public class FakeSyntaxErrorReporter implements SyntaxErrorReporter {
         private final String description;
 
 
-        public SyntaxErrorData(final boolean isFeature, final File file, final String line, final int lineNumber,
+        public SyntaxErrorData(final boolean isFeature, final File file,
+                final String line, final int lineNumber,
                 final String description) {
             this.isFeature = isFeature;
             this.file = file;
@@ -69,33 +74,32 @@ public class FakeSyntaxErrorReporter implements SyntaxErrorReporter {
 
 
         public boolean isFeature() {
-            return isFeature;
+            return this.isFeature;
         }
 
 
         public File getFile() {
-            return file;
+            return this.file;
         }
 
 
         public String getLine() {
-            return line;
+            return this.line;
         }
 
 
         public int getLineNumber() {
-            return lineNumber;
+            return this.lineNumber;
         }
 
 
         public String getDescription() {
-            return description;
+            return this.description;
         }
 
 
-        @Override
         public int compareTo(final SyntaxErrorData other) {
-            return lineNumber - other.lineNumber;
+            return this.lineNumber - other.lineNumber;
         }
     }
 }

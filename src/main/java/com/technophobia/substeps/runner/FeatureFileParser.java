@@ -51,10 +51,11 @@ public class FeatureFileParser {
 
     private static Map<String, Directive> directiveMap = new HashMap<String, Directive>();
 
+    // TODO - remove ?
     private List<String> currentFeatureFileLines = null;
-    private String currentOriginalFileContents = null;
-
     private int[] currentFileOffsets = null;
+
+    private String currentOriginalFileContents = null;
 
 
     public FeatureFile loadFeatureFile(final File featureFile) {
