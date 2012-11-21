@@ -28,7 +28,10 @@ import java.util.Map;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.technophobia.substeps.model.exception.DuplicateStepImplementationException;
+import com.technophobia.substeps.model.exception.StepImplementationException;
 import com.technophobia.substeps.model.exception.UnimplementedStepException;
+import com.technophobia.substeps.runner.syntax.DefaultSyntaxErrorReporter;
+import com.technophobia.substeps.runner.syntax.SyntaxErrorReporter;
 
 /**
  * 
