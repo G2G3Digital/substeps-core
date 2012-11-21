@@ -3,6 +3,11 @@ Substeps Core - Release Notes
 
 - A list of changes per release 
 
+1.0.2
+-----
+- Line numbers, source offsets included in steps
+- Applied standard formatter (can be found in the root of the 'Substeps' project)  
+
 1.0.1
 -----
 - Bug in substeps.js used for the reports.

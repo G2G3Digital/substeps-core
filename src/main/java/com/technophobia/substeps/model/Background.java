@@ -11,46 +11,43 @@ public class Background {
     private final String description;
     private final List<Step> steps;
     private final String rawText;
+    private final int sourceStartOffset;
 
-
-    public Background(final int lineNumber, final String rawText, final File sourceFile) {
+    public Background(final int lineNumber, final String rawText, final File sourceFile, final int sourceStartOffset) {
         super();
         this.lineNumber = lineNumber;
         this.rawText = rawText;
         this.description = descriptionFor(rawText);
         this.steps = stepsFrom(lineNumber, rawText, sourceFile);
+        this.sourceStartOffset = sourceStartOffset;
     }
-
 
     private List<Step> stepsFrom(final int backgroundLineNumber, final String backgroundText, final File sourceFile) {
         final List<Step> backgroundSteps = new ArrayList<Step>();
         final String[] bLines = backgroundText.split("\n");
         for (int i = 1; i < bLines.length; i++) {
-            backgroundSteps.add(new Step(bLines[i], sourceFile, backgroundLineNumber + i));
+
+            // TODO
+            backgroundSteps.add(new Step(bLines[i], sourceFile, backgroundLineNumber + i, -1));
         }
         return Collections.unmodifiableList(backgroundSteps);
     }
 
-
     public String getDescription() {
-        return description;
+        return this.description;
     }
-
 
     public int getLineNumber() {
-        return lineNumber;
+        return this.lineNumber;
     }
-
 
     public String getRawText() {
-        return rawText;
+        return this.rawText;
     }
-
 
     public List<Step> getSteps() {
-        return steps;
+        return this.steps;
     }
-
 
     private String descriptionFor(final String text) {
         final int startIndex = text.indexOf(":") + 1;

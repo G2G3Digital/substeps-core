@@ -32,78 +32,81 @@ import com.google.common.io.Files;
  */
 public class FileContents {
 
-    private List<String> currentFeatureFileLines = null;
-    private int[] currentFileOffsets = null;
-    private String currentOriginalFileContents = null;
+    private List<String> lines = null;
+    private int[] lineStartOffsets = null;
+    private String fullContents = null;
     private File file;
 
-
     public List<String> getLines() {
-        return this.currentFeatureFileLines;
+        return this.lines;
     }
-
 
     /**
      * @return
      */
     public int getNumberOfLines() {
-        return this.currentFeatureFileLines.size();
+        return this.lines.size();
     }
-
 
     public File getFile() {
         return this.file;
     }
 
-
     public void readFile(final File file) throws IOException {
 
         this.file = file;
-        this.currentFeatureFileLines = Files.readLines(file,
-                Charset.forName("UTF-8"));
+        this.lines = Files.readLines(file, Charset.forName("UTF-8"));
 
-        this.currentFileOffsets = new int[this.currentFeatureFileLines.size()];
+        this.lineStartOffsets = new int[this.lines.size()];
 
-        this.currentOriginalFileContents = Files.toString(file,
-                Charset.forName("UTF-8"));
+        this.fullContents = Files.toString(file, Charset.forName("UTF-8"));
 
         int lastOffset = 0;
-        for (int i = 0; i < this.currentFeatureFileLines.size(); i++) {
+        for (int i = 0; i < this.lines.size(); i++) {
 
-            final String s = this.currentFeatureFileLines.get(i);
+            final String s = this.lines.get(i);
 
-            this.currentFileOffsets[i] = this.currentOriginalFileContents
-                    .indexOf(s, lastOffset);
-            lastOffset = this.currentFileOffsets[i] + s.length();
+            this.lineStartOffsets[i] = this.fullContents.indexOf(s, lastOffset);
+            lastOffset = this.lineStartOffsets[i] + s.length();
         }
     }
 
+    public int getSourceLineNumber(final String line, final int offset) {
+
+        int lineNumber = -1;
+        // find the line from the offset
+        final int idx = this.fullContents.indexOf(line);
+
+        if (idx != -1) {
+            // what's the line number of this offset ?
+            lineNumber = getSourceLineNumberForOffset(offset);
+        }
+        return lineNumber;
+    }
 
     public int getSourceLineNumberForOffset(final int offset) {
 
         int lineNumber = -1;
         lineNumber = 0;
-        for (; lineNumber < this.currentFileOffsets.length; lineNumber++) {
+        for (; lineNumber < this.lineStartOffsets.length; lineNumber++) {
 
-            if (this.currentFileOffsets[lineNumber] > offset) {
+            if (this.lineStartOffsets[lineNumber] > offset) {
                 break;
             }
         }
         return lineNumber;
     }
 
-
     public int getEndOfLineOffset(final int lineNumber) {
 
         int lastOffset;
-        if (lineNumber + 1 < this.currentFileOffsets.length) {
-            lastOffset = this.currentFileOffsets[lineNumber + 1] - 1;
+        if (lineNumber + 1 < this.lineStartOffsets.length) {
+            lastOffset = this.lineStartOffsets[lineNumber + 1] - 1;
         } else {
-            lastOffset = this.currentOriginalFileContents.length();
+            lastOffset = this.fullContents.length();
         }
         return lastOffset;
     }
-
 
     /**
      * @param lineNumberIdx
@@ -111,7 +114,24 @@ public class FileContents {
      */
     public String getLineAt(final int lineNumberIdx) {
 
-        return this.currentFeatureFileLines.get(lineNumberIdx);
+        return this.lines.get(lineNumberIdx);
+    }
+
+    /**
+     * @param lineNumberIdx
+     * @return
+     */
+    public int getSourceStartOffsetForLineIndex(final int lineNumberIdx) {
+
+        return this.lineStartOffsets[lineNumberIdx];
+    }
+
+    /**
+     * @return
+     */
+    public String getFullContent() {
+
+        return this.fullContents;
     }
 
 }

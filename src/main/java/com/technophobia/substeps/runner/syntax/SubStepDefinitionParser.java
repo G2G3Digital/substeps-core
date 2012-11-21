@@ -192,9 +192,13 @@ public class SubStepDefinitionParser {
 
         if (!lineProcessed) {
             if (this.currentParentStep != null) {
+
+                final int sourceOffset = this.currentFileContents
+                        .getSourceStartOffsetForLineIndex(lineNumberIdx);
                 // no context at the mo
                 this.currentParentStep.addStep(new Step(trimmed, true,
-                        this.currentFileContents.getFile(), lineNumberIdx + 1));
+                        this.currentFileContents.getFile(), lineNumberIdx + 1,
+                        sourceOffset));
             }
         }
     }
@@ -242,8 +246,12 @@ public class SubStepDefinitionParser {
 
             // build up a Step from the remainder
 
+            final int sourceOffset = this.currentFileContents
+                    .getSourceStartOffsetForLineIndex(lineNumberIdx);
+
             final Step parent = new Step(remainder, true,
-                    this.currentFileContents.getFile(), lineNumberIdx + 1);
+                    this.currentFileContents.getFile(), lineNumberIdx + 1,
+                    sourceOffset);
 
             if (this.currentParentStep != null) {
                 final String newPattern = this.currentParentStep.getParent()
