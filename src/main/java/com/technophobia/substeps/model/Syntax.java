@@ -27,6 +27,8 @@ import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.technophobia.substeps.runner.syntax.DefaultSyntaxErrorReporter;
+import com.technophobia.substeps.runner.syntax.SyntaxErrorReporter;
 
 /**
  * 
@@ -44,6 +46,18 @@ public class Syntax {
     private boolean strict;
     private boolean failOnDuplicateStepImplementations = true;
     private String[] nonStrictKeywordPrecedence;
+
+    private final SyntaxErrorReporter syntaxErrorReporter;
+
+
+    public Syntax() {
+        this(new DefaultSyntaxErrorReporter());
+    }
+
+
+    public Syntax(final SyntaxErrorReporter syntaxErrorReporter) {
+        this.syntaxErrorReporter = syntaxErrorReporter;
+    }
 
 
     public Map<String, PatternMap<StepImplementation>> getStepImplementationMap() {
@@ -114,6 +128,7 @@ public class Syntax {
 
     /**
      * @param impl
+     * @param syntaxErrorReporter
      */
     public void addStepImplementation(final StepImplementation impl) {
 
@@ -128,7 +143,8 @@ public class Syntax {
             patternMap.put(impl.getValue(), impl);
         } catch (final DuplicatePatternException ex) {
             if (failOnDuplicateStepImplementations) {
-                throw ex;
+                syntaxErrorReporter.reportStepImplError(impl.getImplementedIn(), impl.getMethod().getName(),
+                        "Duplicate pattern " + impl.getValue(), ex);
             }
 
         }
@@ -236,6 +252,7 @@ public class Syntax {
         }
 
 
+        @Override
         public StepImplementation apply(final StepImplementation stepImplementation) {
             return stepImplementation.cloneWithKeyword(keyword);
         }

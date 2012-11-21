@@ -47,7 +47,7 @@ public class SyntaxAwareStepValidatorTest {
         final FeatureFile featureFile = this.featureFileParser.loadFeatureFile(createFeatureFile("error.feature"));
 
         createStepValidatorWithSubsteps("simple.substeps").validateFeatureFile(featureFile, syntaxErrorReporter);
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertThat(Integer.valueOf(errors.size()), is(Integer.valueOf(2)));
 
         checkError(errors.get(0), 6, "Given step 1");
@@ -60,7 +60,7 @@ public class SyntaxAwareStepValidatorTest {
         final FeatureFile featureFile = this.featureFileParser.loadFeatureFile(createFeatureFile("error.feature"));
 
         createStepValidatorWithSubsteps("error.substeps").validateFeatureFile(featureFile, syntaxErrorReporter);
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertTrue(errors.isEmpty());
     }
 
@@ -74,7 +74,7 @@ public class SyntaxAwareStepValidatorTest {
             stepValidator.validateSubstep(substep, syntaxErrorReporter);
         }
 
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertThat(Integer.valueOf(errors.size()), is(Integer.valueOf(3)));
 
         checkError(errors.get(0), 4, "SingleWord");
@@ -93,7 +93,7 @@ public class SyntaxAwareStepValidatorTest {
         for (final ParentStep substep : substeps.values()) {
             stepValidator.validateSubstep(substep, syntaxErrorReporter);
         }
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertTrue(errors.isEmpty());
     }
 

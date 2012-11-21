@@ -9,45 +9,66 @@ import com.technophobia.substeps.runner.syntax.SyntaxErrorReporter;
 
 public class FakeSyntaxErrorReporter implements SyntaxErrorReporter {
 
-    private final List<SyntaxErrorData> errors;
+    private final List<SyntaxErrorData> syntaxErrors;
+    private final List<StepImplErrorData> stepErrors;
 
 
     public FakeSyntaxErrorReporter() {
-        this.errors = new ArrayList<FakeSyntaxErrorReporter.SyntaxErrorData>();
+        this.syntaxErrors = new ArrayList<FakeSyntaxErrorReporter.SyntaxErrorData>();
+        this.stepErrors = new ArrayList<FakeSyntaxErrorReporter.StepImplErrorData>();
     }
 
 
     @Override
     public void reportFeatureError(final File file, final String line, final int lineNumber, final String description)
             throws RuntimeException {
-        errors.add(new SyntaxErrorData(true, file, line, lineNumber, description));
+        syntaxErrors.add(new SyntaxErrorData(true, file, line, lineNumber, description));
     }
 
 
     @Override
     public void reportFeatureError(final File file, final String line, final int lineNumber, final String description,
             final RuntimeException ex) throws RuntimeException {
-        errors.add(new SyntaxErrorData(true, file, line, lineNumber, description));
+        syntaxErrors.add(new SyntaxErrorData(true, file, line, lineNumber, description));
     }
 
 
     @Override
     public void reportSubstepsError(final File file, final String line, final int lineNumber, final String description)
             throws RuntimeException {
-        errors.add(new SyntaxErrorData(false, file, line, lineNumber, description));
+        syntaxErrors.add(new SyntaxErrorData(false, file, line, lineNumber, description));
     }
 
 
     @Override
     public void reportSubstepsError(final File file, final String line, final int lineNumber, final String description,
             final RuntimeException ex) throws RuntimeException {
-        errors.add(new SyntaxErrorData(false, file, line, lineNumber, description));
+        syntaxErrors.add(new SyntaxErrorData(false, file, line, lineNumber, description));
     }
 
 
-    public List<SyntaxErrorData> errors() {
-        Collections.sort(errors);
-        return errors;
+    @Override
+    public void reportStepImplError(final Class<?> stepImplClass, final String method, final String description) {
+        stepErrors.add(new StepImplErrorData(stepImplClass, method, description));
+    }
+
+
+    @Override
+    public void reportStepImplError(final Class<?> stepImplClass, final String method, final String description,
+            final RuntimeException ex) {
+        stepErrors.add(new StepImplErrorData(stepImplClass, method, description));
+    }
+
+
+    public List<SyntaxErrorData> syntaxErrors() {
+        Collections.sort(syntaxErrors);
+        return syntaxErrors;
+    }
+
+
+    public List<StepImplErrorData> stepImplErrors() {
+        Collections.sort(stepImplErrors());
+        return stepErrors;
     }
 
     public static class SyntaxErrorData implements Comparable<SyntaxErrorData> {
@@ -96,6 +117,45 @@ public class FakeSyntaxErrorReporter implements SyntaxErrorReporter {
         @Override
         public int compareTo(final SyntaxErrorData other) {
             return lineNumber - other.lineNumber;
+        }
+    }
+
+    private static class StepImplErrorData implements Comparable<StepImplErrorData> {
+        private final Class<?> clazz;
+        private final String methodName;
+        private final String description;
+
+
+        public StepImplErrorData(final Class<?> clazz, final String methodName, final String description) {
+            this.clazz = clazz;
+            this.methodName = methodName;
+            this.description = description;
+        }
+
+
+        public Class<?> getClazz() {
+            return clazz;
+        }
+
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+
+        public String getDescription() {
+            return description;
+        }
+
+
+        @Override
+        public int compareTo(final StepImplErrorData other) {
+            final int result = clazz.getName().compareTo(other.clazz.getName());
+
+            if (result != 0) {
+                return result;
+            }
+            return methodName.compareTo(other.methodName);
         }
     }
 }

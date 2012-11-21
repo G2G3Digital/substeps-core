@@ -16,4 +16,10 @@ public interface SyntaxErrorReporter {
 
     void reportSubstepsError(File file, String line, int lineNumber, String description, RuntimeException ex)
             throws RuntimeException;
+
+
+    void reportStepImplError(Class<?> stepImplClass, String method, String description);
+
+
+    void reportStepImplError(Class<?> stepImplClass, String method, String description, RuntimeException ex);
 }
