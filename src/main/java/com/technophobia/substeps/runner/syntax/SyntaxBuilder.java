@@ -76,7 +76,8 @@ public final class SyntaxBuilder {
     public static Syntax buildSyntax(final List<Class<?>> stepImplementationClasses, final File subStepsFile,
             final boolean strict, final String[] nonStrictKeywordPrecedence, final ClassAnalyser classAnalyser,
             final boolean failOnDuplicateEntries, final SyntaxErrorReporter syntaxErrorReporter) {
-        final Syntax syntax = buildBaseSyntax(stepImplementationClasses, classAnalyser, failOnDuplicateEntries);
+        final Syntax syntax = buildBaseSyntax(stepImplementationClasses, classAnalyser, failOnDuplicateEntries,
+                syntaxErrorReporter);
 
         syntax.setStrict(strict, nonStrictKeywordPrecedence);
 
@@ -91,12 +92,13 @@ public final class SyntaxBuilder {
 
 
     private static Syntax buildBaseSyntax(final List<Class<?>> stepImplementationClasses,
-            final ClassAnalyser classAnalyser, final boolean failOnDuplicateEntries) {
+            final ClassAnalyser classAnalyser, final boolean failOnDuplicateEntries,
+            final SyntaxErrorReporter syntaxErrorReporter) {
         // step implementations (arranged by StepDefinition, ie the annotation)
         // +
         // sub step definitions
 
-        final Syntax syntax = new Syntax();
+        final Syntax syntax = new Syntax(syntaxErrorReporter);
         syntax.setFailOnDuplicateStepImplementations(failOnDuplicateEntries);
 
         final List<Class<?>> implClassList;

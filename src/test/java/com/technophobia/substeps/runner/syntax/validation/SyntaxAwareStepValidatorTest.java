@@ -38,7 +38,8 @@ public class SyntaxAwareStepValidatorTest {
 
         this.syntaxErrorReporter = new FakeSyntaxErrorReporter();
         this.featureFileParser = new FeatureFileParser();
-        this.substepsFileParser = new SubStepDefinitionParser(syntaxErrorReporter);
+        this.substepsFileParser = new SubStepDefinitionParser(
+                this.syntaxErrorReporter);
     }
 
 
@@ -47,7 +48,7 @@ public class SyntaxAwareStepValidatorTest {
         final FeatureFile featureFile = this.featureFileParser.loadFeatureFile(createFeatureFile("error.feature"));
 
         createStepValidatorWithSubsteps("simple.substeps").validateFeatureFile(featureFile, syntaxErrorReporter);
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertThat(Integer.valueOf(errors.size()), is(Integer.valueOf(2)));
 
         checkError(errors.get(0), 6, "Given step 1");
@@ -60,7 +61,7 @@ public class SyntaxAwareStepValidatorTest {
         final FeatureFile featureFile = this.featureFileParser.loadFeatureFile(createFeatureFile("error.feature"));
 
         createStepValidatorWithSubsteps("error.substeps").validateFeatureFile(featureFile, syntaxErrorReporter);
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertTrue(errors.isEmpty());
     }
 
@@ -74,18 +75,18 @@ public class SyntaxAwareStepValidatorTest {
             stepValidator.validateSubstep(substep, syntaxErrorReporter);
         }
 
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertThat(Integer.valueOf(errors.size()), is(Integer.valueOf(3)));
 
-        checkError(errors.get(0), 4, "SingleWord");
-        checkError(errors.get(1), 5, "Test_Then something else has happened");
-        checkError(errors.get(2), 8, "Test_Then something has happened");
+        checkError(errors.get(0), 5, "SingleWord");
+        checkError(errors.get(1), 6, "Test_Then something else has happened");
+        checkError(errors.get(2), 9, "Test_Then something has happened");
     }
 
 
     @Test
     public void validatorReportsNoErrorsForSubstepsWithValidSteps() {
-        final PatternMap<ParentStep> substeps = substepsFileParser
+        final PatternMap<ParentStep> substeps = this.substepsFileParser
                 .loadSubSteps(createSubstepsFile("allFeatures.substeps"));
 
         final StepValidator stepValidator = createStepValidatorWithSubsteps("simple.substeps",
@@ -93,7 +94,7 @@ public class SyntaxAwareStepValidatorTest {
         for (final ParentStep substep : substeps.values()) {
             stepValidator.validateSubstep(substep, syntaxErrorReporter);
         }
-        final List<SyntaxErrorData> errors = syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertTrue(errors.isEmpty());
     }
 
@@ -115,11 +116,12 @@ public class SyntaxAwareStepValidatorTest {
     }
 
 
-    private StepValidator createStepValidatorWithSubsteps(final String substepsFilename,
-            final Class<?>... stepImplClasses) {
-        final Syntax syntax = SyntaxBuilder.buildSyntax(Arrays.asList(stepImplClasses),
-                createSubstepsFile(substepsFilename), true, new String[0], new ClassAnalyser(), true,
-                syntaxErrorReporter);
+    private StepValidator createStepValidatorWithSubsteps(
+            final String substepsFilename, final Class<?>... stepImplClasses) {
+        final Syntax syntax = SyntaxBuilder.buildSyntax(
+                Arrays.asList(stepImplClasses),
+                createSubstepsFile(substepsFilename), true, new String[0],
+                new ClassAnalyser(), true, this.syntaxErrorReporter);
 
         return new SyntaxAwareStepValidator(syntax);
     }

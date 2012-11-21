@@ -30,6 +30,8 @@ import org.apache.commons.configuration.tree.OverrideCombiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
+
 /**
  * @author ian
  * 
@@ -88,7 +90,7 @@ public enum Configuration {
                 combinedConfig.addConfiguration(defaultProps, name);
             } catch (final ConfigurationException e) {
                 logger.error("error loading default properties", e);
-                throw new SubStepConfigurationException(e);
+                throw new SubstepsConfigurationException(e);
             }
         }
     }

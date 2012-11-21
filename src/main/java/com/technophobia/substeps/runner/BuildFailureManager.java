@@ -27,34 +27,31 @@ import java.util.Set;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 
-
 /**
  * @author ian
- *
+ * 
  */
-public class BuildFailureManager
-{
+public class BuildFailureManager {
+
     private List<SubstepExecutionFailure> criticalFailures = null;
     private List<SubstepExecutionFailure> nonCriticalFailures = null;
-    
-	public String getBuildFailureInfo()
-	{
-        return getBuildInfoString("NON CRITICAL FAILURES:\n\n", this.nonCriticalFailures)
-                +  getBuildInfoString("\n\nCRITICAL FAILURES:\n\n", this.criticalFailures);
-	}
 
-	private String getBuildInfoString(final String msg, final List<SubstepExecutionFailure> failures)
-	{
+    public String getBuildFailureInfo() {
+        return getBuildInfoString("NON CRITICAL FAILURES:\n\n", this.nonCriticalFailures)
+                + getBuildInfoString("\n\nCRITICAL FAILURES:\n\n", this.criticalFailures);
+    }
+
+    private String getBuildInfoString(final String msg, final List<SubstepExecutionFailure> failures) {
         final StringBuilder buf = new StringBuilder();
 
         final Set<ExecutionNode> dealtWith = new HashSet<ExecutionNode>();
 
         if (failures != null && !failures.isEmpty()) {
-        	
-        	buf.append(msg);
-        	
+
+            buf.append(msg);
+
             for (final SubstepExecutionFailure fail : failures) {
-            	final ExecutionNode node = fail.getExeccutionNode();
+                final ExecutionNode node = fail.getExeccutionNode();
                 if (!dealtWith.contains(node)) {
                     final List<ExecutionNode> hierarchy = new ArrayList<ExecutionNode>();
 
@@ -74,55 +71,50 @@ public class BuildFailureManager
                         dealtWith.add(node2);
                     }
                 }
+                buf.append("\n");
             }
         }
         return buf.toString();
-	}
-    
+    }
 
-	/**
-	 * @param failures
-	 */
-	public void sortFailures(final List<SubstepExecutionFailure> failures)
-	{
-		
-		for (final SubstepExecutionFailure fail : failures){
-			
-			if (fail.isNonCritical()){
-			
-	            if (this.nonCriticalFailures == null){
-	            	this.nonCriticalFailures = new ArrayList<SubstepExecutionFailure>();
-	            }
-	            
-	            this.nonCriticalFailures.add(fail);
-			}
-			else {
+    /**
+     * @param failures
+     */
+    public void sortFailures(final List<SubstepExecutionFailure> failures) {
+
+        for (final SubstepExecutionFailure fail : failures) {
+
+            if (fail.isNonCritical()) {
+
+                if (this.nonCriticalFailures == null) {
+                    this.nonCriticalFailures = new ArrayList<SubstepExecutionFailure>();
+                }
+
+                this.nonCriticalFailures.add(fail);
+            } else {
 
                 if (this.criticalFailures == null) {
                     this.criticalFailures = new ArrayList<SubstepExecutionFailure>();
                 }
 
                 criticalFailures.add(fail);
-			}
-        }		
-	}
+            }
+        }
+    }
 
-	public boolean testSuiteCompletelyPassed()
-	{
-		return (this.criticalFailures == null && this.nonCriticalFailures == null) ||
-			
-				(this.criticalFailures != null && this.criticalFailures.isEmpty() && 
-				this.nonCriticalFailures != null && this.nonCriticalFailures.isEmpty() );
-	}
+    public boolean testSuiteCompletelyPassed() {
+        return (this.criticalFailures == null && this.nonCriticalFailures == null)
+                ||
 
-	public boolean testSuiteSomeFailures()
-	{
-		return (testSuiteFailed()) || 
-				(this.nonCriticalFailures != null && !this.nonCriticalFailures.isEmpty() );
-	}
+                (this.criticalFailures != null && this.criticalFailures.isEmpty() && this.nonCriticalFailures != null && this.nonCriticalFailures
+                        .isEmpty());
+    }
 
-	public boolean testSuiteFailed()
-	{
-		return (this.criticalFailures != null && !this.criticalFailures.isEmpty()); 
-	}
+    public boolean testSuiteSomeFailures() {
+        return (testSuiteFailed()) || (this.nonCriticalFailures != null && !this.nonCriticalFailures.isEmpty());
+    }
+
+    public boolean testSuiteFailed() {
+        return (this.criticalFailures != null && !this.criticalFailures.isEmpty());
+    }
 }
