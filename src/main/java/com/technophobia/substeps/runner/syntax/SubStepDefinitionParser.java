@@ -64,7 +64,7 @@ public class SubStepDefinitionParser {
         this.syntaxErrorReporter = syntaxErrorReporter;
     }
 
-    private void parseSubStepFile(final File substepFile) {
+    void parseSubStepFile(final File substepFile) {
         try {
             final List<String> lines = Files.readLines(substepFile, Charset.forName("UTF-8"));
 
@@ -75,8 +75,8 @@ public class SubStepDefinitionParser {
                 processLine(line, substepFile, i);
             }
 
+            // add the last scenario in, but only if it has some steps
             if (this.currentParentStep != null) {
-                // add the last scenario in, but only if it has some steps
 
                 if (this.currentParentStep.getSteps() != null && !this.currentParentStep.getSteps().isEmpty()) {
                     try {
@@ -198,7 +198,7 @@ public class SubStepDefinitionParser {
 
         if (!this.parentMap.containsPattern(newPattern)) {
             this.parentMap.put(newPattern, parentStep);
-        } else if (failOnDuplicateSubsteps) {
+        } else {
             throw new DuplicatePatternException(newPattern, parentMap.getValueForPattern(newPattern), parentStep);
         }
 
