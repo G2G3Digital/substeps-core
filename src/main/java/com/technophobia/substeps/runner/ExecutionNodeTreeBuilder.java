@@ -41,9 +41,9 @@ import com.technophobia.substeps.model.PatternMap;
 import com.technophobia.substeps.model.Scenario;
 import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.StepImplementation;
-import com.technophobia.substeps.model.SubStepConfigurationException;
 import com.technophobia.substeps.model.SubSteps.StepParameter;
 import com.technophobia.substeps.model.Util;
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import com.technophobia.substeps.model.parameter.Converter;
 
 /**
@@ -147,7 +147,7 @@ public class ExecutionNodeTreeBuilder {
 
                     if (parameters.isFailParseErrorsImmediately()) {
 
-                        throw new SubStepConfigurationException(t);
+                        throw new SubstepsConfigurationException(t);
                     }
                 }
 
@@ -182,7 +182,7 @@ public class ExecutionNodeTreeBuilder {
 
         if (steps == null || steps.isEmpty()) {
 
-            throw new SubStepConfigurationException("Scenario: " + scenarioNode.getDebugStringForThisNode()
+            throw new SubstepsConfigurationException("Scenario: " + scenarioNode.getDebugStringForThisNode()
                     + " has no steps");
         }
 
@@ -234,7 +234,7 @@ public class ExecutionNodeTreeBuilder {
                             + "] AND matches a sub step definition: [" + substepsParent.getParent().getParameterLine()
                             + "] in [" + substepsParent.getSubStepFile() + "]";
 
-                    throw new SubStepConfigurationException(msg);
+                    throw new SubstepsConfigurationException(msg);
 
                 }
 
@@ -351,7 +351,7 @@ public class ExecutionNodeTreeBuilder {
         } else {
             log.error("Unable to locate an implementation for the step: " + step.toDebugString());
 
-            final SubStepConfigurationException e = new SubStepConfigurationException(
+            final SubstepsConfigurationException e = new SubstepsConfigurationException(
                     "Unable to locate an implementation for the step: " + step.toDebugString() + " in "
                             + step.getSource());
 
@@ -378,7 +378,7 @@ public class ExecutionNodeTreeBuilder {
                         + si.getMethod().getName());
             }
 
-            throw new SubStepConfigurationException("Ambiguity resolving step to impl: " + step.toDebugString());
+            throw new SubstepsConfigurationException("Ambiguity resolving step to impl: " + step.toDebugString());
         }
 
         if (list != null && !list.isEmpty()) {

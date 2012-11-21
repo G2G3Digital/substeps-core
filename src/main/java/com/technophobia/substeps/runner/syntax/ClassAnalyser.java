@@ -48,6 +48,7 @@ public class ClassAnalyser {
      * @param loadedClass
      * @param stepImplementationMap
      * @param m
+     * @param syntaxErrorReporter
      */
     private void analyseMethod(final Class<?> loadedClass, final Syntax syntax, final Method m) {
 
@@ -116,6 +117,7 @@ public class ClassAnalyser {
      * 
      * @param loadedClass
      * @param syntax
+     * @param syntaxErrorReporter
      */
     private void analyseAdditionalStepImplementations(final Class<?> loadedClass, final Syntax syntax,
             final Class<?>[] additionalStepImplementationClasses) {

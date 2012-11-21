@@ -40,7 +40,7 @@ import org.junit.runner.notification.RunNotifier;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.model.StepImplementation;
-import com.technophobia.substeps.model.SubStepConfigurationException;
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import com.technophobia.substeps.steps.TestStepImplementations;
 
@@ -50,7 +50,7 @@ import com.technophobia.substeps.steps.TestStepImplementations;
  */
 public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
 
-    @Test(expected = SubStepConfigurationException.class)
+    @Test(expected = SubstepsConfigurationException.class)
     public void testScenarioWithMissingStepsCausesFailure() {
         final String feature = "./target/test-classes/features/scenario_missing_steps.feature";
 
@@ -68,7 +68,7 @@ public class JunitFeatureRunnerTest extends BaseJunitFeatureRunnerTest {
     }
 
 
-    @Test(expected = SubStepConfigurationException.class)
+    @Test(expected = SubstepsConfigurationException.class)
     public void testMissingSubStepCausesFailure() {
         final String feature = "./target/test-classes/features/error.feature";
         final String tag = "@bug_missing_sub_step_impl";

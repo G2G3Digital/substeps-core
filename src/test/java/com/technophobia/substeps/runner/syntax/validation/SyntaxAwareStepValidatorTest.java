@@ -45,12 +45,10 @@ public class SyntaxAwareStepValidatorTest {
 
     @Test
     public void validatorReportsMissingStepsInScenario() {
-        final FeatureFile featureFile = this.featureFileParser
-                .loadFeatureFile(createFeatureFile("error.feature"));
+        final FeatureFile featureFile = this.featureFileParser.loadFeatureFile(createFeatureFile("error.feature"));
 
-        createStepValidatorWithSubsteps("simple.substeps").validateFeatureFile(
-                featureFile, this.syntaxErrorReporter);
-        final List<SyntaxErrorData> errors = this.syntaxErrorReporter.errors();
+        createStepValidatorWithSubsteps("simple.substeps").validateFeatureFile(featureFile, syntaxErrorReporter);
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertThat(Integer.valueOf(errors.size()), is(Integer.valueOf(2)));
 
         checkError(errors.get(0), 6, "Given step 1");
@@ -60,27 +58,24 @@ public class SyntaxAwareStepValidatorTest {
 
     @Test
     public void validatorReportsNoErrorsForFeatureWithValidSteps() {
-        final FeatureFile featureFile = this.featureFileParser
-                .loadFeatureFile(createFeatureFile("error.feature"));
+        final FeatureFile featureFile = this.featureFileParser.loadFeatureFile(createFeatureFile("error.feature"));
 
-        createStepValidatorWithSubsteps("error.substeps").validateFeatureFile(
-                featureFile, this.syntaxErrorReporter);
-        final List<SyntaxErrorData> errors = this.syntaxErrorReporter.errors();
+        createStepValidatorWithSubsteps("error.substeps").validateFeatureFile(featureFile, syntaxErrorReporter);
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertTrue(errors.isEmpty());
     }
 
 
     @Test
     public void validatorReportsMissingSubstepsInDefinition() {
-        final PatternMap<ParentStep> substeps = this.substepsFileParser
-                .loadSubSteps(createSubstepsFile("error.substeps"));
+        final PatternMap<ParentStep> substeps = substepsFileParser.loadSubSteps(createSubstepsFile("error.substeps"));
 
         final StepValidator stepValidator = createStepValidatorWithSubsteps("simple.substeps");
         for (final ParentStep substep : substeps.values()) {
-            stepValidator.validateSubstep(substep, this.syntaxErrorReporter);
+            stepValidator.validateSubstep(substep, syntaxErrorReporter);
         }
 
-        final List<SyntaxErrorData> errors = this.syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertThat(Integer.valueOf(errors.size()), is(Integer.valueOf(3)));
 
         checkError(errors.get(0), 5, "SingleWord");
@@ -94,23 +89,20 @@ public class SyntaxAwareStepValidatorTest {
         final PatternMap<ParentStep> substeps = this.substepsFileParser
                 .loadSubSteps(createSubstepsFile("allFeatures.substeps"));
 
-        final StepValidator stepValidator = createStepValidatorWithSubsteps(
-                "simple.substeps", MockStepImplementations.class);
+        final StepValidator stepValidator = createStepValidatorWithSubsteps("simple.substeps",
+                MockStepImplementations.class);
         for (final ParentStep substep : substeps.values()) {
-            stepValidator.validateSubstep(substep, this.syntaxErrorReporter);
+            stepValidator.validateSubstep(substep, syntaxErrorReporter);
         }
-        final List<SyntaxErrorData> errors = this.syntaxErrorReporter.errors();
+        final List<SyntaxErrorData> errors = syntaxErrorReporter.syntaxErrors();
         assertTrue(errors.isEmpty());
     }
 
 
-    private void checkError(final SyntaxErrorData error, final int lineNumber,
-            final String line) {
-        assertThat(Integer.valueOf(error.getLineNumber()),
-                is(Integer.valueOf(lineNumber)));
+    private void checkError(final SyntaxErrorData error, final int lineNumber, final String line) {
+        assertThat(Integer.valueOf(error.getLineNumber()), is(Integer.valueOf(lineNumber)));
         assertThat(error.getLine(), is(line));
-        assertThat(error.getDescription(), is("Step \"" + line
-                + "\" is not defined"));
+        assertThat(error.getDescription(), is("Step \"" + line + "\" is not defined"));
     }
 
 
