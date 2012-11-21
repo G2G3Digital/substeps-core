@@ -26,9 +26,11 @@ public class SubstepsConfigurationException extends SubstepsException {
 
     private static final long serialVersionUID = -7081029538420278487L;
 
+
     public SubstepsConfigurationException(final Throwable cause) {
         super(cause);
     }
+
 
     /*
      * TODO: The following probably shouldn't be required - but we use this
@@ -39,14 +41,11 @@ public class SubstepsConfigurationException extends SubstepsException {
         super();
     }
 
-    public SubstepsConfigurationException(final String message, final Throwable cause, final boolean enableSuppression,
-            final boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 
     public SubstepsConfigurationException(final String message, final Throwable cause) {
         super(message, cause);
     }
+
 
     public SubstepsConfigurationException(final String message) {
         super(message);
