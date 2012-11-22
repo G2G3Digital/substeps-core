@@ -37,9 +37,11 @@ public class FileContents {
     private String fullContents = null;
     private File file;
 
+
     public List<String> getLines() {
         return this.lines;
     }
+
 
     /**
      * @return
@@ -48,9 +50,11 @@ public class FileContents {
         return this.lines.size();
     }
 
+
     public File getFile() {
         return this.file;
     }
+
 
     public void readFile(final File file) throws IOException {
 
@@ -71,6 +75,7 @@ public class FileContents {
         }
     }
 
+
     public int getSourceLineNumber(final String line, final int offset) {
 
         int lineNumber = -1;
@@ -83,6 +88,7 @@ public class FileContents {
         }
         return lineNumber;
     }
+
 
     public int getSourceLineNumberForOffset(final int offset) {
 
@@ -97,6 +103,7 @@ public class FileContents {
         return lineNumber;
     }
 
+
     public int getEndOfLineOffset(final int lineNumber) {
 
         int lastOffset;
@@ -108,6 +115,7 @@ public class FileContents {
         return lastOffset;
     }
 
+
     /**
      * @param lineNumberIdx
      * @return
@@ -117,14 +125,26 @@ public class FileContents {
         return this.lines.get(lineNumberIdx);
     }
 
+
+    /**
+     * @param lineNumberIdx
+     * @return
+     */
+    public int getLineStartOffsetForLineIndex(final int lineNumberIdx) {
+
+        return this.lineStartOffsets[lineNumberIdx];
+    }
+
+
     /**
      * @param lineNumberIdx
      * @return
      */
     public int getSourceStartOffsetForLineIndex(final int lineNumberIdx) {
-
-        return this.lineStartOffsets[lineNumberIdx];
+        final String line = getLineAt(lineNumberIdx);
+        return getLineStartOffsetForLineIndex(lineNumberIdx) + firstCharacterIndex(line);
     }
+
 
     /**
      * @return
@@ -134,4 +154,17 @@ public class FileContents {
         return this.fullContents;
     }
 
+
+    private int firstCharacterIndex(final String line) {
+        int offset = 0;
+        if (!line.isEmpty()) {
+            while (Character.isWhitespace(line.charAt(offset))) {
+                if (offset == line.length() - 1) {
+                    return 0;
+                }
+                offset++;
+            }
+        }
+        return offset;
+    }
 }

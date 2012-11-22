@@ -56,14 +56,17 @@ public class SubStepDefinitionParser {
 
     private FileContents currentFileContents;
 
+
     public SubStepDefinitionParser(final SyntaxErrorReporter syntaxErrorReporter) {
         this(true, syntaxErrorReporter);
     }
+
 
     public SubStepDefinitionParser(final boolean failOnDuplicateSubsteps, final SyntaxErrorReporter syntaxErrorReporter) {
         this.failOnDuplicateSubsteps = failOnDuplicateSubsteps;
         this.syntaxErrorReporter = syntaxErrorReporter;
     }
+
 
     void parseSubStepFile(final File substepFile) {
 
@@ -111,6 +114,7 @@ public class SubStepDefinitionParser {
         }
     }
 
+
     public PatternMap<ParentStep> loadSubSteps(final File definitions) {
 
         final List<File> substepsFiles = FileUtils.getFiles(definitions, ".substeps");
@@ -121,6 +125,7 @@ public class SubStepDefinitionParser {
 
         return this.parentMap;
     }
+
 
     // private void processLine(final String line, final File source,
     // final int lineNumber) {
@@ -143,8 +148,8 @@ public class SubStepDefinitionParser {
         final String line = this.currentFileContents.getLineAt(lineNumberIdx);
 
         if (this.log.isTraceEnabled()) {
-            this.log.trace("substep line[" + line + "] @ " + lineNumberIdx
-                    + ":" + this.currentFileContents.getFile().getName());
+            this.log.trace("substep line[" + line + "] @ " + lineNumberIdx + ":"
+                    + this.currentFileContents.getFile().getName());
         }
 
         if (line != null && line.length() > 0) {
@@ -160,8 +165,8 @@ public class SubStepDefinitionParser {
         }
     }
 
-    private void processTrimmedLine(final String trimmed,
-            final int lineNumberIdx) {
+
+    private void processTrimmedLine(final String trimmed, final int lineNumberIdx) {
 
         // TODO convert <> into regex wildcards
 
@@ -186,15 +191,14 @@ public class SubStepDefinitionParser {
         if (!lineProcessed) {
             if (this.currentParentStep != null) {
 
-                final int sourceOffset = this.currentFileContents
-                        .getSourceStartOffsetForLineIndex(lineNumberIdx);
+                final int sourceOffset = this.currentFileContents.getSourceStartOffsetForLineIndex(lineNumberIdx);
                 // no context at the mo
-                this.currentParentStep.addStep(new Step(trimmed, true,
-                        this.currentFileContents.getFile(), lineNumberIdx + 1,
-                        sourceOffset));
+                this.currentParentStep.addStep(new Step(trimmed, true, this.currentFileContents.getFile(),
+                        lineNumberIdx + 1, sourceOffset));
             }
         }
     }
+
 
     // private void processTrimmedLine(final String trimmed, final File source,
     // final int lineNumber) {
@@ -228,45 +232,42 @@ public class SubStepDefinitionParser {
     // }
     // }
 
-    private void processDirective(final Directive d, final String remainder,
-            final int lineNumberIdx) {
+    private void processDirective(final Directive d, final String remainder, final int lineNumberIdx) {
         this.currentDirective = d;
 
         switch (this.currentDirective) {
 
-            case DEFINITION: {
+        case DEFINITION: {
 
-                // build up a Step from the remainder
+            // build up a Step from the remainder
 
-            final int sourceOffset = this.currentFileContents
-                    .getSourceStartOffsetForLineIndex(lineNumberIdx);
+            final int sourceOffset = this.currentFileContents.getSourceStartOffsetForLineIndex(lineNumberIdx);
 
-            final Step parent = new Step(remainder, true,
-                    this.currentFileContents.getFile(), lineNumberIdx + 1,
+            final Step parent = new Step(remainder, true, this.currentFileContents.getFile(), lineNumberIdx + 1,
                     sourceOffset);
 
-                if (this.currentParentStep != null) {
-                final String newPattern = this.currentParentStep.getParent()
-                        .getPattern();
+            if (this.currentParentStep != null) {
+                final String newPattern = this.currentParentStep.getParent().getPattern();
 
-                    try {
-                        storeForPatternOrThrowException(newPattern, this.currentParentStep);
-                    } catch (final DuplicatePatternException ex) {
-                        syntaxErrorReporter.reportSubstepsError(ex);
+                try {
+                    storeForPatternOrThrowException(newPattern, this.currentParentStep);
+                } catch (final DuplicatePatternException ex) {
+                    syntaxErrorReporter.reportSubstepsError(ex);
 
-                        if (failOnDuplicateSubsteps) {
-                            throw ex;
-                        }
+                    if (failOnDuplicateSubsteps) {
+                        throw ex;
                     }
                 }
-
-                this.currentParentStep = new ParentStep(parent);
-
-                break;
             }
+
+            this.currentParentStep = new ParentStep(parent);
+
+            break;
+        }
         default: // whatever
         }
     }
+
 
     /*
      * private void processDirective(final Directive d, final String remainder,
@@ -324,6 +325,7 @@ public class SubStepDefinitionParser {
     }
 
     private Directive currentDirective = null;
+
 
     private Directive isDirective(final String word) {
 
