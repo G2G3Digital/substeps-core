@@ -38,8 +38,7 @@ public class SyntaxAwareStepValidatorTest {
 
         this.syntaxErrorReporter = new FakeSyntaxErrorReporter();
         this.featureFileParser = new FeatureFileParser();
-        this.substepsFileParser = new SubStepDefinitionParser(
-                this.syntaxErrorReporter);
+        this.substepsFileParser = new SubStepDefinitionParser(this.syntaxErrorReporter);
     }
 
 
@@ -116,12 +115,11 @@ public class SyntaxAwareStepValidatorTest {
     }
 
 
-    private StepValidator createStepValidatorWithSubsteps(
-            final String substepsFilename, final Class<?>... stepImplClasses) {
-        final Syntax syntax = SyntaxBuilder.buildSyntax(
-                Arrays.asList(stepImplClasses),
-                createSubstepsFile(substepsFilename), true, new String[0],
-                new ClassAnalyser(), true, this.syntaxErrorReporter);
+    private StepValidator createStepValidatorWithSubsteps(final String substepsFilename,
+            final Class<?>... stepImplClasses) {
+        final Syntax syntax = SyntaxBuilder.buildSyntax(Arrays.asList(stepImplClasses),
+                createSubstepsFile(substepsFilename), true, new String[0], new ClassAnalyser(), true,
+                this.syntaxErrorReporter);
 
         return new SyntaxAwareStepValidator(syntax);
     }

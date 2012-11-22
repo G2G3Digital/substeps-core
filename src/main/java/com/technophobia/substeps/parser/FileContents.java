@@ -43,6 +43,18 @@ public class FileContents {
     }
 
 
+    public int getFirstLineNumberStartingWith(final String text) {
+
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).trim().startsWith(text)) {
+                // line numbers are 1-based, lines list isn't
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+
+
     /**
      * @return
      */
@@ -80,39 +92,59 @@ public class FileContents {
 
         int lineNumber = -1;
         // find the line from the offset
-        final int idx = this.fullContents.indexOf(line);
+        final int idx = this.fullContents.indexOf(line, offset - 1);
 
         if (idx != -1) {
             // what's the line number of this offset ?
-            lineNumber = getSourceLineNumberForOffset(offset);
+            lineNumber = getSourceLineNumberForOffset(idx);
         }
         return lineNumber;
     }
 
 
+    // TODO: Tidy this up - what's the correct algorithm?
+    // The original version returned the 1st line number after the offset.
+    // However, as we were usually hitting this method with the offset for the
+    // 1st character of the line, it was usually returning the following line
     public int getSourceLineNumberForOffset(final int offset) {
 
         int lineNumber = -1;
         lineNumber = 0;
-        for (; lineNumber < this.lineStartOffsets.length; lineNumber++) {
+        for (; lineNumber < this.lineStartOffsets.length - 1; lineNumber++) {
 
-            if (this.lineStartOffsets[lineNumber] > offset) {
+            if (this.lineStartOffsets[lineNumber + 1] > offset) {
                 break;
             }
         }
-        return lineNumber;
+        if (offset > lineStartOffsets[lineStartOffsets.length - 1]) {
+            lineNumber = lineStartOffsets.length - 1;
+        }
+
+        // we now have line number, but it's 0-based. Need to convert to 1-based
+        return lineNumber + 1;
     }
 
 
     public int getEndOfLineOffset(final int lineNumber) {
 
+        final int normalisedLineNumber = normaliseLineNumber(lineNumber);
+
         int lastOffset;
-        if (lineNumber + 1 < this.lineStartOffsets.length) {
-            lastOffset = this.lineStartOffsets[lineNumber + 1] - 1;
+        if (normalisedLineNumber + 1 < this.lineStartOffsets.length) {
+            lastOffset = this.lineStartOffsets[normalisedLineNumber + 1] - 1;
         } else {
             lastOffset = this.fullContents.length();
         }
         return lastOffset;
+    }
+
+
+    // Line number is 1-based. When doing lookups in arrays etc, need it to be
+    // 0-based.
+    // This method makes this clear, rather than using undocumented +1, -1
+    // operations on lineNumber
+    private int normaliseLineNumber(final int lineNumber) {
+        return lineNumber - 1;
     }
 
 
@@ -122,7 +154,7 @@ public class FileContents {
      */
     public String getLineAt(final int lineNumberIdx) {
 
-        return this.lines.get(lineNumberIdx);
+        return this.lines.get(normaliseLineNumber(lineNumberIdx));
     }
 
 
@@ -132,7 +164,7 @@ public class FileContents {
      */
     public int getLineStartOffsetForLineIndex(final int lineNumberIdx) {
 
-        return this.lineStartOffsets[lineNumberIdx];
+        return this.lineStartOffsets[normaliseLineNumber(lineNumberIdx)];
     }
 
 

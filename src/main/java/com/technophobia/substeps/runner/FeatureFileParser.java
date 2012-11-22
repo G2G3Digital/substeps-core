@@ -222,7 +222,7 @@ public class FeatureFileParser {
 
                 } else {
                     sc.addStep(new Step(line, file, lineNumber, this.currentFileContents
-                            .getSourceStartOffsetForLineIndex(lineNumber - 1)));
+                            .getSourceStartOffsetForLineIndex(lineNumber)));
                 }
             }
         }
@@ -345,16 +345,7 @@ public class FeatureFileParser {
 
 
     private int backgroundLineNumber() {
-
-        final List<String> lines = this.currentFileContents.getLines();
-
-        for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).startsWith("Background:")) {
-                return i;
-            }
-
-        }
-        return 0;
+        return Math.max(currentFileContents.getFirstLineNumberStartingWith("Background:"), 0);
     }
 
 

@@ -81,7 +81,8 @@ public class SubStepDefinitionParser {
 
             for (int i = 0; i < this.currentFileContents.getNumberOfLines(); i++) {
 
-                processLine(i);
+                // Line numbers are 1-based in FileContents
+                processLine(i + 1);
             }
 
             // add the last scenario in, but only if it has some steps
@@ -144,7 +145,6 @@ public class SubStepDefinitionParser {
     // }
 
     private void processLine(final int lineNumberIdx) {
-
         final String line = this.currentFileContents.getLineAt(lineNumberIdx);
 
         if (this.log.isTraceEnabled()) {
@@ -194,7 +194,7 @@ public class SubStepDefinitionParser {
                 final int sourceOffset = this.currentFileContents.getSourceStartOffsetForLineIndex(lineNumberIdx);
                 // no context at the mo
                 this.currentParentStep.addStep(new Step(trimmed, true, this.currentFileContents.getFile(),
-                        lineNumberIdx + 1, sourceOffset));
+                        lineNumberIdx, sourceOffset));
             }
         }
     }
