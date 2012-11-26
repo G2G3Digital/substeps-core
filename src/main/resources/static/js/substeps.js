@@ -92,7 +92,7 @@ $(document).ready(function() {
 				detailhtml += "<p>File: " +  detailJSON.filename + "</p>";
 			}
 		 
-			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.desc + "</p>";
+			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.description + "</p>";
 		
 			if (detailJSON.method.length > 0){
 				detailhtml = detailhtml + "<p>Method: " + detailJSON.method + "</p>";
