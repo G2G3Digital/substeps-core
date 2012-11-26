@@ -53,19 +53,11 @@ import com.technophobia.substeps.execution.Feature;
 public class DefaultExecutionReportBuilderTest {
 
     private static final String STEP_NODE = "stepNode";
-
     private static final String SCENARIO_NAME = "scenarioName";
-
     private static final String RESULT = "result";
-
     private static final String DESCRIPTION = "description";
-
-    private static final String DESC = "desc";
-
     private static final String FEATURE_NAME = "test feature";
-
     private static final String NOT_RUN = "NOT_RUN";
-
     private static final String NODE_TYPE = "nodetype";
 
     @Rule
@@ -193,7 +185,7 @@ public class DefaultExecutionReportBuilderTest {
         JsonObject featureNode = details.get(2);
         assertBasics(index, featureNode, "Feature", NOT_RUN);
 
-        Assert.assertEquals(FEATURE_NAME, featureNode.get(DESC).getAsString());
+        Assert.assertEquals(FEATURE_NAME, featureNode.get(DESCRIPTION).getAsString());
 
         JsonArray children = featureNode.getAsJsonArray("children");
         Assert.assertEquals(1, children.size());
@@ -206,7 +198,7 @@ public class DefaultExecutionReportBuilderTest {
 
         JsonObject scenarioNode = details.get(index);
         assertBasics(index, scenarioNode, "Scenario", NOT_RUN);
-        Assert.assertEquals(SCENARIO_NAME, scenarioNode.get(DESC).getAsString());
+        Assert.assertEquals(SCENARIO_NAME, scenarioNode.get(DESCRIPTION).getAsString());
 
         JsonArray children = scenarioNode.getAsJsonArray("children");
         Assert.assertEquals(stepNodes.size(), children.size());
@@ -228,7 +220,7 @@ public class DefaultExecutionReportBuilderTest {
 
         JsonObject stepNode = details.get(index);
         assertBasics(index, stepNode, "Step", NOT_RUN);
-        Assert.assertEquals(description, stepNode.get(DESC).getAsString());
+        Assert.assertEquals(description, stepNode.get(DESCRIPTION).getAsString());
 
         JsonArray children = stepNode.getAsJsonArray("children");
         Assert.assertEquals(0, children.size());

@@ -334,7 +334,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         nodeAndChildren.add(thisNode);
 
         thisNode.addProperty("nodetype", node.getType());
-        thisNode.addProperty("fileName", node.getFilename());
+        thisNode.addProperty("filename", node.getFilename());
         thisNode.addProperty("result", node.getResult().getResult().toString());
         thisNode.addProperty("id", node.getId());
         thisNode.addProperty("emessage", getExceptionMessage(node));
@@ -347,7 +347,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         String description = node.getDescription() == null ? null : node.getDescription().trim();
         String descriptionEscaped = replaceNewLines(StringEscapeUtils.escapeHtml4(description));
 
-        thisNode.addProperty("desc", descriptionEscaped);
+        thisNode.addProperty("description", descriptionEscaped);
 
         JsonArray children = new JsonArray();
         if (node.hasChildren()) {
