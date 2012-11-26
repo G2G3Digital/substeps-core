@@ -78,6 +78,8 @@ public class TestParameters {
         if (failOnNoFeatures) {
             Assert.assertNotNull("No Feature files found!", featureFileList);
             Assert.assertFalse("No Feature files found!", featureFileList.isEmpty());
+        } else if (featureFileList == null) {
+            featureFileList = Collections.emptyList();
         }
 
         Collections.sort(featureFileList, new FeatureFileComparator());
