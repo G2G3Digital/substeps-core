@@ -54,7 +54,11 @@ public class TestParameters {
 
 
     public void init() {
+        init(true);
+    }
 
+
+    public void init(final boolean failOnNoFeatures) {
         final List<File> featureFiles = FileUtils.getFiles(new File(featureFile), ".feature");
 
         final FeatureFileParser fp2 = new FeatureFileParser();
@@ -71,8 +75,10 @@ public class TestParameters {
         final File f = new File(".");
         log.debug("Current dir is: " + f.getAbsolutePath());
 
-        Assert.assertNotNull("No Feature files found!", featureFileList);
-        Assert.assertFalse("No Feature files found!", featureFileList.isEmpty());
+        if (failOnNoFeatures) {
+            Assert.assertNotNull("No Feature files found!", featureFileList);
+            Assert.assertFalse("No Feature files found!", featureFileList.isEmpty());
+        }
 
         Collections.sort(featureFileList, new FeatureFileComparator());
     }

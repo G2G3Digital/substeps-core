@@ -243,7 +243,7 @@ public class SubStepDefinitionParser {
 
             final int sourceOffset = this.currentFileContents.getSourceStartOffsetForLineIndex(lineNumberIdx);
 
-            final Step parent = new Step(remainder, true, this.currentFileContents.getFile(), lineNumberIdx + 1,
+            final Step parent = new Step(remainder, true, this.currentFileContents.getFile(), lineNumberIdx,
                     sourceOffset);
 
             if (this.currentParentStep != null) {
