@@ -193,7 +193,7 @@ public class DefaultExecutionReportBuilderTest {
 
     private void assertFeatureNodeAsExpected(int index) {
 
-        JsonObject featureNode = details.get(2);
+        JsonObject featureNode = details.get(index);
         assertBasics(index, featureNode, "Feature", NOT_RUN);
 
         Assert.assertEquals(FEATURE_NAME, featureNode.get(DESCRIPTION).getAsString());
