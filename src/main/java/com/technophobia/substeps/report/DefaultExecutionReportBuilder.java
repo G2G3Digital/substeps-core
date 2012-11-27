@@ -48,6 +48,9 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.joda.time.Duration;
+import org.joda.time.format.PeriodFormat;
+import org.joda.time.format.PeriodFormatter;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -340,6 +343,9 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         thisNode.addProperty("emessage", getExceptionMessage(node));
         thisNode.addProperty("stacktrace", getStackTrace(node));
 
+        thisNode.addProperty("runningDurationMillis", node.getResult().getRunningDuration());
+        thisNode.addProperty("runningDurationString", convert(node.getResult().getRunningDuration()));
+
         String methodInfo = createMethodInfo(node);
 
         thisNode.addProperty("method", methodInfo);
@@ -364,6 +370,17 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
 
         return nodeAndChildren;
+    }
+
+    private String convert(Long runningDurationMillis) {
+
+        return runningDurationMillis == null ? "No duration recorded" : convert(runningDurationMillis.longValue());
+    }
+
+    private String convert(long runningDurationMillis) {
+        Duration duration = new Duration(runningDurationMillis);
+        PeriodFormatter formatter = PeriodFormat.getDefault();
+        return formatter.print(duration.toPeriod());
     }
 
     private void addDetailsForChildren(ExecutionNode node, JsonArray children) {

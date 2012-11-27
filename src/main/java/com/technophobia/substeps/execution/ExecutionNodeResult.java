@@ -27,10 +27,13 @@ import java.io.StringWriter;
  * 
  */
 public class ExecutionNodeResult {
+
     private ExecutionResult result = ExecutionResult.NOT_RUN;
 
     private Throwable thrown = null;
 
+    private Long startedAt;
+    private Long completedAt;
 
     public String getStackTrace() {
         if (thrown != null) {
@@ -47,14 +50,12 @@ public class ExecutionNodeResult {
         }
     }
 
-
     /**
      * @return the result
      */
     public ExecutionResult getResult() {
         return result;
     }
-
 
     /**
      * @param result
@@ -64,14 +65,12 @@ public class ExecutionNodeResult {
         this.result = result;
     }
 
-
     /**
      * @return the failureStackTrace
      */
     public Throwable getThrown() {
         return thrown;
     }
-
 
     /**
      * @param failureStackTrace
@@ -81,31 +80,30 @@ public class ExecutionNodeResult {
         thrown = failureStackTrace;
     }
 
-
     /**
      * @param theException
      */
     public void setFailed(final Throwable theException) {
         result = ExecutionResult.FAILED;
         thrown = theException;
+        recordComplete();
     }
-
 
     /**
 	 * 
 	 */
     public void setFinished() {
         result = ExecutionResult.PASSED;
+        recordComplete();
     }
-
 
     /**
 	 * 
 	 */
     public void setStarted() {
         result = ExecutionResult.RUNNING;
+        startedAt = System.currentTimeMillis();
     }
-
 
     /**
      * @param t
@@ -115,7 +113,6 @@ public class ExecutionNodeResult {
         thrown = t;
     }
 
-
     /**
      * @param theException
      */
@@ -124,4 +121,12 @@ public class ExecutionNodeResult {
         thrown = t;
     }
 
+    public Long getRunningDuration() {
+
+        return startedAt != null && completedAt != null ? completedAt - startedAt : null;
+    }
+
+    private void recordComplete() {
+        completedAt = System.currentTimeMillis();
+    }
 }

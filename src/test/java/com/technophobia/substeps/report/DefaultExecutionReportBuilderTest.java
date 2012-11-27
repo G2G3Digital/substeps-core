@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -58,7 +59,10 @@ public class DefaultExecutionReportBuilderTest {
     private static final String DESCRIPTION = "description";
     private static final String FEATURE_NAME = "test feature";
     private static final String NOT_RUN = "NOT_RUN";
+    private static final String PASSED = "PASSED";
     private static final String NODE_TYPE = "nodetype";
+
+    private static final Logger LOG = Logger.getLogger(DefaultExecutionReportBuilderTest.class);
 
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
@@ -142,11 +146,13 @@ public class DefaultExecutionReportBuilderTest {
     private void addStep(ExecutionNode scenario, Class<?> stepClass, Method stepMethod, String stepLine) {
 
         final ExecutionNode stepNode = new ExecutionNode();
+        stepNode.getResult().setStarted();
         stepNodes.add(stepNode);
         stepNode.setLine(stepLine);
         stepNode.setTargetClass(stepClass);
         stepNode.setTargetMethod(stepMethod);
         scenario.addChild(stepNode);
+        stepNode.getResult().setFinished();
     }
 
     @Test
@@ -171,6 +177,9 @@ public class DefaultExecutionReportBuilderTest {
     private void assertRootNodeAsExpected(int index) {
 
         JsonObject rootNode = details.get(index);
+
+        Assert.assertNotNull(rootNode);
+
         assertBasics(index, rootNode, "Root node", NOT_RUN);
 
         JsonArray children = rootNode.getAsJsonArray("children");
@@ -212,14 +221,14 @@ public class DefaultExecutionReportBuilderTest {
 
     private void assertChildStepNode(JsonObject child, String description) {
 
-        Assert.assertEquals(NOT_RUN, child.get(RESULT).getAsString());
+        Assert.assertEquals(PASSED, child.get(RESULT).getAsString());
         Assert.assertEquals(description, child.get(DESCRIPTION).getAsString());
     }
 
     private void assertStepNodeAsExpected(int index, String description) {
 
         JsonObject stepNode = details.get(index);
-        assertBasics(index, stepNode, "Step", NOT_RUN);
+        assertBasics(index, stepNode, "Step", PASSED);
         Assert.assertEquals(description, stepNode.get(DESCRIPTION).getAsString());
 
         JsonArray children = stepNode.getAsJsonArray("children");
@@ -251,6 +260,8 @@ public class DefaultExecutionReportBuilderTest {
 
         BufferedReader reportReader = null;
 
+        LOG.debug("decomposeReport() entered");
+
         try {
             reportReader = getDetailReportReader();
 
@@ -262,6 +273,8 @@ public class DefaultExecutionReportBuilderTest {
             details = Maps.newHashMap();
             String line;
             while ((line = reportReader.readLine()) != null) {
+
+                LOG.debug("Line found in detail report = " + line);
 
                 Matcher matcher = pattern.matcher(line);
 

@@ -102,6 +102,8 @@ $(document).ready(function() {
 				detailhtml = detailhtml + "<p>" + detailJSON.emessage + "</p><div class=\"stacktrace\"><pre class=\"stacktracepre\">" +
 				detailJSON.stacktrace + "</div></pre>";
 			}
+			
+			detailhtml = detailhtml + "<p>Duration: " + detailJSON.runningDurationString + "</p>"
 
 			if (detailJSON.children.length > 0){
 				
