@@ -75,6 +75,8 @@ public class DefaultExecutionReportBuilderTest {
 
     List<ExecutionNode> stepNodes = Lists.newArrayList();
 
+    private Integer nodeIdOffset;
+
     private ReportData reportData;
 
     private String arrayCreationLine;
@@ -166,12 +168,12 @@ public class DefaultExecutionReportBuilderTest {
 
         Assert.assertEquals("The array creation line was not as expected", ARRAY_CREATION_LINE, arrayCreationLine);
         assertThereAreAsManyDetailsInTheReportAsNodesCreated();
-        assertRootNodeAsExpected(1);
-        assertFeatureNodeAsExpected(2);
-        assertScenarioNodeAsExpected(3);
-        assertStepNodeAsExpected(4, STEP_NODE + "1");
-        assertStepNodeAsExpected(5, STEP_NODE + "2");
-        assertStepNodeAsExpected(6, STEP_NODE + "3");
+        assertRootNodeAsExpected(1 + nodeIdOffset);
+        assertFeatureNodeAsExpected(2 + nodeIdOffset);
+        assertScenarioNodeAsExpected(3 + nodeIdOffset);
+        assertStepNodeAsExpected(4 + nodeIdOffset, STEP_NODE + "1");
+        assertStepNodeAsExpected(5 + nodeIdOffset, STEP_NODE + "2");
+        assertStepNodeAsExpected(6 + nodeIdOffset, STEP_NODE + "3");
     }
 
     private void assertRootNodeAsExpected(int index) {
@@ -291,7 +293,13 @@ public class DefaultExecutionReportBuilderTest {
                     Assert.fail("Invalid json found '" + detail + "'");
                 }
 
-                details.put(Integer.valueOf(index), json);
+                int indexInt = Integer.valueOf(index);
+
+                if (nodeIdOffset == null) {
+                    nodeIdOffset = indexInt - 1;
+                }
+
+                details.put(indexInt, json);
             }
         } finally {
             if (reportReader != null) {
