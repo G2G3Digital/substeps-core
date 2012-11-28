@@ -154,7 +154,7 @@ function toggle(id){
 <script type="text/javascript" src="js/substeps.js"></script>
 
 <script type="text/javascript" src="report_data.json"></script>
-<script type="text/javascript" src="detail_data.json"></script>
+<script type="text/javascript" src="detail_data.js"></script>
 <script type="text/javascript" src="susbteps-stats.js"></script>
 
 </body>

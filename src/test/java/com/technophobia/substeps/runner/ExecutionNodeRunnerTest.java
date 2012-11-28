@@ -41,7 +41,8 @@ import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.execution.Feature;
 import com.technophobia.substeps.execution.ImplementationCache;
-import com.technophobia.substeps.model.SubStepConfigurationException;
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
+import com.technophobia.substeps.model.exception.UnimplementedStepException;
 import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 import com.technophobia.substeps.steps.TestStepImplementations;
@@ -61,7 +62,7 @@ public class ExecutionNodeRunnerTest {
         final String tags = "@bug_missing_sub_step_impl";
         final String substeps = "./target/test-classes/substeps/error.substeps";
         final INotifier notifier = mock(INotifier.class);
-        
+
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
 
         final ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier, failures);
@@ -74,19 +75,18 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
-        verify(notifier, times(1)).notifyNodeFailed(eq(scenarioNode),
-                argThat(any(SubStepConfigurationException.class)));
+        verify(notifier, times(1)).notifyNodeFailed(eq(scenarioNode), argThat(any(UnimplementedStepException.class)));
 
         Assert.assertThat(failures.size(), is(2));
-        
-        Assert.assertThat(failures.get(0).getCause() , instanceOf(SubStepConfigurationException.class));
-        Assert.assertThat(failures.get(0).getCause().getMessage(), is("SingleWord is not a recognised substep or step implementation"));
 
-        Assert.assertThat(failures.get(1).getCause() , instanceOf(IllegalStateException.class));
+        Assert.assertThat(failures.get(0).getCause(), instanceOf(UnimplementedStepException.class));
+        Assert.assertThat(failures.get(0).getCause().getMessage(),
+                is("SingleWord is not a recognised step or substep implementation"));
+
+        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
         Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
 
     }
-
 
     @Test
     public void testSubStepDefinitionMatchesStepImplFailure() {
@@ -95,7 +95,7 @@ public class ExecutionNodeRunnerTest {
         final String tags = "@duplicate_step_step_def";
         final String substeps = "./target/test-classes/substeps/duplicates2.substeps";
         final INotifier notifier = mock(INotifier.class);
-        
+
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
 
         final ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier, failures);
@@ -109,20 +109,20 @@ public class ExecutionNodeRunnerTest {
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
         verify(notifier, times(1)).notifyNodeFailed(eq(scenarioNode),
-                argThat(any(SubStepConfigurationException.class)));
-        
+                argThat(any(SubstepsConfigurationException.class)));
+
         Assert.assertThat(failures.size(), is(2));
-        
-        Assert.assertThat(failures.get(0).getCause() , instanceOf(SubStepConfigurationException.class));
-        
-        Assert.assertThat(failures.get(0).getCause().getMessage(), 
-        		is("line: [Given something] in [./target/test-classes/features/error3.feature] matches step implementation method: [public void com.technophobia.substeps.steps.TestStepImplementations.given()] AND matches a sub step definition: [Given something] in [duplicates2.substeps]"));
-        
-        Assert.assertThat(failures.get(1).getCause() , instanceOf(IllegalStateException.class));
+
+        Assert.assertThat(failures.get(0).getCause(), instanceOf(SubstepsConfigurationException.class));
+
+        Assert.assertThat(
+                failures.get(0).getCause().getMessage(),
+                is("line: [Given something] in [./target/test-classes/features/error3.feature] matches step implementation method: [public void com.technophobia.substeps.steps.TestStepImplementations.given()] AND matches a sub step definition: [Given something] in [duplicates2.substeps]"));
+
+        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
         Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
 
     }
-
 
     @Ignore("can't get to fail as I would expect for some reason")
     @Test
@@ -134,10 +134,10 @@ public class ExecutionNodeRunnerTest {
         final String tags = "@invalid_scenario_outline";
         final String substeps = "./target/test-classes/substeps/simple.substeps";
         final INotifier notifier = mock(INotifier.class);
-        
+
         // TODO - checkfailures - test currently ignored anyway..
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
-        final ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier,failures);
+        final ExecutionNode rootNode = runExecutionTest(feature, tags, substeps, notifier, failures);
 
         System.out.println("\n\n\n\n\n*************\n\n" + rootNode.toDebugString());
 
@@ -149,18 +149,12 @@ public class ExecutionNodeRunnerTest {
 
         final ExecutionNode scenarioOutlineNode2 = scenarioNode.getChild(1);
 
-        Assert.assertThat(scenarioOutlineNode2.getResult().getResult(),
-                is(ExecutionResult.PARSE_FAILURE));
+        Assert.assertThat(scenarioOutlineNode2.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
         verify(notifier, times(1)).notifyNodeFailed(eq(scenarioOutlineNode2),
-                argThat(any(SubStepConfigurationException.class)));
-        
-        
-        
-        
+                argThat(any(SubstepsConfigurationException.class)));
 
     }
-
 
     @Test
     public void regExTest() {
@@ -183,7 +177,6 @@ public class ExecutionNodeRunnerTest {
 
     }
 
-
     /**
      * @param feature
      * @param tags
@@ -191,13 +184,13 @@ public class ExecutionNodeRunnerTest {
      * @param notifier
      * @return
      */
-    private ExecutionNode runExecutionTest(final String feature, final String tags,
-            final String substeps, final INotifier notifier, final Class<?>[] initialisationClasses,
-            final List<SubstepExecutionFailure> failures ) {
+    private ExecutionNode runExecutionTest(final String feature, final String tags, final String substeps,
+            final INotifier notifier, final Class<?>[] initialisationClasses,
+            final List<SubstepExecutionFailure> failures) {
         final ExecutionConfig executionConfig = new ExecutionConfig();
 
         Assert.assertTrue(failures.isEmpty());
-        
+
         executionConfig.setTags(tags);
         executionConfig.setFeatureFile(feature);
         executionConfig.setSubStepsFileName(substeps);
@@ -222,17 +215,15 @@ public class ExecutionNodeRunnerTest {
         final List<SubstepExecutionFailure> localFailures = runner.run();
 
         failures.addAll(localFailures);
-        
+
         return rootNode;
     }
 
-
-    private ExecutionNode runExecutionTest(final String feature, final String tags,
-            final String substeps, final INotifier notifier,final List<SubstepExecutionFailure> failures  ) {
+    private ExecutionNode runExecutionTest(final String feature, final String tags, final String substeps,
+            final INotifier notifier, final List<SubstepExecutionFailure> failures) {
 
         return runExecutionTest(feature, tags, substeps, notifier, null, failures);
     }
-
 
     private void setPrivateField(final Object target, final String fieldName, final Object value) {
 
@@ -262,9 +253,13 @@ public class ExecutionNodeRunnerTest {
 
     }
 
-
+    /**
+     * If we use a root node with no children, we should get two failures, one
+     * for there being no children on a node which should have children, another
+     * for there being no tests run
+     */
     @Test
-    public void testNoTestsExecutedResultsInFailure() {
+    public void testNoTestsExecutedResultsInTwoFailures() {
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
         final ExecutionNode node = new ExecutionNode();
@@ -289,14 +284,12 @@ public class ExecutionNodeRunnerTest {
 
         final List<SubstepExecutionFailure> failures = runner.run();
 
-        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(node)),
-                argThat(any(IllegalStateException.class)));
-        
-        Assert.assertFalse("expecting some failures", failures.isEmpty());
-        
-        Assert.assertThat(failures.size(), is(1));
-    }
+        verify(mockNotifer, times(2)).notifyNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
 
+        Assert.assertFalse("expecting some failures", failures.isEmpty());
+
+        Assert.assertThat(failures.size(), is(2));
+    }
 
     @Test
     public void testScenarioOutlineFailsWithNoExamples() {
@@ -329,35 +322,32 @@ public class ExecutionNodeRunnerTest {
         // the failure is called on the root twice, once for the child not
         // having tests, the other for
         // not having any run any tests
-        // NB. notifications of failed nodes not the same as the actual failure list returned
-        // list contains just those nodes that have actually failed, not the entire tree.
+        // NB. notifications of failed nodes not the same as the actual failure
+        // list returned
+        // list contains just those nodes that have actually failed, not the
+        // entire tree.
 
-        verify(mockNotifer, times(2)).notifyNodeFailed(argThat(is(rootNode)),
-                argThat(any(Throwable.class)));
+        verify(mockNotifer, times(2)).notifyNodeFailed(argThat(is(rootNode)), argThat(any(Throwable.class)));
 
-        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(featureNode)),
-                argThat(any(Throwable.class)));
+        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(featureNode)), argThat(any(Throwable.class)));
 
-        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(scenarioNode)),
-                argThat(any(Throwable.class)));
+        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(scenarioNode)), argThat(any(Throwable.class)));
 
-        
         Assert.assertFalse("expecting some failures", failures.isEmpty());
-        
-        // two failures, one for the scenario outline not having any examples, other for the root node for not having run any tests
+
+        // two failures, one for the scenario outline not having any examples,
+        // other for the root node for not having run any tests
         Assert.assertThat(failures.size(), is(2));
-        
+
         Assert.assertThat(failures.size(), is(2));
-        
-        Assert.assertThat(failures.get(0).getCause() , instanceOf(IllegalStateException.class));
-        
-        Assert.assertThat(failures.get(0).getCause().getMessage(), 
-        		is("node should have children but doesn't"));
-        
-        Assert.assertThat(failures.get(1).getCause() , instanceOf(IllegalStateException.class));
+
+        Assert.assertThat(failures.get(0).getCause(), instanceOf(IllegalStateException.class));
+
+        Assert.assertThat(failures.get(0).getCause().getMessage(), is("node should have children but doesn't"));
+
+        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
         Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
     }
-
 
     @Test
     public void testStepFailureFailsFeature() {
@@ -379,10 +369,12 @@ public class ExecutionNodeRunnerTest {
         final ExecutionNode scenarioOutlineNode = new ExecutionNode();
         scenarioNode.addChild(scenarioOutlineNode);
         scenarioOutlineNode.setRowNumber(1);
+        scenarioOutlineNode.setOutline(true);
 
         final ExecutionNode scenarioOutlineNode2 = new ExecutionNode();
         scenarioNode.addChild(scenarioOutlineNode2);
         scenarioOutlineNode2.setRowNumber(2);
+        scenarioOutlineNode2.setOutline(true);
 
         Method nonFailMethod = null;
         Method failMethod = null;
@@ -446,22 +438,19 @@ public class ExecutionNodeRunnerTest {
         Assert.assertThat(stepNode1b.getResult().getResult(), is(ExecutionResult.PASSED));
         Assert.assertThat(stepNode2b.getResult().getResult(), is(ExecutionResult.PASSED));
         Assert.assertThat(stepNode3b.getResult().getResult(), is(ExecutionResult.PASSED));
-        
-        
+
         Assert.assertFalse("expecting some failures", failures.isEmpty());
-        
+
         // just one failure for the actual step that failed
         Assert.assertThat(failures.size(), is(1));
 
     }
-
 
     @BeforeAllFeatures
     public void failingSetupMethod() {
 
         throw new IllegalStateException("something has gone wrong");
     }
-
 
     @Test
     public void testBeforeAllFeaturesSetupFailureFailsTheBuild() {
@@ -530,8 +519,7 @@ public class ExecutionNodeRunnerTest {
         stepNode3b.setTargetMethod(nonFailMethod);
 
         final Class<?>[] setupClasses = new Class[] { this.getClass() };
-        final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(setupClasses,
-                new ImplementationCache());
+        final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(setupClasses, new ImplementationCache());
 
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
@@ -543,24 +531,23 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
         Assert.assertThat(featureNode.getResult().getResult(), is(ExecutionResult.NOT_RUN));
-        
+
         Assert.assertFalse("expecting some failures", failures.isEmpty());
-        
-        // two failures - one for the @before failure and another because no tests run
+
+        // two failures - one for the @before failure and another because no
+        // tests run
         Assert.assertThat(failures.size(), is(2));
-        
-        Assert.assertTrue( "failure should be marked as setup or tear down",        failures.get(0).isSetupOrTearDown());
-        
-        Assert.assertThat(failures.get(1).getCause() , instanceOf(IllegalStateException.class));
-        
+
+        Assert.assertTrue("failure should be marked as setup or tear down", failures.get(0).isSetupOrTearDown());
+
+        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
+
         Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
     }
-
 
     public void nonFailingMethod() {
         System.out.println("no fail");
     }
-
 
     public void failingMethod() {
         System.out.println("uh oh");

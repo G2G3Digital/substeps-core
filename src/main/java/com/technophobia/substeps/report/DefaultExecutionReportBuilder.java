@@ -48,13 +48,19 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.joda.time.Duration;
+import org.joda.time.format.PeriodFormat;
+import org.joda.time.format.PeriodFormatter;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sun.net.www.protocol.file.FileURLConnection;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionResult;
 
@@ -62,13 +68,14 @@ import com.technophobia.substeps.execution.ExecutionResult;
  * @author ian
  */
 public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
-    private final Logger log = LoggerFactory
-            .getLogger(DefaultExecutionReportBuilder.class);
+
+    private final Logger log = LoggerFactory.getLogger(DefaultExecutionReportBuilder.class);
 
     private final Properties velocityProperties = new Properties();
 
+    public static final String FEATURE_REPORT_FOLDER = "feature_report";
     public static final String JSON_DATA_FILENAME = "report_data.json";
-    public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.json";
+    public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.js";
 
     private static final String JSON_STATS_DATA_FILENAME = "susbteps-stats.js";
 
@@ -93,20 +100,16 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
      */
     private String reportTitle;
 
-
     public DefaultExecutionReportBuilder() {
         velocityProperties.setProperty("resource.loader", "class");
-        velocityProperties
-                .setProperty("class.resource.loader.class",
-                        "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        velocityProperties.setProperty("class.resource.loader.class",
+                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
     }
-
 
     public DefaultExecutionReportBuilder(final File outputDirectory) {
         this();
         this.outputDirectory = outputDirectory;
     }
-
 
     /*
      * (non-Javadoc)
@@ -119,8 +122,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
         log.debug("Build report in: " + outputDirectory.getAbsolutePath());
 
-        final File reportDir = new File(outputDirectory + File.separator
-                + "feature_report");
+        final File reportDir = new File(outputDirectory + File.separator + FEATURE_REPORT_FOLDER);
 
         try {
 
@@ -130,8 +132,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 FileUtils.deleteDirectory(reportDir);
             }
 
-            Assert.assertTrue("failed to create directory: " + reportDir,
-                    reportDir.mkdir());
+            Assert.assertTrue("failed to create directory: " + reportDir, reportDir.mkdir());
 
             copyStaticResources(reportDir);
 
@@ -150,21 +151,18 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
     }
 
-
     /**
      * @param data
      * @param reportDir
      */
-    private void buildStatsJSON(final ReportData data, final File reportDir)
-            throws IOException {
+    private void buildStatsJSON(final ReportData data, final File reportDir) throws IOException {
 
         final File jsonFile = new File(reportDir, JSON_STATS_DATA_FILENAME);
 
         final ExecutionStats stats = new ExecutionStats();
         stats.buildStats(data);
 
-        final BufferedWriter writer = Files.newWriter(jsonFile,
-                Charset.defaultCharset());
+        final BufferedWriter writer = Files.newWriter(jsonFile, Charset.defaultCharset());
         try {
             buildStatsJSON(stats, writer);
         } finally {
@@ -173,13 +171,11 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
     /**
      * @param stats
      * @param writer
      */
-    private void buildStatsJSON(final ExecutionStats stats,
-            final BufferedWriter writer) throws IOException {
+    private void buildStatsJSON(final ExecutionStats stats, final BufferedWriter writer) throws IOException {
 
         writer.append("var featureStatsData = [");
         boolean first = true;
@@ -190,23 +186,11 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 writer.append(",\n");
             }
             writer.append("[\"").append(stat.getTag()).append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getFeatureStats().getCount()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getFeatureStats().getRun()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer
-                            .toString(stat.getFeatureStats().getPassed()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer
-                            .toString(stat.getFeatureStats().getFailed()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Double.toString(stat.getFeatureStats()
-                            .getSuccessPc())).append("\"]");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getCount())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getRun())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getPassed())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getFailed())).append("\",");
+            writer.append("\"").append(Double.toString(stat.getFeatureStats().getSuccessPc())).append("\"]");
 
             first = false;
         }
@@ -222,22 +206,12 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 writer.append(",\n");
             }
             writer.append("[\"").append(stat.getTag()).append("\",");
-            writer.append("\"")
-                    .append(Integer
-                            .toString(stat.getScenarioStats().getCount()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getScenarioStats().getRun()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getScenarioStats()
-                            .getPassed())).append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getScenarioStats()
-                            .getFailed())).append("\",");
-            writer.append("\"")
-                    .append(Double.toString(stat.getScenarioStats()
-                            .getSuccessPc())).append("\"").append("]");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getCount())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getRun())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getPassed())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getFailed())).append("\",");
+            writer.append("\"").append(Double.toString(stat.getScenarioStats().getSuccessPc())).append("\"")
+                    .append("]");
 
             first = false;
         }
@@ -246,18 +220,15 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
     /**
      * @param data
      * @param reportDir
      * @throws IOException
      */
-    private void buildDetailJSON(final ReportData data, final File reportDir)
-            throws IOException {
+    private void buildDetailJSON(final ReportData data, final File reportDir) throws IOException {
         final File jsonFile = new File(reportDir, JSON_DETAIL_DATA_FILENAME);
 
-        final BufferedWriter writer = Files.newWriter(jsonFile,
-                Charset.defaultCharset());
+        final BufferedWriter writer = Files.newWriter(jsonFile, Charset.defaultCharset());
         try {
             buildDetailJSON(data, writer);
         } finally {
@@ -266,9 +237,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
-    private void buildTreeJSON(final ReportData reportData, final File reportDir)
-            throws IOException {
+    private void buildTreeJSON(final ReportData reportData, final File reportDir) throws IOException {
         log.debug("Building tree json file.");
 
         final File jsonFile = new File(reportDir, JSON_DATA_FILENAME);
@@ -321,23 +290,20 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
     /**
      * @param reportData
      * @param writer
      * @throws IOException
      */
-    private void buildDetailJSON(final ReportData reportData,
-            final Writer writer) throws IOException {
+    private void buildDetailJSON(final ReportData reportData, final Writer writer) throws IOException {
 
-        writer.append("var detail = new Array();\n");
+        writer.append("var detail = new Array();");
 
         for (final ExecutionNode node : reportData.getRootNodes()) {
             buildDetailJSON(node, writer);
         }
 
     }
-
 
     private String replaceNewLines(final String s) {
 
@@ -349,106 +315,130 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
     }
 
-
     /**
      * @param node
      * @param writer
      */
-    private void buildDetailJSON(final ExecutionNode node, final Writer writer)
-            throws IOException {
+    private void buildDetailJSON(final ExecutionNode node, final Writer writer) throws IOException {
 
-        // create some json for each node
+        List<JsonObject> allNodesAsJson = createDetailJsonObjects(node);
 
-        writer.append("detail[" + node.getId() + "]=");
-
-        writer.append("{\"nodetype\": \""
-                + node.getType()
-                + "\",\"filename\": \""
-                + node.getFilename()
-                + "\",\"result\": \""
-                + node.getResult().getResult().toString()
-                + "\",\"id\": "
-                + node.getId()
-                + ",\"debugstr\": \""
-                + replaceNewLines(StringEscapeUtils.escapeHtml4(node
-                        .getDebugStringForThisNode().trim()))
-                + "\",\"emessage\": \"");
-
-        String stackTrace = null;
-
-        if (node.getResult().getThrown() != null) {
-
-            final String exceptionMsg = StringEscapeUtils.escapeHtml4(node
-                    .getResult().getThrown().getMessage());
-
-            writer.append(replaceNewLines(exceptionMsg));
-
-            final StackTraceElement[] stackTraceElements = node.getResult()
-                    .getThrown().getStackTrace();
-
-            final StringBuilder buf = new StringBuilder();
-            for (final StackTraceElement e : stackTraceElements) {
-
-                buf.append(StringEscapeUtils.escapeHtml4(e.toString().trim()))
-                        .append("<br/>");
-            }
-            stackTrace = buf.toString();
-        }
-
-        if (stackTrace == null) {
-            stackTrace = "";
-        }
-
-        writer.append("\",\"stacktrace\": \"" + stackTrace + "\"");
-
-        writer.append(",\"method\": \"");
-        final StringBuilder buf = new StringBuilder();
-        node.appendMethodInfo(buf);
-
-        String methodInfo = buf.toString();
-        if (methodInfo.contains("\"")) {
-            methodInfo = methodInfo.replace("\"", "\\\"");
-        }
-
-        writer.append(replaceNewLines(methodInfo));
-
-        writer.append("\"");
-
-        writer.append(",\"desc\": \"");
-        writer.append(replaceNewLines(StringEscapeUtils.escapeHtml4(node
-                .getDescription().trim())));
-
-        writer.append("\"");
-
-        writer.append(",\"children\": [");
-
-        boolean first = true;
-        if (node.getChildren() != null) {
-            for (final ExecutionNode child : node.getChildren()) {
-
-                if (!first) {
-                    writer.append(",");
-                }
-                writer.append("{\"result\": \"" + child.getResult().getResult()
-                        + "\",\"description\": \""
-                        + StringEscapeUtils.escapeHtml4(child.getDescription())
-                        + "\", }");
-                first = false;
-            }
-        }
-        writer.append("]};\n");
-
-        if (node.hasChildren()) {
-            for (final ExecutionNode child : node.getChildren()) {
-                buildDetailJSON(child, writer);
-            }
+        for (JsonObject nodeAsJson : allNodesAsJson) {
+            writer.append("\ndetail[" + nodeAsJson.get("id") + "]=" + nodeAsJson.toString() + ";");
         }
 
     }
 
+    private List<JsonObject> createDetailJsonObjects(ExecutionNode node) {
 
-    private void buildNodeJSON(final ExecutionNode node, final Writer writer)
-            throws IOException {
+        List<JsonObject> nodeAndChildren = Lists.newArrayList();
+
+        JsonObject thisNode = new JsonObject();
+        nodeAndChildren.add(thisNode);
+
+        thisNode.addProperty("nodetype", node.getType());
+        thisNode.addProperty("filename", node.getFilename());
+        thisNode.addProperty("result", node.getResult().getResult().toString());
+        thisNode.addProperty("id", node.getId());
+        thisNode.addProperty("emessage", getExceptionMessage(node));
+        thisNode.addProperty("stacktrace", getStackTrace(node));
+
+        thisNode.addProperty("runningDurationMillis", node.getResult().getRunningDuration());
+        thisNode.addProperty("runningDurationString", convert(node.getResult().getRunningDuration()));
+
+        String methodInfo = createMethodInfo(node);
+
+        thisNode.addProperty("method", methodInfo);
+
+        String description = node.getDescription() == null ? null : node.getDescription().trim();
+        String descriptionEscaped = replaceNewLines(StringEscapeUtils.escapeHtml4(description));
+
+        thisNode.addProperty("description", descriptionEscaped);
+
+        JsonArray children = new JsonArray();
+        if (node.hasChildren()) {
+            addDetailsForChildren(node, children);
+        }
+        thisNode.add("children", children);
+
+        if (node.hasChildren()) {
+
+            for (final ExecutionNode childNode : node.getChildren()) {
+
+                nodeAndChildren.addAll(createDetailJsonObjects(childNode));
+            }
+        }
+
+        return nodeAndChildren;
+    }
+
+    private String convert(Long runningDurationMillis) {
+
+        return runningDurationMillis == null ? "No duration recorded" : convert(runningDurationMillis.longValue());
+    }
+
+    private String convert(long runningDurationMillis) {
+        Duration duration = new Duration(runningDurationMillis);
+        PeriodFormatter formatter = PeriodFormat.getDefault();
+        return formatter.print(duration.toPeriod());
+    }
+
+    private void addDetailsForChildren(ExecutionNode node, JsonArray children) {
+        for (ExecutionNode childNode : node.getChildren()) {
+            JsonObject childObject = new JsonObject();
+            childObject.addProperty("result", childNode.getResult().getResult().toString());
+            childObject.addProperty("description", StringEscapeUtils.escapeHtml4(childNode.getDescription()));
+            children.add(childObject);
+        }
+    }
+
+    private String createMethodInfo(ExecutionNode node) {
+
+        final StringBuilder methodInfoBuffer = new StringBuilder();
+        node.appendMethodInfo(methodInfoBuffer);
+
+        String methodInfo = methodInfoBuffer.toString();
+        if (methodInfo.contains("\"")) {
+            methodInfo = methodInfo.replace("\"", "\\\"");
+        }
+
+        return replaceNewLines(methodInfo);
+    }
+
+    private String getExceptionMessage(ExecutionNode node) {
+        String exceptionMessage = "";
+
+        if (node.getResult().getThrown() != null) {
+
+            final String exceptionMsg = StringEscapeUtils.escapeHtml4(node.getResult().getThrown().getMessage());
+
+            exceptionMessage = replaceNewLines(exceptionMsg);
+
+        }
+
+        return exceptionMessage;
+    }
+
+    private String getStackTrace(ExecutionNode node) {
+        String stackTrace = "";
+
+        if (node.getResult().getThrown() != null) {
+
+            final StackTraceElement[] stackTraceElements = node.getResult().getThrown().getStackTrace();
+
+            final StringBuilder buf = new StringBuilder();
+
+            for (final StackTraceElement e : stackTraceElements) {
+
+                buf.append(StringEscapeUtils.escapeHtml4(e.toString().trim())).append("<br/>");
+            }
+            stackTrace = buf.toString();
+        }
+
+        return stackTrace;
+    }
+
+    private void buildNodeJSON(final ExecutionNode node, final Writer writer) throws IOException {
 
         writer.append("{ ");
 
@@ -489,30 +479,25 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
     /**
      * @param reportDir
      * @throws IOException
      */
-    private void copyStaticResources(final File reportDir)
-            throws URISyntaxException, IOException {
+    private void copyStaticResources(final File reportDir) throws URISyntaxException, IOException {
 
         log.debug("Copying static resources to: " + reportDir.getAbsolutePath());
 
         final URL staticURL = getClass().getResource("/static");
         if (staticURL == null) {
-            throw new IllegalStateException(
-                    "Failed to copy static resources for report.  URL for resources is null.");
+            throw new IllegalStateException("Failed to copy static resources for report.  URL for resources is null.");
         }
 
         copyResourcesRecursively(staticURL, reportDir);
     }
 
-
     private String getNodeImage(final ExecutionNode node) {
         return resultToImageMap.get(node.getResult().getResult());
     }
-
 
     private String getDescriptionForNode(final ExecutionNode node) {
         final StringBuilder buf = new StringBuilder();
@@ -540,9 +525,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         return msg;
     }
 
-
-    public static void buildDescriptionString(final String prefix,
-            final ExecutionNode node, final StringBuilder buf) {
+    public static void buildDescriptionString(final String prefix, final ExecutionNode node, final StringBuilder buf) {
         if (prefix != null) {
             buf.append(prefix);
         }
@@ -563,8 +546,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
         if (node.getParent() != null && node.getParent().isOutlineScenario()) {
 
-            buf.append(node.getRowNumber()).append(" ")
-                    .append(node.getParent().getScenarioName()).append(":");
+            buf.append(node.getRowNumber()).append(" ").append(node.getParent().getScenarioName()).append(":");
         }
 
         if (node.getLine() != null) {
@@ -572,9 +554,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
     }
 
-
-    private void buildMainReport(final ReportData data, final File reportDir)
-            throws IOException {
+    private void buildMainReport(final ReportData data, final File reportDir) throws IOException {
 
         log.debug("Building main report file.");
 
@@ -585,8 +565,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         final ExecutionStats stats = new ExecutionStats();
         stats.buildStats(data);
 
-        final SimpleDateFormat sdf = new SimpleDateFormat(
-                "EEE dd MMM yyyy HH:mm");
+        final SimpleDateFormat sdf = new SimpleDateFormat("EEE dd MMM yyyy HH:mm");
         final String dateTimeStr = sdf.format(new Date());
 
         vCtx.put("stats", stats);
@@ -597,7 +576,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
     /**
      * @param reportDir
      * @param vCtx
@@ -605,12 +583,10 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
      * @param targetFilename
      * @throws IOException
      */
-    private void renderAndWriteToFile(final File reportDir,
-            final VelocityContext vCtx, final String vm,
+    private void renderAndWriteToFile(final File reportDir, final VelocityContext vCtx, final String vm,
             final String targetFilename) throws IOException {
 
-        final Writer writer = new BufferedWriter(new FileWriter(new File(
-                reportDir, targetFilename)));
+        final Writer writer = new BufferedWriter(new FileWriter(new File(reportDir, targetFilename)));
 
         final VelocityEngine velocityEngine = new VelocityEngine();
 
@@ -641,36 +617,29 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
     }
 
-
-    public void copyResourcesRecursively(final URL originUrl,
-            final File destination) throws IOException {
+    public void copyResourcesRecursively(final URL originUrl, final File destination) throws IOException {
         final URLConnection urlConnection = originUrl.openConnection();
         if (urlConnection instanceof JarURLConnection) {
-            copyJarResourcesRecursively(destination,
-                    (JarURLConnection) urlConnection);
+            copyJarResourcesRecursively(destination, (JarURLConnection) urlConnection);
         } else if (urlConnection instanceof FileURLConnection) {
             FileUtils.copyDirectory(new File(originUrl.getPath()), destination);
         } else {
-            throw new RuntimeException("URLConnection["
-                    + urlConnection.getClass().getSimpleName()
+            throw new RuntimeException("URLConnection[" + urlConnection.getClass().getSimpleName()
                     + "] is not a recognized/implemented connection type.");
         }
     }
 
-
-    public void copyJarResourcesRecursively(final File destination,
-            final JarURLConnection jarConnection) throws IOException {
+    public void copyJarResourcesRecursively(final File destination, final JarURLConnection jarConnection)
+            throws IOException {
         final JarFile jarFile = jarConnection.getJarFile();
         for (final JarEntry entry : Collections.list(jarFile.entries())) {
             if (entry.getName().startsWith(jarConnection.getEntryName())) {
-                final String fileName = StringUtils.removeStart(
-                        entry.getName(), jarConnection.getEntryName());
+                final String fileName = StringUtils.removeStart(entry.getName(), jarConnection.getEntryName());
                 if (!entry.isDirectory()) {
                     InputStream entryInputStream = null;
                     try {
                         entryInputStream = jarFile.getInputStream(entry);
-                        FileUtils.copyInputStreamToFile(entryInputStream,
-                                new File(destination, fileName));
+                        FileUtils.copyInputStreamToFile(entryInputStream, new File(destination, fileName));
                     } finally {
                         IOUtils.closeQuietly(entryInputStream);
                     }

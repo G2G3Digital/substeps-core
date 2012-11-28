@@ -37,10 +37,13 @@ public class ExecutionNodeResult implements Serializable{
     
     private final long executionNodeId;
 
+    private Long startedAt;
+    private Long completedAt;
+
     public ExecutionNodeResult(final long id){
         this.executionNodeId = id;
     }
-    
+
     public String getStackTrace() {
         if (thrown != null) {
             final StringWriter sw = new StringWriter();
@@ -56,14 +59,12 @@ public class ExecutionNodeResult implements Serializable{
         }
     }
 
-
     /**
      * @return the result
      */
     public ExecutionResult getResult() {
         return result;
     }
-
 
     /**
      * @param result
@@ -73,14 +74,12 @@ public class ExecutionNodeResult implements Serializable{
         this.result = result;
     }
 
-
     /**
      * @return the failureStackTrace
      */
     public Throwable getThrown() {
         return thrown;
     }
-
 
     /**
      * @param failureStackTrace
@@ -90,31 +89,30 @@ public class ExecutionNodeResult implements Serializable{
         thrown = failureStackTrace;
     }
 
-
     /**
      * @param theException
      */
     public void setFailed(final Throwable theException) {
         result = ExecutionResult.FAILED;
         thrown = theException;
+        recordComplete();
     }
-
 
     /**
 	 * 
 	 */
     public void setFinished() {
         result = ExecutionResult.PASSED;
+        recordComplete();
     }
-
 
     /**
 	 * 
 	 */
     public void setStarted() {
         result = ExecutionResult.RUNNING;
+        startedAt = System.currentTimeMillis();
     }
-
 
     /**
      * @param t
@@ -123,7 +121,6 @@ public class ExecutionNodeResult implements Serializable{
         result = ExecutionResult.PARSE_FAILURE;
         thrown = t;
     }
-
 
     /**
      * @param theException
@@ -142,4 +139,12 @@ public class ExecutionNodeResult implements Serializable{
         return executionNodeId;
     }
 
+    public Long getRunningDuration() {
+
+        return startedAt != null && completedAt != null ? completedAt - startedAt : null;
+    }
+
+    private void recordComplete() {
+        completedAt = System.currentTimeMillis();
+    }
 }

@@ -28,8 +28,8 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.model.SubStepConfigurationException;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 
 /**
  * @author ian
@@ -423,7 +423,7 @@ public class ExecutionConfig implements Serializable{
 
                                         // TODO - build up a message
 
-                                        throw new SubStepConfigurationException(
+                                        throw new SubstepsConfigurationException(
                                                 "Incompatible initialisation sequence");
                                     }
                                 } else {

@@ -48,11 +48,23 @@ public class PatternMap<V> {
     }
 
 
-    public void put(final String pattern, final V value) {
+    /**
+     * Adds a new pattern to the map.
+     * 
+     * Users of this class <em>must</em> check if the pattern has already been added
+     * by using {@link containsPattern} to avoid IllegalStateException in the event that
+     * the pattern has already been added to the map. 
+     * 
+     * @param pattern
+     * @param value
+     * 
+     * @throws IllegalStateException - if the map already contains the specified patter.
+     */
+    public void put(final String pattern, final V value) throws IllegalStateException {
 
         if (pattern != null) {
             if (keys.containsKey(pattern)) {
-                throw new DuplicatePatternException("duplicate patterns detected: " + pattern);
+                throw new IllegalStateException("");
             }
             keys.put(pattern, value);
 
@@ -66,7 +78,6 @@ public class PatternMap<V> {
 
 
     public int size() {
-
         return patternMap.size();
     }
 

@@ -92,7 +92,7 @@ $(document).ready(function() {
 				detailhtml += "<p>File: " +  detailJSON.filename + "</p>";
 			}
 		 
-			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.desc + "</p>";
+			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.description + "</p>";
 		
 			if (detailJSON.method.length > 0){
 				detailhtml = detailhtml + "<p>Method: " + detailJSON.method + "</p>";
@@ -102,6 +102,8 @@ $(document).ready(function() {
 				detailhtml = detailhtml + "<p>" + detailJSON.emessage + "</p><div class=\"stacktrace\"><pre class=\"stacktracepre\">" +
 				detailJSON.stacktrace + "</div></pre>";
 			}
+			
+			detailhtml = detailhtml + "<p>Duration: " + detailJSON.runningDurationString + "</p>"
 
 			if (detailJSON.children.length > 0){
 				

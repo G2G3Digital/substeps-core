@@ -1,0 +1,7 @@
+Define: this is a normal step
+	DoSomething
+
+Define: this definition is empty
+
+Define: this is a normal step
+	DoSomething

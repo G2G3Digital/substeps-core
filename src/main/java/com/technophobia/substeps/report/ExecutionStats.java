@@ -195,7 +195,7 @@ public class ExecutionStats {
      */
     public List<TestCounterSet> getSortedList() {
 
-        if (taggedStats != null && !taggedStats.isEmpty()) {
+        if (taggedStats != null) { //FIXME RB Removed && !taggedStats.isEmpty()
             sortedList = new ArrayList<TestCounterSet>();
             sortedList.addAll(taggedStats.values());
 

@@ -1,0 +1,10 @@
+
+Define: a duplicate definition
+	DoSomething
+	
+Define: a duplicate definition
+	DoSomething
+	
+#we require an additional substep at the end here to execute the required code
+Define: something else
+	DoSomething

@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Step {
+
     private final Logger log = LoggerFactory.getLogger(Step.class);
 
     // eg Given, When, Then
@@ -57,8 +58,25 @@ public class Step {
 
     private File source;
 
-    private int sourceLineNumber = -1;
+    private final int sourceLineNumber;
 
+    // the offest in the source file of the first character of this line
+    private int sourceStartOffset = -1;
+
+    /**
+     * @return the sourceStartOffset
+     */
+    public int getSourceStartOffset() {
+        return this.sourceStartOffset;
+    }
+
+    /**
+     * @param sourceStartOffset
+     *            the sourceStartOffset to set
+     */
+    public void setSourceStartOffset(final int sourceStartOffset) {
+        this.sourceStartOffset = sourceStartOffset;
+    }
 
     /**
      * @return the line
@@ -67,31 +85,31 @@ public class Step {
         return this.line;
     }
 
-
     // tests
     public Step(final String line) {
-        this(line, false, null, -1);
+        this(line, false, null, -1, -1);
     }
 
+    public Step(final String line, final File source, final int lineNumber, final int sourceStartOffset) {
 
-    public Step(final String line, final File source, final int lineNumber) {
-        this(line, false, source, lineNumber);
+        this(line, false, source, lineNumber, sourceStartOffset);
     }
 
-
-    // called by tests and clone
+    // called by tests
     public Step(final String theLine, final boolean isSubStep) {
-        this(theLine, isSubStep, null, -1);
+        this(theLine, isSubStep, null, -1, -1);
     }
 
-
-    public Step(final String theLine, final boolean isSubStep, final File source, final int lineNumber) {
+    // preferred ctor
+    public Step(final String theLine, final boolean isSubStep, final File source, final int lineNumber,
+            final int sourceStartOffset) {
         if (theLine == null || theLine.length() == 0) {
             throw new IllegalArgumentException("null or empty args");
         }
 
         this.source = source;
         this.sourceLineNumber = lineNumber;
+        this.sourceStartOffset = sourceStartOffset;
 
         // pick out the first word
         this.line = theLine.trim();
@@ -114,7 +132,6 @@ public class Step {
         }
     }
 
-
     // only used in tests
     public Step(final String keyword, final String line, final boolean isSubStep) {
         this.keyword = keyword;
@@ -123,8 +140,8 @@ public class Step {
         if (isSubStep) {
             setParamAndParamNames();
         }
+        this.sourceLineNumber = -1;
     }
-
 
     private void setParamAndParamNames() {
         // do we have any params in the string that we need to swap for regex
@@ -149,7 +166,6 @@ public class Step {
         this.pattern = this.line.replaceAll("(<[^>]*>)", "\"?([^\"]*)\"?");
     }
 
-
     /**
      * @return
      */
@@ -161,12 +177,10 @@ public class Step {
         return " [" + this.line + "]";
     }
 
-
     @Override
     public String toString() {
         return toDebugString();
     }
-
 
     /**
      * @return the annotationName
@@ -175,16 +189,13 @@ public class Step {
         return this.keyword;
     }
 
-
     public String getPattern() {
         return this.pattern;
     }
 
-
     public List<String> getParamNames() {
         return this.paramNames;
     }
-
 
     /**
      * @param data
@@ -209,17 +220,14 @@ public class Step {
 
     }
 
-
     public String getParameterLine() {
         return this.parameterLine != null ? this.parameterLine : this.line;
 
     }
 
-
     public void setParameterLine(final String parameterLine) {
         this.parameterLine = parameterLine;
     }
-
 
     /**
      * @return the inlineTable
@@ -228,14 +236,12 @@ public class Step {
         return this.inlineTable;
     }
 
-
     /**
      * @return the inlineTable
      */
     public List<Map<String, String>> getSubstitutedInlineTable() {
         return this.substitutedInlineTable != null ? this.substitutedInlineTable : this.inlineTable;
     }
-
 
     /**
      * @param replacedInlineTable
@@ -244,7 +250,6 @@ public class Step {
         this.substitutedInlineTable = substitutedInlineTable;
     }
 
-
     /**
      * @return the source
      */
@@ -252,9 +257,9 @@ public class Step {
         return this.source;
     }
 
-
     public Step cloneWithAlternativeLine(final String alt) {
-        final Step step = new Step(alt, this.pattern != null);
+        final Step step = new Step(alt, this.pattern != null, this.source, this.sourceLineNumber,
+                this.sourceStartOffset);
 
         step.inlineTable = this.inlineTable;
 
@@ -262,29 +267,14 @@ public class Step {
 
         step.substitutedInlineTable = this.substitutedInlineTable;
 
-        step.source = this.source;
-
-        // same line number
-        step.sourceLineNumber = this.sourceLineNumber;
-
         return step;
     }
-
 
     /**
      * @return the sourceLineNumber
      */
     public int getSourceLineNumber() {
         return this.sourceLineNumber;
-    }
-
-
-    /**
-     * @param sourceLineNumber
-     *            the sourceLineNumber to set
-     */
-    protected void setSourceLineNumber(final int sourceLineNumber) {
-        this.sourceLineNumber = sourceLineNumber;
     }
 
 }
