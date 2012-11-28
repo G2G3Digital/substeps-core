@@ -480,7 +480,7 @@ public class ExecutionNode {
      * @return
      */
     public boolean shouldHaveChildren() {
-        return isFeature() || isScenario() || isOutlineScenario();
+        return isFeature() || isScenario() || isOutlineScenario() || this.parent == null;
     }
 
     /**

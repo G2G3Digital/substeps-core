@@ -253,8 +253,13 @@ public class ExecutionNodeRunnerTest {
 
     }
 
+    /**
+     * If we use a root node with no children, we should get two failures, one
+     * for there being no children on a node which should have children, another
+     * for there being no tests run
+     */
     @Test
-    public void testNoTestsExecutedResultsInFailure() {
+    public void testNoTestsExecutedResultsInTwoFailures() {
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
         final ExecutionNode node = new ExecutionNode();
@@ -279,11 +284,11 @@ public class ExecutionNodeRunnerTest {
 
         final List<SubstepExecutionFailure> failures = runner.run();
 
-        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
+        verify(mockNotifer, times(2)).notifyNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
 
         Assert.assertFalse("expecting some failures", failures.isEmpty());
 
-        Assert.assertThat(failures.size(), is(1));
+        Assert.assertThat(failures.size(), is(2));
     }
 
     @Test
@@ -364,10 +369,12 @@ public class ExecutionNodeRunnerTest {
         final ExecutionNode scenarioOutlineNode = new ExecutionNode();
         scenarioNode.addChild(scenarioOutlineNode);
         scenarioOutlineNode.setRowNumber(1);
+        scenarioOutlineNode.setOutline(true);
 
         final ExecutionNode scenarioOutlineNode2 = new ExecutionNode();
         scenarioNode.addChild(scenarioOutlineNode2);
         scenarioOutlineNode2.setRowNumber(2);
+        scenarioOutlineNode2.setOutline(true);
 
         Method nonFailMethod = null;
         Method failMethod = null;
