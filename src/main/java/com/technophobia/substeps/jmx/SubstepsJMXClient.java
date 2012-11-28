@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionNodeResult;
 import com.technophobia.substeps.execution.ExecutionResult;
-import com.technophobia.substeps.model.SubStepConfigurationException;
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import com.technophobia.substeps.runner.ExecutionConfig;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 import com.technophobia.substeps.runner.SubstepsRunner;
@@ -58,6 +58,7 @@ import com.technophobia.substeps.runner.SubstepsRunner;
  * 
  */
 public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
+
     Logger log = LoggerFactory.getLogger(SubstepsJMXClient.class);
     private SubstepsServerMBean mbean;
 
@@ -71,11 +72,9 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
 
     private final boolean ansiColourOutput = true;
 
-
     public void init(final int portNumber) {
 
-        final String url = "service:jmx:rmi:///jndi/rmi://:" + portNumber
-                + "/jmxrmi";
+        final String url = "service:jmx:rmi:///jndi/rmi://:" + portNumber + "/jmxrmi";
 
         // The address of the connector server
 
@@ -88,13 +87,11 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
             this.cntor = JMXConnectorFactory.connect(serviceURL, environment);
 
             // Obtain a "stub" for the remote MBeanServer
-            final MBeanServerConnection mbsc = this.cntor
-                    .getMBeanServerConnection();
+            final MBeanServerConnection mbsc = this.cntor.getMBeanServerConnection();
 
-            final ObjectName objectName = new ObjectName(
-                    SubstepsJMXServer.SUBSTEPS_JMX_MBEAN_NAME);
-            this.mbean = MBeanServerInvocationHandler.newProxyInstance(mbsc,
-                    objectName, SubstepsServerMBean.class, false);
+            final ObjectName objectName = new ObjectName(SubstepsJMXServer.SUBSTEPS_JMX_MBEAN_NAME);
+            this.mbean = MBeanServerInvocationHandler.newProxyInstance(mbsc, objectName, SubstepsServerMBean.class,
+                    false);
 
             // register this as a listener
             mbsc.addNotificationListener(objectName, this, null, null);
@@ -103,26 +100,25 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
 
             // Eclipse grumbles about cntor not being closed, but it will be by
             // the finally block below..
-            throw new SubStepConfigurationException(e);
+            throw new SubstepsConfigurationException(e);
 
         } catch (final IOException e) {
 
-            throw new SubStepConfigurationException(e);
+            throw new SubstepsConfigurationException(e);
 
         } catch (final MalformedObjectNameException e) {
 
-            throw new SubStepConfigurationException(e);
+            throw new SubstepsConfigurationException(e);
 
         } catch (final NullPointerException e) {
 
-            throw new SubStepConfigurationException(e);
+            throw new SubstepsConfigurationException(e);
 
         } catch (final InstanceNotFoundException e) {
 
-            throw new SubStepConfigurationException(e);
+            throw new SubstepsConfigurationException(e);
         }
     }
-
 
     public ExecutionNode prepareExecutionConfig(final ExecutionConfig cfg) {
 
@@ -137,7 +133,6 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
         this.totalNodesToRun = this.nodesNotPassed.size();
         return rootNode;
     }
-
 
     private void populateNodeMap(final ExecutionNode node) {
 
@@ -158,7 +153,6 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
         }
     }
 
-
     public List<SubstepExecutionFailure> run() {
 
         this.complete = new CountDownLatch(1);
@@ -166,8 +160,7 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
         return this.mbean.run();
     }
 
-
-    public void shutdown() {
+    public boolean shutdown() {
 
         if (this.complete != null) {
             try {
@@ -182,7 +175,19 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
                 this.log.debug("waited 10 secs for the final notification... not heard, shutting down");
             }
         }
-        this.mbean.shutdown();
+
+        boolean shutdownReturned = false;
+
+        try {
+
+            this.mbean.shutdown();
+            shutdownReturned = true;
+
+        } catch (RuntimeException re) {
+
+            this.log.debug("Unable to connect to server to shutdown, it may have already closed");
+
+        }
 
         if (this.cntor != null) {
             try {
@@ -192,8 +197,9 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
                 e.printStackTrace();
             }
         }
-    }
 
+        return shutdownReturned;
+    }
 
     /*
      * (non-Javadoc)
@@ -202,8 +208,7 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
      * javax.management.NotificationListener#handleNotification(javax.management
      * .Notification, java.lang.Object)
      */
-    public void handleNotification(final Notification notification,
-            final Object handback) {
+    public void handleNotification(final Notification notification, final Object handback) {
 
         final String msgType = notification.getType();
 
@@ -212,14 +217,11 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
 
         if (msgType.equals("ExNode")) {
 
-            final ExecutionNodeResult newResult = (ExecutionNodeResult) notification
-                    .getUserData();
+            final ExecutionNodeResult newResult = (ExecutionNodeResult) notification.getUserData();
 
             if (this.log.isTraceEnabled()) {
-                this.log.trace("received notification seq: "
-                        + notification.getSequenceNumber() + " nodeid: "
-                        + newResult.getExecutionNodeId() + " result: "
-                        + newResult.getResult());
+                this.log.trace("received notification seq: " + notification.getSequenceNumber() + " nodeid: "
+                        + newResult.getExecutionNodeId() + " result: " + newResult.getResult());
             }
 
             final Long id = Long.valueOf(newResult.getExecutionNodeId());
@@ -232,17 +234,13 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
 
             }
 
-            final int numberRun = this.totalNodesToRun
-                    - this.nodesNotPassed.size();
+            final int numberRun = this.totalNodesToRun - this.nodesNotPassed.size();
 
-            final double pcent = (double) numberRun
-                    / (double) this.totalNodesToRun * 100;
+            final double pcent = (double) numberRun / (double) this.totalNodesToRun * 100;
 
-            final BigDecimal percentComplete = BigDecimal.valueOf(pcent)
-                    .setScale(3, RoundingMode.HALF_DOWN);
+            final BigDecimal percentComplete = BigDecimal.valueOf(pcent).setScale(3, RoundingMode.HALF_DOWN);
 
-            this.log.info(percentComplete.toString()
-                    + " % of steps passed (of total steps)");
+            this.log.info(percentComplete.toString() + " % of steps passed (of total steps)");
 
             final ExecutionNodeResult origResult = executionNode.getResult();
 
@@ -272,7 +270,6 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
     private static final String POSTFIX = "m";
     private static final String SEPARATOR = ";";
 
-
     /**
      * @param executionNode
      */
@@ -285,20 +282,16 @@ public class SubstepsJMXClient implements NotificationListener, SubstepsRunner {
         }
     }
 
-
     private void printRedBold(final String line) {
 
-        System.out.println(PREFIX + "1" + SEPARATOR + "31" + POSTFIX + line
-                + PREFIX + POSTFIX);
+        System.out.println(PREFIX + "1" + SEPARATOR + "31" + POSTFIX + line + PREFIX + POSTFIX);
     }
-
 
     private void printBold(final String line) {
 
         System.out.println(PREFIX + "1" + POSTFIX + line + PREFIX + POSTFIX);
 
     }
-
 
     /**
      * @param executionNode
