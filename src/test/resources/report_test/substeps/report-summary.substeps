@@ -1,0 +1,7 @@
+
+Define: Given I go to the report
+    NavigateTo /feature_report/report_frame.html
+    
+Define: Then the heading contains '<heading>'
+    FindById navbar
+    AssertCurrentElement text contains "<heading>"

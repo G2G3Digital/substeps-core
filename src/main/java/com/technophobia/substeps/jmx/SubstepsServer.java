@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.runner.ExecutionConfig;
+import com.technophobia.substeps.runner.SubstepsExecutionConfig;
 import com.technophobia.substeps.runner.ExecutionNodeRunner;
 import com.technophobia.substeps.runner.INotifier;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
@@ -38,14 +38,12 @@ import com.technophobia.substeps.runner.SubstepExecutionFailure;
  * @author ian
  * 
  */
-public class SubstepsServer extends NotificationBroadcasterSupport implements
-        SubstepsServerMBean, INotifier {
+public class SubstepsServer extends NotificationBroadcasterSupport implements SubstepsServerMBean, INotifier {
 
     private final Logger log = LoggerFactory.getLogger(SubstepsServer.class);
 
     private ExecutionNodeRunner nodeRunner = null;
     private final CountDownLatch shutdownSignal;
-
 
     /**
      * @param shutdownSignal
@@ -54,11 +52,9 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
         this.shutdownSignal = shutdownSignal;
     }
 
-
     public void shutdown() {
         this.shutdownSignal.countDown();
     }
-
 
     /*
      * (non-Javadoc)
@@ -67,12 +63,11 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
      * com.technopobia.substeps.jmx.SubstepsMBean#prepareExecutionConfig(com
      * .technophobia.substeps.runner.ExecutionConfig)
      */
-    public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig) {
+    public void prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
         // TODO - synchronise around the init call ?
         this.nodeRunner = new ExecutionNodeRunner();
-        return this.nodeRunner.prepareExecutionConfig(theConfig);
+        this.nodeRunner.prepareExecutionConfig(theConfig);
     }
-
 
     /*
      * (non-Javadoc)
@@ -90,11 +85,9 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
         } finally {
             // now send the final notification
 
-            final Notification n = new Notification("ExecConfigComplete", this,
-                    this.notificationSequenceNumber);
+            final Notification n = new Notification("ExecConfigComplete", this, this.notificationSequenceNumber);
 
-            this.log.trace("sending complete notification sequence: "
-                    + this.notificationSequenceNumber);
+            this.log.trace("sending complete notification sequence: " + this.notificationSequenceNumber);
 
             sendNotification(n);
         }
@@ -104,23 +97,20 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
 
     private long notificationSequenceNumber = 1;
 
-
     private void doNotification(final ExecutionNode node) {
 
-        final Notification n = new Notification("ExNode", this,
-                this.notificationSequenceNumber);
+        final Notification n = new Notification("ExNode", this, this.notificationSequenceNumber);
 
         this.notificationSequenceNumber++;
 
         n.setUserData(node.getResult());
 
-        this.log.trace("sending notification for node id: " + node.getId()
-                + " sequence: " + this.notificationSequenceNumber);
+        this.log.trace("sending notification for node id: " + node.getId() + " sequence: "
+                + this.notificationSequenceNumber);
 
         sendNotification(n);
 
     }
-
 
     /*
      * (non-Javadoc)
@@ -135,7 +125,6 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
 
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -149,7 +138,6 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
 
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -162,7 +150,6 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
 
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -174,4 +161,15 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements
 
         doNotification(node);
     }
+
+    public ExecutionNode getRootNode() {
+
+        return this.nodeRunner.getRootNode();
+    }
+
+    public void addNotifier(INotifier notifier) {
+
+        this.nodeRunner.addNotifier(notifier);
+    }
+
 }

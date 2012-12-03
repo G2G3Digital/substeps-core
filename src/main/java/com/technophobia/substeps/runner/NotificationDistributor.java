@@ -27,14 +27,12 @@ public class NotificationDistributor implements INotificationDistributor {
 
     private List<INotifier> listeners;
 
-
     public void addListener(final INotifier listener) {
         if (this.listeners == null) {
             this.listeners = new ArrayList<INotifier>();
         }
         this.listeners.add(listener);
     }
-
 
     /*
      * (non-Javadoc)
@@ -43,13 +41,11 @@ public class NotificationDistributor implements INotificationDistributor {
      * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
      * .substeps.execution.ExecutionNode, java.lang.Throwable)
      */
-    public final void notifyNodeFailed(final ExecutionNode node,
-            final Throwable cause) {
+    public final void notifyNodeFailed(final ExecutionNode node, final Throwable cause) {
 
         notifyListenersTestFailed(node, cause);
 
     }
-
 
     /*
      * (non-Javadoc)
@@ -63,7 +59,6 @@ public class NotificationDistributor implements INotificationDistributor {
         notifyListenersTestStarted(node);
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -75,7 +70,6 @@ public class NotificationDistributor implements INotificationDistributor {
         notifyListenersTestFinished(node);
 
     }
-
 
     /*
      * (non-Javadoc)
@@ -90,21 +84,18 @@ public class NotificationDistributor implements INotificationDistributor {
 
     }
 
-
     /**
      * @param listeners2
      * @param junitDescription
      * @param cause
      */
-    private void notifyListenersTestFailed(final ExecutionNode node,
-            final Throwable cause) {
+    private void notifyListenersTestFailed(final ExecutionNode node, final Throwable cause) {
         if (this.listeners != null) {
             for (final INotifier listener : this.listeners) {
                 listener.notifyNodeFailed(node, cause);
             }
         }
     }
-
 
     /**
      * @param listeners2
@@ -118,7 +109,6 @@ public class NotificationDistributor implements INotificationDistributor {
         }
     }
 
-
     /**
      * @param listeners2
      * @param junitDescription
@@ -130,7 +120,6 @@ public class NotificationDistributor implements INotificationDistributor {
             }
         }
     }
-
 
     private void notifyListenersTestStarted(final ExecutionNode node) {
         if (this.listeners != null) {

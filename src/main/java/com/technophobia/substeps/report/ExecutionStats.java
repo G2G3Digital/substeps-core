@@ -34,12 +34,12 @@ import com.technophobia.substeps.execution.ExecutionNode;
  * 
  */
 public class ExecutionStats {
+
     private final TestCounterSet totals = new TestCounterSet();
 
     private final Map<String, TestCounterSet> taggedStats = new HashMap<String, TestCounterSet>();
 
     private List<TestCounterSet> sortedList = null;
-
 
     public void buildStats(final ReportData data) {
         for (final ExecutionNode node : data.getNodeList()) {
@@ -71,99 +71,80 @@ public class ExecutionStats {
         }
     }
 
-
     public int getTotalFeatures() {
         return totals.getFeatureStats().getCount();
     }
-
 
     public int getTotalFeaturesRun() {
         return totals.getFeatureStats().getRun();
     }
 
-
     public int getTotalFeaturesPassed() {
         return totals.getFeatureStats().getPassed();
     }
-
 
     public int getTotalFeaturesFailed() {
         return totals.getFeatureStats().getFailed();
     }
 
-
     public int getTotalFeaturesSkipped() {
         return totals.getFeatureStats().getIgnored();
     }
-
 
     public double getTotalFeaturesSuccess() {
 
         return totals.getFeatureStats().getSuccessPc();
     }
 
-
     public double getTotalFeaturesFailedPC() {
 
         return 100 - totals.getFeatureStats().getSuccessPc();
     }
 
-
     public int getTotalScenarios() {
         return totals.getScenarioStats().getCount();
     }
-
 
     public int getTotalScenariosRun() {
         return totals.getScenarioStats().getRun();
     }
 
-
     public int getTotalScenariosPassed() {
         return totals.getScenarioStats().getPassed();
     }
-
 
     public int getTotalScenariosFailed() {
         return totals.getScenarioStats().getFailed();
     }
 
-
     public int getTotalScenariosSkipped() {
         return totals.getScenarioStats().getIgnored();
     }
-
 
     public double getTotalScenariosSuccess() {
 
         return totals.getScenarioStats().getSuccessPc();
     }
 
-
     public int getTotalScenarioSteps() {
         return totals.getScenarioStepStats().getCount();
     }
-
 
     public int getTotalScenarioStepsRun() {
         return totals.getScenarioStepStats().getRun();
     }
 
-
     public int getTotalScenarioStepsPassed() {
         return totals.getScenarioStepStats().getPassed();
     }
-
 
     public int getTotalScenarioStepsFailed() {
         return totals.getScenarioStepStats().getFailed();
     }
 
-
     public int getTotalScenarioStepsSkipped() {
         return totals.getScenarioStepStats().getIgnored();
     }
-
 
     public double getTotalScenarioStepsSuccess() {
 
@@ -171,10 +152,9 @@ public class ExecutionStats {
 
     }
 
-    private static class TestStatSetComparator implements
-            Comparator<TestCounterSet>, Serializable {
-        private static final long serialVersionUID = -1736428075471005357L;
+    private static class TestStatSetComparator implements Comparator<TestCounterSet>, Serializable {
 
+        private static final long serialVersionUID = -1736428075471005357L;
 
         /*
          * (non-Javadoc)
@@ -183,19 +163,17 @@ public class ExecutionStats {
          */
         public int compare(final TestCounterSet t1, final TestCounterSet t2) {
             // not sure which way around this is!!
-            return t1.getScenarioStepStats().getFailed()
-                    - t2.getScenarioStepStats().getFailed();
+            return t1.getScenarioStepStats().getFailed() - t2.getScenarioStepStats().getFailed();
         }
 
     }
-
 
     /**
      * @return the sortedList
      */
     public List<TestCounterSet> getSortedList() {
 
-        if (taggedStats != null) { //FIXME RB Removed && !taggedStats.isEmpty()
+        if (taggedStats != null) { // FIXME RB Removed && !taggedStats.isEmpty()
             sortedList = new ArrayList<TestCounterSet>();
             sortedList.addAll(taggedStats.values());
 

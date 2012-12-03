@@ -38,10 +38,10 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SubstepsJMXServer {
+
     private final Logger log = LoggerFactory.getLogger(SubstepsJMXServer.class);
 
     private final CountDownLatch shutdownSignal = new CountDownLatch(1);
-
 
     /**
      * @param args
@@ -60,9 +60,6 @@ public class SubstepsJMXServer {
         server.run();
     }
 
-    public static final String SUBSTEPS_JMX_MBEAN_NAME = "com.technopobia.substeps.jmx:type=SubstepsServerMBean";
-
-
     /**
 	 * 
 	 */
@@ -75,7 +72,7 @@ public class SubstepsJMXServer {
         final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         try {
 
-            final ObjectName name = new ObjectName(SUBSTEPS_JMX_MBEAN_NAME);
+            final ObjectName name = new ObjectName(SubstepsServerMBean.SUBSTEPS_JMX_MBEAN_NAME);
 
             mbs.registerMBean(mBeanImpl, name);
 

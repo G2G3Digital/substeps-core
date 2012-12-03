@@ -187,7 +187,7 @@ public class ExecutionNodeRunnerTest {
     private ExecutionNode runExecutionTest(final String feature, final String tags, final String substeps,
             final INotifier notifier, final Class<?>[] initialisationClasses,
             final List<SubstepExecutionFailure> failures) {
-        final ExecutionConfig executionConfig = new ExecutionConfig();
+        final SubstepsExecutionConfig executionConfig = new SubstepsExecutionConfig();
 
         Assert.assertTrue(failures.isEmpty());
 
@@ -210,9 +210,11 @@ public class ExecutionNodeRunnerTest {
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
         runner.addNotifier(notifier);
 
-        final ExecutionNode rootNode = runner.prepareExecutionConfig(executionConfig);
+        runner.prepareExecutionConfig(executionConfig);
 
         final List<SubstepExecutionFailure> localFailures = runner.run();
+
+        final ExecutionNode rootNode = runner.getRootNode();
 
         failures.addAll(localFailures);
 

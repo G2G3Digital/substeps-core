@@ -23,24 +23,24 @@ import java.util.List;
 
 import com.technophobia.substeps.execution.ExecutionNode;
 
-
 /**
  * @author ian
  * 
  */
-public class ReportData {
+class ReportData {
+
     private List<ExecutionNode> rootNodes;
 
     public void addRootExecutionNode(final ExecutionNode node) {
         if (rootNodes == null) {
-        	rootNodes = new ArrayList<ExecutionNode>();
+            rootNodes = new ArrayList<ExecutionNode>();
         }
         rootNodes.add(node);
     }
 
     private void flattenTree(final List<ExecutionNode> nodeList, final ExecutionNode node) {
-        
-    	nodeList.add(node);
+
+        nodeList.add(node);
 
         if (node.hasChildren()) {
             for (final ExecutionNode child : node.getChildren()) {
@@ -49,27 +49,25 @@ public class ReportData {
         }
     }
 
-
     /**
      * @return the nodeList
      */
     public List<ExecutionNode> getNodeList() {
-    	
-    	final List<ExecutionNode> nodeList = new ArrayList<ExecutionNode>();
-    	
-    	for (final ExecutionNode rootNode: this.rootNodes){
-    		flattenTree(nodeList, rootNode);
-    	}
-    			
+
+        final List<ExecutionNode> nodeList = new ArrayList<ExecutionNode>();
+
+        for (final ExecutionNode rootNode : this.rootNodes) {
+            flattenTree(nodeList, rootNode);
+        }
+
         return nodeList;
     }
 
-	/**
-	 * @return the rootNodes
-	 */
-	public List<ExecutionNode> getRootNodes()
-	{
-		return rootNodes;
-	}
+    /**
+     * @return the rootNodes
+     */
+    public List<ExecutionNode> getRootNodes() {
+        return rootNodes;
+    }
 
 }

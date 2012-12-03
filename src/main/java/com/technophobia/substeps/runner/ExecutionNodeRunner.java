@@ -53,7 +53,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
     private ExecutionNode rootNode;
     private final INotificationDistributor notificationDistributor = new NotificationDistributor();
     private SetupAndTearDown setupAndTearDown;
-    private ExecutionConfig config;
+    private ExecutionConfigWrapper config;
     private TagManager nonFatalTagmanager = null;
 
     private final MethodExecutor methodExecutor = new ImplementationCache();
@@ -63,9 +63,9 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         notificationDistributor.addListener(notifier);
     }
 
-    public ExecutionNode prepareExecutionConfig(final ExecutionConfig theConfig) {
+    public void prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
 
-        config = theConfig;
+        config = new ExecutionConfigWrapper(theConfig);
         config.initProperties();
 
         setupAndTearDown = new SetupAndTearDown(config.getInitialisationClasses(), methodExecutor);
@@ -110,7 +110,6 @@ public class ExecutionNodeRunner implements SubstepsRunner {
             setDryRun(true);
         }
 
-        return rootNode;
     }
 
     public List<SubstepExecutionFailure> run() {
@@ -232,7 +231,8 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         }
     }
 
-    private void runChildren(final Scope scope, final ExecutionNode node, final List<SubstepExecutionFailure> failures) {
+    private void runChildren(final Scope scope, final ExecutionNode node,
+            final List<SubstepExecutionFailure> failures) {
 
         if (node.shouldHaveChildren() && !node.hasChildren()) {
             // TODO - better error message required
@@ -266,7 +266,8 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         }
     }
 
-    private void runTearDown(final Scope scope, final ExecutionNode node, final List<SubstepExecutionFailure> failures) {
+    private void runTearDown(final Scope scope, final ExecutionNode node,
+            final List<SubstepExecutionFailure> failures) {
         try {
             // run tear down if necessary for this depth and step
             if (!node.isOutlineScenario()) {
@@ -405,6 +406,11 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
     public void setDryRun(final boolean dryRun) {
         this.dryRun = dryRun;
+    }
+
+    public ExecutionNode getRootNode() {
+
+        return this.rootNode;
     }
 
 }

@@ -77,14 +77,13 @@ public class DefaultExecutionReportBuilderTest {
 
     private Integer nodeIdOffset;
 
-    private ReportData reportData;
-
     private String arrayCreationLine;
 
     private static final String DETAIL_PATTERN = "detail\\[(\\d+)\\]=(\\{.*\\});";
     private static final String ARRAY_CREATION_LINE = "var detail = new Array();";
 
     private Map<Integer, JsonObject> details;
+    private DefaultExecutionReportBuilder builder;
 
     public void nonFailingMethod() {
         System.out.println("no fail");
@@ -98,6 +97,9 @@ public class DefaultExecutionReportBuilderTest {
     @Before
     public void createData() {
 
+        builder = new DefaultExecutionReportBuilder();
+        builder.setOutputDirectory(testFolder.getRoot());
+
         Method nonFailMethod = null;
         Method failMethod = null;
         try {
@@ -109,11 +111,9 @@ public class DefaultExecutionReportBuilderTest {
         Assert.assertNotNull(nonFailMethod);
         Assert.assertNotNull(failMethod);
 
-        reportData = new ReportData();
-
         rootNode = new ExecutionNode();
 
-        reportData.addRootExecutionNode(rootNode);
+        builder.addRootExecutionNode(rootNode);
 
         ExecutionNode feature = addFeature(rootNode, FEATURE_NAME, "test file");
         ExecutionNode scenario = addScenario(feature, SCENARIO_NAME);
@@ -160,9 +160,7 @@ public class DefaultExecutionReportBuilderTest {
     @Test
     public void testDetailReport() throws IOException {
 
-        final DefaultExecutionReportBuilder builder = new DefaultExecutionReportBuilder(testFolder.getRoot());
-
-        builder.buildReport(reportData);
+        builder.buildReport();
 
         decomposeReport();
 

@@ -33,146 +33,142 @@ import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 
 /**
  * @author ian
- *
+ * 
  */
 public class ExecutionConfigTest {
 
-	public static class InitClass1{
-	}
+    public static class InitClass1 {
+    }
 
-	public static class InitClass2{
-	}
+    public static class InitClass2 {
+    }
 
-	public static class InitClass3{
-	}
+    public static class InitClass3 {
+    }
 
-	public static class InitClass4{
-	}
+    public static class InitClass4 {
+    }
 
-	public static class InitClass5{
-	}
+    public static class InitClass5 {
+    }
 
-	@StepImplementations(requiredInitialisationClasses={InitClass1.class})
-	public static class StepImplsClass1{
-	}
-	
-	@StepImplementations(requiredInitialisationClasses={InitClass2.class, InitClass1.class})
-	public static class StepImplsClass2{
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass1.class })
+    public static class StepImplsClass1 {
+    }
 
-	@StepImplementations(requiredInitialisationClasses={InitClass3.class, InitClass2.class})
-	public static class StepImplsClass3{
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass2.class, InitClass1.class })
+    public static class StepImplsClass2 {
+    }
 
-	@StepImplementations(requiredInitialisationClasses={InitClass3.class, InitClass2.class})
-	public static class StepImplsClass4{
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass3.class, InitClass2.class })
+    public static class StepImplsClass3 {
+    }
 
+    @StepImplementations(requiredInitialisationClasses = { InitClass3.class, InitClass2.class })
+    public static class StepImplsClass4 {
+    }
 
-	
-	
-	@StepImplementations(requiredInitialisationClasses={InitClass1.class,InitClass2.class, InitClass3.class})
-	public static class StepImplsClassA{
-	}
-	
-	@StepImplementations(requiredInitialisationClasses={InitClass2.class, InitClass3.class})
-	public static class StepImplsClassB{
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass2.class, InitClass3.class })
+    public static class StepImplsClassA {
+    }
 
-	@StepImplementations(requiredInitialisationClasses={InitClass1.class, InitClass4.class})
-	public static class StepImplsClassC{
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass2.class, InitClass3.class })
+    public static class StepImplsClassB {
+    }
 
-	@StepImplementations(requiredInitialisationClasses={InitClass1.class, InitClass5.class, InitClass2.class})
-	public static class StepImplsClassD{
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass4.class })
+    public static class StepImplsClassC {
+    }
 
-	@StepImplementations(requiredInitialisationClasses={InitClass2.class, InitClass5.class})
-	public static class StepImplsClassE{
-	}
-	
-	
-	@Test
-	public void testDeterminInitialisationClasses(){
-		
-		final ExecutionConfig config = new ExecutionConfig();
-		
-		final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
-		
-		stepImplClasses.add(StepImplsClassA.class);
-		stepImplClasses.add(StepImplsClassB.class);
-		stepImplClasses.add(StepImplsClassC.class);
-		stepImplClasses.add(StepImplsClassD.class);
-		
-		config.setStepImplementationClasses(stepImplClasses);
-		
-		final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
-		
-		Assert.assertThat(initialisationClasses.length, is(5));
-		
-		int idx = 0;
-		Assert.assertEquals(initialisationClasses[idx++], InitClass1.class);
-		Assert.assertEquals(initialisationClasses[idx++], InitClass5.class);
-		Assert.assertEquals(initialisationClasses[idx++], InitClass2.class);
-		Assert.assertEquals(initialisationClasses[idx++], InitClass3.class);
-		Assert.assertEquals(initialisationClasses[idx++], InitClass4.class);
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass5.class, InitClass2.class })
+    public static class StepImplsClassD {
+    }
 
-	@Test (expected=SubstepsConfigurationException.class)
-	public void testIncompatibleDeterminInitialisationClasses(){
-		
-		final ExecutionConfig config = new ExecutionConfig();
-		
-		final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
-		
-		stepImplClasses.add(StepImplsClassA.class);
-		stepImplClasses.add(StepImplsClassB.class);
-		stepImplClasses.add(StepImplsClassC.class);
-		stepImplClasses.add(StepImplsClassD.class);
-		stepImplClasses.add(StepImplsClassE.class);
-		
-		config.setStepImplementationClasses(stepImplClasses);
-		
-		final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
-		
-	}
+    @StepImplementations(requiredInitialisationClasses = { InitClass2.class, InitClass5.class })
+    public static class StepImplsClassE {
+    }
 
-	
-	@Test
-	public void testDeterminInitialisationClasses2(){
-		
-		final ExecutionConfig config = new ExecutionConfig();
-		
-		final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
-		
-		stepImplClasses.add(StepImplsClass1.class);
-		stepImplClasses.add(StepImplsClass2.class);
-		stepImplClasses.add(StepImplsClass3.class);
-		
-		config.setStepImplementationClasses(stepImplClasses);
-		
-		final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
-		
-		Assert.assertThat(initialisationClasses.length, is(3));
+    @Test
+    public void testDeterminInitialisationClasses() {
 
-		Assert.assertEquals(initialisationClasses[0], InitClass3.class);
-		Assert.assertEquals(initialisationClasses[1], InitClass2.class);
-		Assert.assertEquals(initialisationClasses[2], InitClass1.class);
+        final ExecutionConfigWrapper config = new ExecutionConfigWrapper(new SubstepsExecutionConfig());
 
-	}
+        final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
 
-	@Test
-	public void testDeterminInitialisationClassesTheOldWay(){
+        stepImplClasses.add(StepImplsClassA.class);
+        stepImplClasses.add(StepImplsClassB.class);
+        stepImplClasses.add(StepImplsClassC.class);
+        stepImplClasses.add(StepImplsClassD.class);
 
-		final ExecutionConfig config = new ExecutionConfig();
-		
-		final String[] initClasses = {"java.lang.String", "java.math.BigDecimal"};
-		
-		config.setInitialisationClass(initClasses);
-		final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
+        config.setStepImplementationClasses(stepImplClasses);
 
-		Assert.assertEquals(initialisationClasses[0], String.class);
-		Assert.assertEquals(initialisationClasses[1], BigDecimal.class);
+        final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
 
-	}
+        Assert.assertThat(initialisationClasses.length, is(5));
+
+        int idx = 0;
+        Assert.assertEquals(initialisationClasses[idx++], InitClass1.class);
+        Assert.assertEquals(initialisationClasses[idx++], InitClass5.class);
+        Assert.assertEquals(initialisationClasses[idx++], InitClass2.class);
+        Assert.assertEquals(initialisationClasses[idx++], InitClass3.class);
+        Assert.assertEquals(initialisationClasses[idx++], InitClass4.class);
+    }
+
+    @Test(expected = SubstepsConfigurationException.class)
+    public void testIncompatibleDeterminInitialisationClasses() {
+
+        final ExecutionConfigWrapper config = new ExecutionConfigWrapper(new SubstepsExecutionConfig());
+
+        final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
+
+        stepImplClasses.add(StepImplsClassA.class);
+        stepImplClasses.add(StepImplsClassB.class);
+        stepImplClasses.add(StepImplsClassC.class);
+        stepImplClasses.add(StepImplsClassD.class);
+        stepImplClasses.add(StepImplsClassE.class);
+
+        config.setStepImplementationClasses(stepImplClasses);
+
+        final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
+
+    }
+
+    @Test
+    public void testDeterminInitialisationClasses2() {
+
+        final ExecutionConfigWrapper config = new ExecutionConfigWrapper(new SubstepsExecutionConfig());
+
+        final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
+
+        stepImplClasses.add(StepImplsClass1.class);
+        stepImplClasses.add(StepImplsClass2.class);
+        stepImplClasses.add(StepImplsClass3.class);
+
+        config.setStepImplementationClasses(stepImplClasses);
+
+        final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
+
+        Assert.assertThat(initialisationClasses.length, is(3));
+
+        Assert.assertEquals(initialisationClasses[0], InitClass3.class);
+        Assert.assertEquals(initialisationClasses[1], InitClass2.class);
+        Assert.assertEquals(initialisationClasses[2], InitClass1.class);
+
+    }
+
+    @Test
+    public void testDeterminInitialisationClassesTheOldWay() {
+
+        SubstepsExecutionConfig configImpl = new SubstepsExecutionConfig();
+        final ExecutionConfigWrapper config = new ExecutionConfigWrapper(configImpl);
+
+        final String[] initClasses = { "java.lang.String", "java.math.BigDecimal" };
+
+        configImpl.setInitialisationClass(initClasses);
+        final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
+
+        Assert.assertEquals(initialisationClasses[0], String.class);
+        Assert.assertEquals(initialisationClasses[1], BigDecimal.class);
+
+    }
 }

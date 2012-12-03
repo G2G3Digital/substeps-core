@@ -67,7 +67,7 @@ import com.technophobia.substeps.execution.ExecutionResult;
 /**
  * @author ian
  */
-public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
+public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
     private final Logger log = LoggerFactory.getLogger(DefaultExecutionReportBuilder.class);
 
@@ -81,13 +81,14 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     private static Map<ExecutionResult, String> resultToImageMap = new HashMap<ExecutionResult, String>();
 
+    private ReportData data = new ReportData();
+
     static {
 
         resultToImageMap.put(ExecutionResult.PASSED, "imgP");
         resultToImageMap.put(ExecutionResult.NOT_RUN, "imgNR");
         resultToImageMap.put(ExecutionResult.PARSE_FAILURE, "imgPF");
         resultToImageMap.put(ExecutionResult.FAILED, "imgF");
-
     }
 
     /**
@@ -106,8 +107,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
     }
 
-    public DefaultExecutionReportBuilder(final File outputDirectory) {
-        this();
+    @Override
+    public void setOutputDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
 
@@ -118,7 +119,8 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
      * com.technophobia.substeps.report.ExecutionReportBuilder#buildReport(com
      * .technophobia.substeps.report.ReportData, java.io.File)
      */
-    public void buildReport(final ReportData data) {
+    @Override
+    public void buildReport() {
 
         log.debug("Build report in: " + outputDirectory.getAbsolutePath());
 
@@ -132,7 +134,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 FileUtils.deleteDirectory(reportDir);
             }
 
-            Assert.assertTrue("failed to create directory: " + reportDir, reportDir.mkdir());
+            Assert.assertTrue("failed to create directory: " + reportDir, reportDir.mkdirs());
 
             copyStaticResources(reportDir);
 
@@ -510,7 +512,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             }
         } else {
 
-            buildDescriptionString(null, node, buf);
+            ExecutionReportBuilder.buildDescriptionString(null, node, buf);
 
         }
         // return StringEscapeUtils.escapeHtml4(buf.toString());
@@ -523,35 +525,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
 
         return msg;
-    }
-
-    public static void buildDescriptionString(final String prefix, final ExecutionNode node, final StringBuilder buf) {
-        if (prefix != null) {
-            buf.append(prefix);
-        }
-
-        if (node.getFeature() != null) {
-
-            buf.append(node.getFeature().getName());
-
-        } else if (node.getScenarioName() != null) {
-
-            if (node.isOutlineScenario()) {
-                buf.append("Scenario #: ");
-            } else {
-                buf.append("Scenario: ");
-            }
-            buf.append(node.getScenarioName());
-        }
-
-        if (node.getParent() != null && node.getParent().isOutlineScenario()) {
-
-            buf.append(node.getRowNumber()).append(" ").append(node.getParent().getScenarioName()).append(":");
-        }
-
-        if (node.getLine() != null) {
-            buf.append(node.getLine());
-        }
     }
 
     private void buildMainReport(final ReportData data, final File reportDir) throws IOException {
@@ -648,6 +621,12 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 }
             }
         }
+    }
+
+    @Override
+    public void addRootExecutionNode(ExecutionNode node) {
+
+        data.addRootExecutionNode(node);
     }
 
 }
