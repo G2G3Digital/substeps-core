@@ -62,6 +62,7 @@ import com.google.common.io.Files;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.ExecutionNodeResult;
 import com.technophobia.substeps.execution.ExecutionResult;
 
 /**
@@ -69,11 +70,13 @@ import com.technophobia.substeps.execution.ExecutionResult;
  */
 public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
+
     private final Logger log = LoggerFactory.getLogger(DefaultExecutionReportBuilder.class);
 
     private final Properties velocityProperties = new Properties();
 
     public static final String FEATURE_REPORT_FOLDER = "feature_report";
+    private static final String SCREENSHOT_FOLDER = "screenshots";
     public static final String JSON_DATA_FILENAME = "report_data.json";
     public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.js";
 
@@ -95,6 +98,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
      * @parameter default-value = ${project.build.directory}
      */
     private File outputDirectory;
+    
 
     /**
      * @parameter default-value = "Substeps report"
@@ -126,6 +130,8 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
         final File reportDir = new File(outputDirectory + File.separator + FEATURE_REPORT_FOLDER);
 
+        File screenshotDirectory = new File(reportDir, SCREENSHOT_FOLDER);
+        
         try {
 
             log.debug("trying to create: " + reportDir.getAbsolutePath());
@@ -145,6 +151,11 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
             buildDetailJSON(data, reportDir);
 
             buildStatsJSON(data, reportDir);
+
+            for (ExecutionNode rootNode : data.getRootNodes()) {
+
+                ScreenshotWriter.writeScreenshots(screenshotDirectory, rootNode);
+            }
 
         } catch (final IOException ex) {
             log.error("IOException: ", ex);
@@ -348,6 +359,8 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
         thisNode.addProperty("runningDurationMillis", node.getResult().getRunningDuration());
         thisNode.addProperty("runningDurationString", convert(node.getResult().getRunningDuration()));
 
+        addLinkToScreenshot(node.getResult(), thisNode);
+        
         String methodInfo = createMethodInfo(node);
 
         thisNode.addProperty("method", methodInfo);
@@ -372,6 +385,13 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
         }
 
         return nodeAndChildren;
+    }
+
+    private void addLinkToScreenshot(ExecutionNodeResult result, JsonObject thisNode) {
+
+        if(result.getScreenshot() != null) {
+            thisNode.addProperty("screenshot", SCREENSHOT_FOLDER + File.separator + result.getExecutionNodeId() + ScreenshotWriter.SCREENSHOT_SUFFIX);
+        }
     }
 
     private String convert(Long runningDurationMillis) {

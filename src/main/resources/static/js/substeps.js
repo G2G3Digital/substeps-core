@@ -97,14 +97,18 @@ $(document).ready(function() {
 			if (detailJSON.method.length > 0){
 				detailhtml = detailhtml + "<p>Method: " + detailJSON.method + "</p>";
 			}
-	
+
+			if(detailJSON.screenshot) {
+				detailhtml = detailhtml + "<p><a href='" + detailJSON.screenshot + "'><img style='border: 2px solid red;' width='400px;' src='" + detailJSON.screenshot + "' alt='screenshot of failure' /></a>";
+			}
+			
 			if (detailJSON.emessage.length > 0){
 				detailhtml = detailhtml + "<p>" + detailJSON.emessage + "</p><div class=\"stacktrace\"><pre class=\"stacktracepre\">" +
 				detailJSON.stacktrace + "</div></pre>";
 			}
 			
 			detailhtml = detailhtml + "<p>Duration: " + detailJSON.runningDurationString + "</p>"
-
+			
 			if (detailJSON.children.length > 0){
 				
 				detailhtml = detailhtml + '<table class="table table-bordered table-condensed"><tbody>';

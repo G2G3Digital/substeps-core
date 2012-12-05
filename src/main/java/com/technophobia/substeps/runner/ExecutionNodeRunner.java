@@ -231,8 +231,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         }
     }
 
-    private void runChildren(final Scope scope, final ExecutionNode node,
-            final List<SubstepExecutionFailure> failures) {
+    private void runChildren(final Scope scope, final ExecutionNode node, final List<SubstepExecutionFailure> failures) {
 
         if (node.shouldHaveChildren() && !node.hasChildren()) {
             // TODO - better error message required
@@ -266,8 +265,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         }
     }
 
-    private void runTearDown(final Scope scope, final ExecutionNode node,
-            final List<SubstepExecutionFailure> failures) {
+    private void runTearDown(final Scope scope, final ExecutionNode node, final List<SubstepExecutionFailure> failures) {
         try {
             // run tear down if necessary for this depth and step
             if (!node.isOutlineScenario()) {
@@ -283,6 +281,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
     }
 
     private void recordResult(final ExecutionNode node, final List<SubstepExecutionFailure> failures) {
+
         if (failures.isEmpty()) {
             log.debug("node success");
             notificationDistributor.notifyNodeFinished(node);
@@ -292,12 +291,18 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         } else {
 
             log.debug("node failures");
+            SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
             // just notify on the last one in..?
-            final Throwable lastException = failures.get(failures.size() - 1).getCause();
+            final Throwable lastException = lastFailure.getCause();
             notificationDistributor.notifyNodeFailed(node, lastException);
 
             // TODO should this have been set earlier...?
             node.getResult().setFailed(lastException);
+            
+            if(node.isExecutable()) {
+                
+                node.getResult().setScreenshot(lastFailure.getScreenshot());
+            }
         }
     }
 
@@ -355,13 +360,41 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
         } catch (final InvocationTargetException e) {
 
-            theFailure = new SubstepExecutionFailure(e.getTargetException(), node);
+            byte[] screenshotBytes = attemptScreenshot(node.getTargetClass());
+            log.info("screenshotBytes=" + screenshotBytes);
+            theFailure = new SubstepExecutionFailure(e.getTargetException(), node, screenshotBytes);
 
         } catch (final Throwable e) {
 
-            theFailure = new SubstepExecutionFailure(e, node);
+            byte[] screenshotBytes = attemptScreenshot(node.getTargetClass());
+            log.info("screenshotBytes=" + screenshotBytes);
+            theFailure = new SubstepExecutionFailure(e, node, screenshotBytes);
         }
         return theFailure;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> byte[] attemptScreenshot(Class<T> targetClass) {
+
+        try {
+            log.info(Boolean.valueOf(targetClass.newInstance() instanceof ProvidesScreenshot).toString());
+        } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        log.info(targetClass + " is Assignable? " + ProvidesScreenshot.class.isAssignableFrom(targetClass));
+
+        return ProvidesScreenshot.class.isAssignableFrom(targetClass) ? getScreenshot((Class<? extends ProvidesScreenshot>) targetClass)
+                : null;
+    }
+
+    private <T extends ProvidesScreenshot> byte[] getScreenshot(Class<T> screenshotClass) {
+
+        T screenshotTakingInstance = methodExecutor.getImplementation(screenshotClass);
+        return screenshotTakingInstance.getScreenshotBytes();
     }
 
     private Scope getChildScope(final ExecutionNode node, final Scope currentScope) {

@@ -33,11 +33,9 @@ public class ImplementationCache implements MethodExecutor {
 
     private final Map<Class<?>, Object> instanceMap;
 
-
     public ImplementationCache() {
         instanceMap = Maps.newHashMap();
     }
-
 
     public void addImplementationClasses(final Class<?>... implementationClasses) {
 
@@ -50,20 +48,16 @@ public class ImplementationCache implements MethodExecutor {
         }
     }
 
-
     private Object instantiate(final Class<?> implementationClass) {
 
         try {
             return implementationClass.newInstance();
         } catch (final InstantiationException ex) {
-            throw new IllegalStateException("Could not create instance of " + implementationClass,
-                    ex);
+            throw new IllegalStateException("Could not create instance of " + implementationClass, ex);
         } catch (final IllegalAccessException ex) {
-            throw new IllegalStateException("Could not create instance of " + implementationClass,
-                    ex);
+            throw new IllegalStateException("Could not create instance of " + implementationClass, ex);
         }
     }
-
 
     /*
      * (non-Javadoc)
@@ -87,7 +81,6 @@ public class ImplementationCache implements MethodExecutor {
         }
     }
 
-
     private Collection<Object> findSuitableInstancesOf(final Class<?> methodClass) {
         final Collection<Class<?>> suitableClassDefs = Collections2.filter(instanceMap.keySet(),
                 new Predicate<Class<?>>() {
@@ -100,7 +93,6 @@ public class ImplementationCache implements MethodExecutor {
         return Collections2.transform(suitableClassDefs, Functions.forMap(instanceMap));
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -108,9 +100,8 @@ public class ImplementationCache implements MethodExecutor {
      * com.technophobia.substeps.execution.MethodExecutor#executeMethod(java
      * .lang.Class, java.lang.reflect.Method, java.lang.Object[])
      */
-    public void executeMethod(final Class<?> targetClass, final Method targetMethod,
-            final Object[] methodArgs) throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException {
+    public void executeMethod(final Class<?> targetClass, final Method targetMethod, final Object[] methodArgs)
+            throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 
         addImplementationClasses(targetClass);
 
@@ -119,6 +110,13 @@ public class ImplementationCache implements MethodExecutor {
         } else {
             targetMethod.invoke(instanceMap.get(targetClass));
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getImplementation(Class<T> implementationClass) {
+
+        addImplementationClasses(implementationClass);
+        return (T) instanceMap.get(implementationClass);
     }
 
 }
