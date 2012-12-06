@@ -7,6 +7,10 @@ Substeps Core - Release Notes
 -----
 - Line numbers, source offsets included in steps
 - Applied standard formatter (can be found in the root of the 'Substeps' project)  
+- Updated report to include step timing information
+- BUGFIX: Fixed trailing commas in  detail_data.json and renamed to detail_data.js
+- BUGFIX: when parsing substeps directives in SubStepDefinitionParser, catch PatternSyntaxExceptions log, rather than failing the whole syntax build
+- Performance improvements for locating the first line
 
 1.0.1
 -----
