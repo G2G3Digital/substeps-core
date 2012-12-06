@@ -66,7 +66,15 @@
             <role>developer</role>
           </roles>
         </developer>
-		
+
+	<developer>
+          <id>rickybarefield</id>
+          <name>Ricky Barefield</name>
+          <organization>Technophobia</organization>
+          <roles>
+            <role>developer</role>
+          </roles>
+        </developer>	
 		  
     </developers>
 
