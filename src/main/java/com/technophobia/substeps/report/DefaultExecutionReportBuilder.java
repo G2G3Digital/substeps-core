@@ -41,35 +41,30 @@ import java.util.jar.JarFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.joda.time.Duration;
-import org.joda.time.format.PeriodFormat;
-import org.joda.time.format.PeriodFormatter;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sun.net.www.protocol.file.FileURLConnection;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.execution.ExecutionNodeResult;
 import com.technophobia.substeps.execution.ExecutionResult;
 
 /**
  * @author ian
  */
 public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
-
 
     private final Logger log = LoggerFactory.getLogger(DefaultExecutionReportBuilder.class);
 
@@ -98,7 +93,6 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
      * @parameter default-value = ${project.build.directory}
      */
     private File outputDirectory;
-    
 
     /**
      * @parameter default-value = "Substeps report"
@@ -131,7 +125,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
         final File reportDir = new File(outputDirectory + File.separator + FEATURE_REPORT_FOLDER);
 
         File screenshotDirectory = new File(reportDir, SCREENSHOT_FOLDER);
-        
+
         try {
 
             log.debug("trying to create: " + reportDir.getAbsolutePath());
@@ -148,8 +142,8 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
             buildTreeJSON(data, reportDir);
 
-            final File detailJsonFile = new File(reportDir, JSON_DETAIL_DATA_FILENAME);
-            DetailedJsonBuilder.writeDetailJson(data, SCREENSHOT_FOLDER, detailJsonFile);
+            DetailedJsonBuilder
+                    .writeDetailJson(data, SCREENSHOT_FOLDER, new File(reportDir, JSON_DETAIL_DATA_FILENAME));
 
             buildStatsJSON(data, reportDir);
 
@@ -234,98 +228,105 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
     }
 
+    private Predicate<ExecutionNode> NODE_HAS_ERROR = new Predicate<ExecutionNode>() {
+
+        public boolean apply(ExecutionNode node) {
+            return node.hasError();
+        }
+    };
+    
     private void buildTreeJSON(final ReportData reportData, final File reportDir) throws IOException {
+        
         log.debug("Building tree json file.");
 
         final File jsonFile = new File(reportDir, JSON_DATA_FILENAME);
 
-        final Writer writer = new BufferedWriter(new FileWriter(jsonFile));
-
         final List<ExecutionNode> nodeList = reportData.getRootNodes();
 
-        boolean rootNodeInError = false;
+        JsonObject treeData = new JsonObject();
 
-        try {
-            if (!nodeList.isEmpty()) {
+        if (!nodeList.isEmpty()) {
 
-                for (final ExecutionNode rootNode : nodeList) {
+            boolean rootNodeInError = Iterables.any(nodeList, NODE_HAS_ERROR);
 
-                    rootNodeInError = rootNode.hasError();
-                    if (rootNodeInError) {
-                        break;
-                    }
-                }
+            JsonObject data = new JsonObject();
+            treeData.add("data", data);
+            data.addProperty("title", "Substeps tests");
 
-                writer.append("var treeData =  { \"data\" : { \"title\" : \"Substeps tests\", \"attr\" : { \"id\" : \"0\" }, ");
+            JsonObject attr = new JsonObject();
+            data.add("attr", attr);
+            attr.addProperty("id", "0");
 
-                if (rootNodeInError) {
+            String icon = rootNodeInError ? "imgF" : "imgP"; // TODO This used
+                                                             // to be a non
+                                                             // string, need to
+                                                             // check how this
+                                                             // affects the
+                                                             // report
+            data.addProperty("icon", icon);
 
-                    writer.append("\"icon\" : imgF, \"state\" : \"open\"}, \"children\" : [");
+            if (rootNodeInError) {
 
-                } else {
-                    writer.append("\"icon\" : imgP}, \"children\" : [");
-                }
-
-                boolean first = true;
-                for (final ExecutionNode rootNode : nodeList) {
-
-                    if (!first) {
-                        writer.append(",\n");
-                    }
-
-                    buildNodeJSON(rootNode, writer);
-                    first = false;
-                }
-
-                writer.append("]};\n");
-
+                data.addProperty("state", "open");
             }
 
-        } finally {
-            writer.close();
+            JsonArray children = new JsonArray();
+            data.add("children", children);
+
+            for (final ExecutionNode rootNode : nodeList) {
+
+                children.add(buildNodeJSON(rootNode));
+            }
+
         }
 
+        writeTreeJson(jsonFile, treeData);
     }
 
-    private void buildNodeJSON(final ExecutionNode node, final Writer writer) throws IOException {
+    private JsonObject buildNodeJSON(final ExecutionNode node) throws IOException {
 
-        writer.append("{ ");
+        JsonObject json = new JsonObject();
 
-        /***** Data object *****/
-        writer.append("\"data\" : { ");
+        JsonObject data = new JsonObject();
+        json.add("data", data);
 
-        writer.append("\"title\" : \"");
-        writer.append(getDescriptionForNode(node));
-        writer.append("\"");
+        json.addProperty("title", getDescriptionForNode(node));
 
-        writer.append(", \"attr\" : { \"id\" : \"");
-        writer.append(Long.toString(node.getId()));
-        writer.append("\" }");
-
-        writer.append(", \"icon\" : ");
-        writer.append(getNodeImage(node));
-
-        writer.append("}");
-        /***** END: Data object *****/
+        JsonObject attr = new JsonObject();
+        data.add("attr", attr);
+        attr.addProperty("id", Long.toString(node.getId()));
+        data.addProperty("icon", getNodeImage(node));
 
         if (node.hasChildren()) {
+
             if (node.hasError()) {
-                writer.append(", \"state\" : \"open\"");
+                json.addProperty("state", "open");
             }
-            writer.append(", \"children\" : [");
-            boolean first = true;
+
+            JsonArray children = new JsonArray();
+            json.add("children", children);
+
             for (final ExecutionNode child : node.getChildren()) {
-                if (!first) {
-                    writer.append(", ");
-                }
-                buildNodeJSON(child, writer);
-                first = false;
+
+                children.add(buildNodeJSON(child));
             }
-            writer.append("]");
         }
 
-        writer.append("}");
+        return json;
+    }
 
+    private void writeTreeJson(final File jsonFile, JsonObject treeData) throws IOException {
+        Writer writer = null;
+        try {
+
+            writer = new BufferedWriter(new FileWriter(jsonFile));
+            writer.append("var treeData = " + treeData.toString() + ";");
+
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
     }
 
     /**
