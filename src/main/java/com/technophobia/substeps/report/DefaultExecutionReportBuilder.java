@@ -148,7 +148,8 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
             buildTreeJSON(data, reportDir);
 
-            buildDetailJSON(data, reportDir);
+            final File detailJsonFile = new File(reportDir, JSON_DETAIL_DATA_FILENAME);
+            DetailedJsonBuilder.writeDetailJson(data, SCREENSHOT_FOLDER, detailJsonFile);
 
             buildStatsJSON(data, reportDir);
 
@@ -233,23 +234,6 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
     }
 
-    /**
-     * @param data
-     * @param reportDir
-     * @throws IOException
-     */
-    private void buildDetailJSON(final ReportData data, final File reportDir) throws IOException {
-        final File jsonFile = new File(reportDir, JSON_DETAIL_DATA_FILENAME);
-
-        final BufferedWriter writer = Files.newWriter(jsonFile, Charset.defaultCharset());
-        try {
-            buildDetailJSON(data, writer);
-        } finally {
-            writer.close();
-        }
-
-    }
-
     private void buildTreeJSON(final ReportData reportData, final File reportDir) throws IOException {
         log.debug("Building tree json file.");
 
@@ -301,163 +285,6 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
             writer.close();
         }
 
-    }
-
-    /**
-     * @param reportData
-     * @param writer
-     * @throws IOException
-     */
-    private void buildDetailJSON(final ReportData reportData, final Writer writer) throws IOException {
-
-        writer.append("var detail = new Array();");
-
-        for (final ExecutionNode node : reportData.getRootNodes()) {
-            buildDetailJSON(node, writer);
-        }
-
-    }
-
-    private String replaceNewLines(final String s) {
-
-        if (s != null && s.contains("\n")) {
-
-            return s.replaceAll("\n", "<br/>");
-        } else {
-            return s;
-        }
-    }
-
-    /**
-     * @param node
-     * @param writer
-     */
-    private void buildDetailJSON(final ExecutionNode node, final Writer writer) throws IOException {
-
-        List<JsonObject> allNodesAsJson = createDetailJsonObjects(node);
-
-        for (JsonObject nodeAsJson : allNodesAsJson) {
-            writer.append("\ndetail[" + nodeAsJson.get("id") + "]=" + nodeAsJson.toString() + ";");
-        }
-
-    }
-
-    private List<JsonObject> createDetailJsonObjects(ExecutionNode node) {
-
-        List<JsonObject> nodeAndChildren = Lists.newArrayList();
-
-        JsonObject thisNode = new JsonObject();
-        nodeAndChildren.add(thisNode);
-
-        thisNode.addProperty("nodetype", node.getType());
-        thisNode.addProperty("filename", node.getFilename());
-        thisNode.addProperty("result", node.getResult().getResult().toString());
-        thisNode.addProperty("id", node.getId());
-        thisNode.addProperty("emessage", getExceptionMessage(node));
-        thisNode.addProperty("stacktrace", getStackTrace(node));
-
-        thisNode.addProperty("runningDurationMillis", node.getResult().getRunningDuration());
-        thisNode.addProperty("runningDurationString", convert(node.getResult().getRunningDuration()));
-
-        addLinkToScreenshot(node.getResult(), thisNode);
-        
-        String methodInfo = createMethodInfo(node);
-
-        thisNode.addProperty("method", methodInfo);
-
-        String description = node.getDescription() == null ? null : node.getDescription().trim();
-        String descriptionEscaped = replaceNewLines(StringEscapeUtils.escapeHtml4(description));
-
-        thisNode.addProperty("description", descriptionEscaped);
-
-        JsonArray children = new JsonArray();
-        if (node.hasChildren()) {
-            addDetailsForChildren(node, children);
-        }
-        thisNode.add("children", children);
-
-        if (node.hasChildren()) {
-
-            for (final ExecutionNode childNode : node.getChildren()) {
-
-                nodeAndChildren.addAll(createDetailJsonObjects(childNode));
-            }
-        }
-
-        return nodeAndChildren;
-    }
-
-    private void addLinkToScreenshot(ExecutionNodeResult result, JsonObject thisNode) {
-
-        if(result.getScreenshot() != null) {
-            thisNode.addProperty("screenshot", SCREENSHOT_FOLDER + File.separator + result.getExecutionNodeId() + ScreenshotWriter.SCREENSHOT_SUFFIX);
-        }
-    }
-
-    private String convert(Long runningDurationMillis) {
-
-        return runningDurationMillis == null ? "No duration recorded" : convert(runningDurationMillis.longValue());
-    }
-
-    private String convert(long runningDurationMillis) {
-        Duration duration = new Duration(runningDurationMillis);
-        PeriodFormatter formatter = PeriodFormat.getDefault();
-        return formatter.print(duration.toPeriod());
-    }
-
-    private void addDetailsForChildren(ExecutionNode node, JsonArray children) {
-        for (ExecutionNode childNode : node.getChildren()) {
-            JsonObject childObject = new JsonObject();
-            childObject.addProperty("result", childNode.getResult().getResult().toString());
-            childObject.addProperty("description", StringEscapeUtils.escapeHtml4(childNode.getDescription()));
-            children.add(childObject);
-        }
-    }
-
-    private String createMethodInfo(ExecutionNode node) {
-
-        final StringBuilder methodInfoBuffer = new StringBuilder();
-        node.appendMethodInfo(methodInfoBuffer);
-
-        String methodInfo = methodInfoBuffer.toString();
-        if (methodInfo.contains("\"")) {
-            methodInfo = methodInfo.replace("\"", "\\\"");
-        }
-
-        return replaceNewLines(methodInfo);
-    }
-
-    private String getExceptionMessage(ExecutionNode node) {
-        String exceptionMessage = "";
-
-        if (node.getResult().getThrown() != null) {
-
-            final String exceptionMsg = StringEscapeUtils.escapeHtml4(node.getResult().getThrown().getMessage());
-
-            exceptionMessage = replaceNewLines(exceptionMsg);
-
-        }
-
-        return exceptionMessage;
-    }
-
-    private String getStackTrace(ExecutionNode node) {
-        String stackTrace = "";
-
-        if (node.getResult().getThrown() != null) {
-
-            final StackTraceElement[] stackTraceElements = node.getResult().getThrown().getStackTrace();
-
-            final StringBuilder buf = new StringBuilder();
-
-            for (final StackTraceElement e : stackTraceElements) {
-
-                buf.append(StringEscapeUtils.escapeHtml4(e.toString().trim())).append("<br/>");
-            }
-            stackTrace = buf.toString();
-        }
-
-        return stackTrace;
     }
 
     private void buildNodeJSON(final ExecutionNode node, final Writer writer) throws IOException {
