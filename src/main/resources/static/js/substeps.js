@@ -1,10 +1,3 @@
-// image variables used in the tree
-var imgP = "img/PASSED.png";
-var imgNR = "img/NOT_RUN.png";
-var imgPF = "img/PARSE_FAILURE.png";
-var imgF = "img/FAILED.png";
-
-
 $(document).ready(function() {
 
 	$('#feature-stats-div').html( '<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="feature-stats-table"></table>' );

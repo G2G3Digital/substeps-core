@@ -83,10 +83,10 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
     static {
 
-        resultToImageMap.put(ExecutionResult.PASSED, "imgP");
-        resultToImageMap.put(ExecutionResult.NOT_RUN, "imgNR");
-        resultToImageMap.put(ExecutionResult.PARSE_FAILURE, "imgPF");
-        resultToImageMap.put(ExecutionResult.FAILED, "imgF");
+        resultToImageMap.put(ExecutionResult.PASSED, "img/PASSED.png");
+        resultToImageMap.put(ExecutionResult.NOT_RUN, "img/NOT_RUN.png");
+        resultToImageMap.put(ExecutionResult.PARSE_FAILURE, "img/PARSE_FAILURE.png");
+        resultToImageMap.put(ExecutionResult.FAILED, "img/FAILED.png");
     }
 
     /**
@@ -110,13 +110,6 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
         this.outputDirectory = outputDirectory;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.technophobia.substeps.report.ExecutionReportBuilder#buildReport(com
-     * .technophobia.substeps.report.ReportData, java.io.File)
-     */
     @Override
     public void buildReport() {
 
@@ -257,12 +250,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
             data.add("attr", attr);
             attr.addProperty("id", "0");
 
-            String icon = rootNodeInError ? "imgF" : "imgP"; // TODO This used
-                                                             // to be a non
-                                                             // string, need to
-                                                             // check how this
-                                                             // affects the
-                                                             // report
+            String icon = rootNodeInError ? resultToImageMap.get(ExecutionResult.FAILED) : resultToImageMap.get(ExecutionResult.PASSED); 
             data.addProperty("icon", icon);
 
             if (rootNodeInError) {
@@ -271,7 +259,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
             }
 
             JsonArray children = new JsonArray();
-            data.add("children", children);
+            treeData.add("children", children);
 
             for (final ExecutionNode rootNode : nodeList) {
 
@@ -290,7 +278,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
         JsonObject data = new JsonObject();
         json.add("data", data);
 
-        json.addProperty("title", getDescriptionForNode(node));
+        data.addProperty("title", getDescriptionForNode(node));
 
         JsonObject attr = new JsonObject();
         data.add("attr", attr);
