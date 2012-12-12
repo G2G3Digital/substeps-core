@@ -29,16 +29,15 @@ public interface MethodExecutor {
      */
     void executeMethods(List<Method> setupAndTearDownMethods) throws Exception;
 
-
     void addImplementationClasses(final Class<?>[] implementationClasses);
 
+    <T> T getImplementation(Class<T> implementationClass);
 
     /**
      * @param targetClass
      * @param targetMethod
      * @param methodArgs
      */
-    void executeMethod(final Class<?> targetClass, final Method targetMethod,
-            final Object[] methodArgs) throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException;
+    void executeMethod(final Class<?> targetClass, final Method targetMethod, final Object[] methodArgs)
+            throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
 }

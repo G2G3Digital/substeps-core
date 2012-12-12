@@ -24,24 +24,24 @@ import java.math.RoundingMode;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionNodeResult;
 
-
 /**
  * @author ian
  * 
  */
 public class TestCounters {
+
     private int count = 0;
     private int run = 0;
     private int ignored = 0;
     private int passed = 0;
     private int failed = 0;
-    
-    public double getSuccessPc(){
-    
-    	double rtn = 0.0;
+
+    public double getSuccessPc() {
+
+        double rtn = 0.0;
         if (run > 0) {
 
-            final double d =  (double)passed / (double)run * 100;
+            final double d = (double) passed / (double) run * 100;
             final BigDecimal bd = BigDecimal.valueOf(d).setScale(1, RoundingMode.HALF_UP);
             rtn = bd.doubleValue();
         }
@@ -52,26 +52,21 @@ public class TestCounters {
         count++;
     }
 
-
     public void addRun() {
         run++;
     }
-
 
     public void addIgnored() {
         ignored++;
     }
 
-
     public void addPassed() {
         passed++;
     }
 
-
     public void addFailed() {
         failed++;
     }
-
 
     /**
      * @return the count
@@ -80,14 +75,12 @@ public class TestCounters {
         return count;
     }
 
-
     /**
      * @return the run
      */
     public int getRun() {
         return run;
     }
-
 
     /**
      * @return the ignored
@@ -96,7 +89,6 @@ public class TestCounters {
         return ignored;
     }
 
-
     /**
      * @return the passed
      */
@@ -104,14 +96,12 @@ public class TestCounters {
         return passed;
     }
 
-
     /**
      * @return the failed
      */
     public int getFailed() {
         return failed;
     }
-
 
     /**
      * @param node
@@ -121,33 +111,32 @@ public class TestCounters {
         final ExecutionNodeResult result = node.getResult();
 
         count++;
-        
+
         switch (result.getResult()) {
-        case IGNORED:
-        case NOT_INCLUDED:
-        case NOT_RUN: {
-            ignored++;
-            
-            break;
-        }
+            case IGNORED:
+            case NOT_INCLUDED:
+            case NOT_RUN: {
+                ignored++;
 
+                break;
+            }
 
-        case RUNNING: {
-            run++;
-            break;
-        }
+            case RUNNING: {
+                run++;
+                break;
+            }
 
-        case PASSED: {
-            run++;
-            passed++;
-            break;
-        }
+            case PASSED: {
+                run++;
+                passed++;
+                break;
+            }
 
-        case FAILED: {
-            run++;
-            failed++;
-            break;
-        }
+            case FAILED: {
+                run++;
+                failed++;
+                break;
+            }
 
         }
     }

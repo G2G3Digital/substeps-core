@@ -27,26 +27,12 @@ public class NotificationDistributor implements INotificationDistributor {
 
     private List<INotifier> listeners;
 
-
-    // public abstract void handleNotifyNodeFailed(ExecutionNode node, Throwable
-    // cause);
-    //
-    //
-    // public abstract void handleNotifyNodeStarted(ExecutionNode node);
-    //
-    //
-    // public abstract void handleNotifyNodeFinished(ExecutionNode node);
-    //
-    //
-    // public abstract void handleNotifyNodeIgnored(ExecutionNode node);
-
     public void addListener(final INotifier listener) {
-        if (listeners == null) {
-            listeners = new ArrayList<INotifier>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<INotifier>();
         }
-        listeners.add(listener);
+        this.listeners.add(listener);
     }
-
 
     /*
      * (non-Javadoc)
@@ -61,7 +47,6 @@ public class NotificationDistributor implements INotificationDistributor {
 
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -74,7 +59,6 @@ public class NotificationDistributor implements INotificationDistributor {
         notifyListenersTestStarted(node);
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -86,7 +70,6 @@ public class NotificationDistributor implements INotificationDistributor {
         notifyListenersTestFinished(node);
 
     }
-
 
     /*
      * (non-Javadoc)
@@ -101,50 +84,46 @@ public class NotificationDistributor implements INotificationDistributor {
 
     }
 
-
     /**
      * @param listeners2
      * @param junitDescription
      * @param cause
      */
     private void notifyListenersTestFailed(final ExecutionNode node, final Throwable cause) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
+        if (this.listeners != null) {
+            for (final INotifier listener : this.listeners) {
                 listener.notifyNodeFailed(node, cause);
             }
         }
     }
-
 
     /**
      * @param listeners2
      * @param junitDescription
      */
     private void notifyListenersTestIgnored(final ExecutionNode node) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
+        if (this.listeners != null) {
+            for (final INotifier listener : this.listeners) {
                 listener.notifyNodeIgnored(node);
             }
         }
     }
-
 
     /**
      * @param listeners2
      * @param junitDescription
      */
     private void notifyListenersTestFinished(final ExecutionNode node) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
+        if (this.listeners != null) {
+            for (final INotifier listener : this.listeners) {
                 listener.notifyNodeFinished(node);
             }
         }
     }
 
-
     private void notifyListenersTestStarted(final ExecutionNode node) {
-        if (listeners != null) {
-            for (final INotifier listener : listeners) {
+        if (this.listeners != null) {
+            for (final INotifier listener : this.listeners) {
                 listener.notifyNodeStarted(node);
             }
         }

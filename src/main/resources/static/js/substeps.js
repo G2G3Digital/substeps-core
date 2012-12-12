@@ -1,10 +1,3 @@
-// image variables used in the tree
-var imgP = "img/PASSED.png";
-var imgNR = "img/NOT_RUN.png";
-var imgPF = "img/PARSE_FAILURE.png";
-var imgF = "img/FAILED.png";
-
-
 $(document).ready(function() {
 
 	$('#feature-stats-div').html( '<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="feature-stats-table"></table>' );
@@ -92,17 +85,23 @@ $(document).ready(function() {
 				detailhtml += "<p>File: " +  detailJSON.filename + "</p>";
 			}
 		 
-			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.desc + "</p>";
+			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.description + "</p>";
 		
 			if (detailJSON.method.length > 0){
 				detailhtml = detailhtml + "<p>Method: " + detailJSON.method + "</p>";
 			}
-	
+
+			if(detailJSON.screenshot) {
+				detailhtml = detailhtml + "<p><a href='" + detailJSON.screenshot + "'><img style='border: 2px solid red;' width='400px;' src='" + detailJSON.screenshot + "' alt='screenshot of failure' /></a>";
+			}
+			
 			if (detailJSON.emessage.length > 0){
 				detailhtml = detailhtml + "<p>" + detailJSON.emessage + "</p><div class=\"stacktrace\"><pre class=\"stacktracepre\">" +
 				detailJSON.stacktrace + "</div></pre>";
 			}
-
+			
+			detailhtml = detailhtml + "<p>Duration: " + detailJSON.runningDurationString + "</p>"
+			
 			if (detailJSON.children.length > 0){
 				
 				detailhtml = detailhtml + '<table class="table table-bordered table-condensed"><tbody>';

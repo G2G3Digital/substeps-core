@@ -17,30 +17,32 @@ public class SyntaxAwareStepValidator implements StepValidator {
     private final PatternMap<StepImplementation> stepImplMap;
     private final Syntax syntax;
 
+
     public SyntaxAwareStepValidator(final Syntax syntax) {
         this.syntax = syntax;
         this.stepImplMap = createStepImplMap();
     }
 
+
     public void validateFeatureFile(final FeatureFile featureFile, final SyntaxErrorReporter syntaxErrorReporter) {
         final List<Scenario> scenarios = featureFile.getScenarios();
         if (scenarios != null) {
             for (final Scenario scenario : scenarios) {
-                validate(scenario, featureFile.getSourceFile(),
-                        syntaxErrorReporter);
+                validate(scenario, featureFile.getSourceFile(), syntaxErrorReporter);
             }
         }
     }
+
 
     public void validateSubstep(final ParentStep substep, final SyntaxErrorReporter syntaxErrorReporter) {
         final List<Step> steps = substep.getSteps();
         if (steps != null) {
             for (final Step step : steps) {
-                validate(step, new File(substep.getSubStepFileUri()),
-                        syntaxErrorReporter);
+                validate(step, new File(substep.getSubStepFileUri()), syntaxErrorReporter);
             }
         }
     }
+
 
     protected void validate(final Scenario scenario, final File sourceFile,
             final SyntaxErrorReporter syntaxErrorReporter) {
@@ -52,29 +54,28 @@ public class SyntaxAwareStepValidator implements StepValidator {
         }
     }
 
-    protected void validate(final Step step, final File sourceFile,
-            final SyntaxErrorReporter syntaxErrorReporter) {
+
+    protected void validate(final Step step, final File sourceFile, final SyntaxErrorReporter syntaxErrorReporter) {
         if (!isValid(step)) {
-            syntaxErrorReporter.reportFeatureError(sourceFile, step.getLine(),
-                    step.getSourceLineNumber(), "Step \"" + step.getLine()
-                            + "\" is not defined");
+            syntaxErrorReporter.reportFeatureError(sourceFile, step.getLine(), step.getSourceLineNumber(),
+                    step.getSourceStartOffset(), "Step \"" + step.getLine() + "\" is not defined");
         }
     }
 
+
     protected boolean isValid(final Step step) {
-        final List<ParentStep> substeps = this.syntax.getSubStepsMap().get(
-                step.getLine());
+        final List<ParentStep> substeps = this.syntax.getSubStepsMap().get(step.getLine());
         if (substeps != null && !substeps.isEmpty()) {
             return true;
         }
 
-        final List<StepImplementation> stepImpls = this.stepImplMap.get(step
-                .getLine());
+        final List<StepImplementation> stepImpls = this.stepImplMap.get(step.getLine());
         if (stepImpls != null && !stepImpls.isEmpty()) {
             return true;
         }
         return false;
     }
+
 
     private PatternMap<StepImplementation> createStepImplMap() {
         final PatternMap<StepImplementation> results = new PatternMap<StepImplementation>();

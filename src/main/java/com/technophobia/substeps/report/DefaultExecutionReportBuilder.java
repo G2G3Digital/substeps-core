@@ -41,7 +41,6 @@ import java.util.jar.JarFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -54,33 +53,40 @@ import org.slf4j.LoggerFactory;
 
 import sun.net.www.protocol.file.FileURLConnection;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionResult;
 
 /**
  * @author ian
  */
-public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
-    private final Logger log = LoggerFactory
-            .getLogger(DefaultExecutionReportBuilder.class);
+public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
+
+    private final Logger log = LoggerFactory.getLogger(DefaultExecutionReportBuilder.class);
 
     private final Properties velocityProperties = new Properties();
 
+    public static final String FEATURE_REPORT_FOLDER = "feature_report";
+    private static final String SCREENSHOT_FOLDER = "screenshots";
     public static final String JSON_DATA_FILENAME = "report_data.json";
-    public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.json";
+    public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.js";
 
     private static final String JSON_STATS_DATA_FILENAME = "susbteps-stats.js";
 
     private static Map<ExecutionResult, String> resultToImageMap = new HashMap<ExecutionResult, String>();
 
+    private ReportData data = new ReportData();
+
     static {
 
-        resultToImageMap.put(ExecutionResult.PASSED, "imgP");
-        resultToImageMap.put(ExecutionResult.NOT_RUN, "imgNR");
-        resultToImageMap.put(ExecutionResult.PARSE_FAILURE, "imgPF");
-        resultToImageMap.put(ExecutionResult.FAILED, "imgF");
-
+        resultToImageMap.put(ExecutionResult.PASSED, "img/PASSED.png");
+        resultToImageMap.put(ExecutionResult.NOT_RUN, "img/NOT_RUN.png");
+        resultToImageMap.put(ExecutionResult.PARSE_FAILURE, "img/PARSE_FAILURE.png");
+        resultToImageMap.put(ExecutionResult.FAILED, "img/FAILED.png");
     }
 
     /**
@@ -93,34 +99,25 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
      */
     private String reportTitle;
 
-
     public DefaultExecutionReportBuilder() {
         velocityProperties.setProperty("resource.loader", "class");
-        velocityProperties
-                .setProperty("class.resource.loader.class",
-                        "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        velocityProperties.setProperty("class.resource.loader.class",
+                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
     }
 
-
-    public DefaultExecutionReportBuilder(final File outputDirectory) {
-        this();
+    @Override
+    public void setOutputDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
 
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.technophobia.substeps.report.ExecutionReportBuilder#buildReport(com
-     * .technophobia.substeps.report.ReportData, java.io.File)
-     */
-    public void buildReport(final ReportData data) {
+    @Override
+    public void buildReport() {
 
         log.debug("Build report in: " + outputDirectory.getAbsolutePath());
 
-        final File reportDir = new File(outputDirectory + File.separator
-                + "feature_report");
+        final File reportDir = new File(outputDirectory + File.separator + FEATURE_REPORT_FOLDER);
+
+        File screenshotDirectory = new File(reportDir, SCREENSHOT_FOLDER);
 
         try {
 
@@ -130,8 +127,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 FileUtils.deleteDirectory(reportDir);
             }
 
-            Assert.assertTrue("failed to create directory: " + reportDir,
-                    reportDir.mkdir());
+            Assert.assertTrue("failed to create directory: " + reportDir, reportDir.mkdirs());
 
             copyStaticResources(reportDir);
 
@@ -139,9 +135,15 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
             buildTreeJSON(data, reportDir);
 
-            buildDetailJSON(data, reportDir);
+            DetailedJsonBuilder
+                    .writeDetailJson(data, SCREENSHOT_FOLDER, new File(reportDir, JSON_DETAIL_DATA_FILENAME));
 
             buildStatsJSON(data, reportDir);
+
+            for (ExecutionNode rootNode : data.getRootNodes()) {
+
+                ScreenshotWriter.writeScreenshots(screenshotDirectory, rootNode);
+            }
 
         } catch (final IOException ex) {
             log.error("IOException: ", ex);
@@ -150,21 +152,18 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
     }
 
-
     /**
      * @param data
      * @param reportDir
      */
-    private void buildStatsJSON(final ReportData data, final File reportDir)
-            throws IOException {
+    private void buildStatsJSON(final ReportData data, final File reportDir) throws IOException {
 
         final File jsonFile = new File(reportDir, JSON_STATS_DATA_FILENAME);
 
         final ExecutionStats stats = new ExecutionStats();
         stats.buildStats(data);
 
-        final BufferedWriter writer = Files.newWriter(jsonFile,
-                Charset.defaultCharset());
+        final BufferedWriter writer = Files.newWriter(jsonFile, Charset.defaultCharset());
         try {
             buildStatsJSON(stats, writer);
         } finally {
@@ -173,13 +172,11 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
     /**
      * @param stats
      * @param writer
      */
-    private void buildStatsJSON(final ExecutionStats stats,
-            final BufferedWriter writer) throws IOException {
+    private void buildStatsJSON(final ExecutionStats stats, final BufferedWriter writer) throws IOException {
 
         writer.append("var featureStatsData = [");
         boolean first = true;
@@ -190,23 +187,11 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 writer.append(",\n");
             }
             writer.append("[\"").append(stat.getTag()).append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getFeatureStats().getCount()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getFeatureStats().getRun()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer
-                            .toString(stat.getFeatureStats().getPassed()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer
-                            .toString(stat.getFeatureStats().getFailed()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Double.toString(stat.getFeatureStats()
-                            .getSuccessPc())).append("\"]");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getCount())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getRun())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getPassed())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getFeatureStats().getFailed())).append("\",");
+            writer.append("\"").append(Double.toString(stat.getFeatureStats().getSuccessPc())).append("\"]");
 
             first = false;
         }
@@ -222,22 +207,12 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 writer.append(",\n");
             }
             writer.append("[\"").append(stat.getTag()).append("\",");
-            writer.append("\"")
-                    .append(Integer
-                            .toString(stat.getScenarioStats().getCount()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getScenarioStats().getRun()))
-                    .append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getScenarioStats()
-                            .getPassed())).append("\",");
-            writer.append("\"")
-                    .append(Integer.toString(stat.getScenarioStats()
-                            .getFailed())).append("\",");
-            writer.append("\"")
-                    .append(Double.toString(stat.getScenarioStats()
-                            .getSuccessPc())).append("\"").append("]");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getCount())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getRun())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getPassed())).append("\",");
+            writer.append("\"").append(Integer.toString(stat.getScenarioStats().getFailed())).append("\",");
+            writer.append("\"").append(Double.toString(stat.getScenarioStats().getSuccessPc())).append("\"")
+                    .append("]");
 
             first = false;
         }
@@ -246,273 +221,121 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
+    private Predicate<ExecutionNode> NODE_HAS_ERROR = new Predicate<ExecutionNode>() {
 
-    /**
-     * @param data
-     * @param reportDir
-     * @throws IOException
-     */
-    private void buildDetailJSON(final ReportData data, final File reportDir)
-            throws IOException {
-        final File jsonFile = new File(reportDir, JSON_DETAIL_DATA_FILENAME);
-
-        final BufferedWriter writer = Files.newWriter(jsonFile,
-                Charset.defaultCharset());
-        try {
-            buildDetailJSON(data, writer);
-        } finally {
-            writer.close();
+        public boolean apply(ExecutionNode node) {
+            return node.hasError();
         }
-
-    }
-
-
-    private void buildTreeJSON(final ReportData reportData, final File reportDir)
-            throws IOException {
+    };
+    
+    private void buildTreeJSON(final ReportData reportData, final File reportDir) throws IOException {
+        
         log.debug("Building tree json file.");
 
         final File jsonFile = new File(reportDir, JSON_DATA_FILENAME);
 
-        final Writer writer = new BufferedWriter(new FileWriter(jsonFile));
-
         final List<ExecutionNode> nodeList = reportData.getRootNodes();
 
-        boolean rootNodeInError = false;
+        JsonObject treeData = new JsonObject();
 
-        try {
-            if (!nodeList.isEmpty()) {
+        if (!nodeList.isEmpty()) {
 
-                for (final ExecutionNode rootNode : nodeList) {
+            boolean rootNodeInError = Iterables.any(nodeList, NODE_HAS_ERROR);
 
-                    rootNodeInError = rootNode.hasError();
-                    if (rootNodeInError) {
-                        break;
-                    }
-                }
+            JsonObject data = new JsonObject();
+            treeData.add("data", data);
+            data.addProperty("title", "Substeps tests");
 
-                writer.append("var treeData =  { \"data\" : { \"title\" : \"Substeps tests\", \"attr\" : { \"id\" : \"0\" }, ");
+            JsonObject attr = new JsonObject();
+            data.add("attr", attr);
+            attr.addProperty("id", "0");
 
-                if (rootNodeInError) {
+            String icon = rootNodeInError ? resultToImageMap.get(ExecutionResult.FAILED) : resultToImageMap.get(ExecutionResult.PASSED); 
+            data.addProperty("icon", icon);
 
-                    writer.append("\"icon\" : imgF, \"state\" : \"open\"}, \"children\" : [");
+            if (rootNodeInError) {
 
-                } else {
-                    writer.append("\"icon\" : imgP}, \"children\" : [");
-                }
-
-                boolean first = true;
-                for (final ExecutionNode rootNode : nodeList) {
-
-                    if (!first) {
-                        writer.append(",\n");
-                    }
-
-                    buildNodeJSON(rootNode, writer);
-                    first = false;
-                }
-
-                writer.append("]};\n");
-
+                data.addProperty("state", "open");
             }
+
+            JsonArray children = new JsonArray();
+            treeData.add("children", children);
+
+            for (final ExecutionNode rootNode : nodeList) {
+
+                children.add(buildNodeJSON(rootNode));
+            }
+
+        }
+
+        writeTreeJson(jsonFile, treeData);
+    }
+
+    private JsonObject buildNodeJSON(final ExecutionNode node) throws IOException {
+
+        JsonObject json = new JsonObject();
+
+        JsonObject data = new JsonObject();
+        json.add("data", data);
+
+        data.addProperty("title", getDescriptionForNode(node));
+
+        JsonObject attr = new JsonObject();
+        data.add("attr", attr);
+        attr.addProperty("id", Long.toString(node.getId()));
+        data.addProperty("icon", getNodeImage(node));
+
+        if (node.hasChildren()) {
+
+            if (node.hasError()) {
+                json.addProperty("state", "open");
+            }
+
+            JsonArray children = new JsonArray();
+            json.add("children", children);
+
+            for (final ExecutionNode child : node.getChildren()) {
+
+                children.add(buildNodeJSON(child));
+            }
+        }
+
+        return json;
+    }
+
+    private void writeTreeJson(final File jsonFile, JsonObject treeData) throws IOException {
+        Writer writer = null;
+        try {
+
+            writer = new BufferedWriter(new FileWriter(jsonFile));
+            writer.append("var treeData = " + treeData.toString() + ";");
 
         } finally {
-            writer.close();
-        }
-
-    }
-
-
-    /**
-     * @param reportData
-     * @param writer
-     * @throws IOException
-     */
-    private void buildDetailJSON(final ReportData reportData,
-            final Writer writer) throws IOException {
-
-        writer.append("var detail = new Array();\n");
-
-        for (final ExecutionNode node : reportData.getRootNodes()) {
-            buildDetailJSON(node, writer);
-        }
-
-    }
-
-
-    private String replaceNewLines(final String s) {
-
-        if (s != null && s.contains("\n")) {
-
-            return s.replaceAll("\n", "<br/>");
-        } else {
-            return s;
-        }
-    }
-
-
-    /**
-     * @param node
-     * @param writer
-     */
-    private void buildDetailJSON(final ExecutionNode node, final Writer writer)
-            throws IOException {
-
-        // create some json for each node
-
-        writer.append("detail[" + node.getId() + "]=");
-
-        writer.append("{\"nodetype\": \""
-                + node.getType()
-                + "\",\"filename\": \""
-                + node.getFilename()
-                + "\",\"result\": \""
-                + node.getResult().getResult().toString()
-                + "\",\"id\": "
-                + node.getId()
-                + ",\"debugstr\": \""
-                + replaceNewLines(StringEscapeUtils.escapeHtml4(node
-                        .getDebugStringForThisNode().trim()))
-                + "\",\"emessage\": \"");
-
-        String stackTrace = null;
-
-        if (node.getResult().getThrown() != null) {
-
-            final String exceptionMsg = StringEscapeUtils.escapeHtml4(node
-                    .getResult().getThrown().getMessage());
-
-            writer.append(replaceNewLines(exceptionMsg));
-
-            final StackTraceElement[] stackTraceElements = node.getResult()
-                    .getThrown().getStackTrace();
-
-            final StringBuilder buf = new StringBuilder();
-            for (final StackTraceElement e : stackTraceElements) {
-
-                buf.append(StringEscapeUtils.escapeHtml4(e.toString().trim()))
-                        .append("<br/>");
-            }
-            stackTrace = buf.toString();
-        }
-
-        if (stackTrace == null) {
-            stackTrace = "";
-        }
-
-        writer.append("\",\"stacktrace\": \"" + stackTrace + "\"");
-
-        writer.append(",\"method\": \"");
-        final StringBuilder buf = new StringBuilder();
-        node.appendMethodInfo(buf);
-
-        String methodInfo = buf.toString();
-        if (methodInfo.contains("\"")) {
-            methodInfo = methodInfo.replace("\"", "\\\"");
-        }
-
-        writer.append(replaceNewLines(methodInfo));
-
-        writer.append("\"");
-
-        writer.append(",\"desc\": \"");
-        writer.append(replaceNewLines(StringEscapeUtils.escapeHtml4(node
-                .getDescription().trim())));
-
-        writer.append("\"");
-
-        writer.append(",\"children\": [");
-
-        boolean first = true;
-        if (node.getChildren() != null) {
-            for (final ExecutionNode child : node.getChildren()) {
-
-                if (!first) {
-                    writer.append(",");
-                }
-                writer.append("{\"result\": \"" + child.getResult().getResult()
-                        + "\",\"description\": \""
-                        + StringEscapeUtils.escapeHtml4(child.getDescription())
-                        + "\", }");
-                first = false;
+            if (writer != null) {
+                writer.close();
             }
         }
-        writer.append("]};\n");
-
-        if (node.hasChildren()) {
-            for (final ExecutionNode child : node.getChildren()) {
-                buildDetailJSON(child, writer);
-            }
-        }
-
     }
-
-
-    private void buildNodeJSON(final ExecutionNode node, final Writer writer)
-            throws IOException {
-
-        writer.append("{ ");
-
-        /***** Data object *****/
-        writer.append("\"data\" : { ");
-
-        writer.append("\"title\" : \"");
-        writer.append(getDescriptionForNode(node));
-        writer.append("\"");
-
-        writer.append(", \"attr\" : { \"id\" : \"");
-        writer.append(Long.toString(node.getId()));
-        writer.append("\" }");
-
-        writer.append(", \"icon\" : ");
-        writer.append(getNodeImage(node));
-
-        writer.append("}");
-        /***** END: Data object *****/
-
-        if (node.hasChildren()) {
-            if (node.hasError()) {
-                writer.append(", \"state\" : \"open\"");
-            }
-            writer.append(", \"children\" : [");
-            boolean first = true;
-            for (final ExecutionNode child : node.getChildren()) {
-                if (!first) {
-                    writer.append(", ");
-                }
-                buildNodeJSON(child, writer);
-                first = false;
-            }
-            writer.append("]");
-        }
-
-        writer.append("}");
-
-    }
-
 
     /**
      * @param reportDir
      * @throws IOException
      */
-    private void copyStaticResources(final File reportDir)
-            throws URISyntaxException, IOException {
+    private void copyStaticResources(final File reportDir) throws URISyntaxException, IOException {
 
         log.debug("Copying static resources to: " + reportDir.getAbsolutePath());
 
         final URL staticURL = getClass().getResource("/static");
         if (staticURL == null) {
-            throw new IllegalStateException(
-                    "Failed to copy static resources for report.  URL for resources is null.");
+            throw new IllegalStateException("Failed to copy static resources for report.  URL for resources is null.");
         }
 
         copyResourcesRecursively(staticURL, reportDir);
     }
 
-
     private String getNodeImage(final ExecutionNode node) {
         return resultToImageMap.get(node.getResult().getResult());
     }
-
 
     private String getDescriptionForNode(final ExecutionNode node) {
         final StringBuilder buf = new StringBuilder();
@@ -525,7 +348,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
             }
         } else {
 
-            buildDescriptionString(null, node, buf);
+            ExecutionReportBuilder.buildDescriptionString(null, node, buf);
 
         }
         // return StringEscapeUtils.escapeHtml4(buf.toString());
@@ -540,41 +363,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         return msg;
     }
 
-
-    public static void buildDescriptionString(final String prefix,
-            final ExecutionNode node, final StringBuilder buf) {
-        if (prefix != null) {
-            buf.append(prefix);
-        }
-
-        if (node.getFeature() != null) {
-
-            buf.append(node.getFeature().getName());
-
-        } else if (node.getScenarioName() != null) {
-
-            if (node.isOutlineScenario()) {
-                buf.append("Scenario #: ");
-            } else {
-                buf.append("Scenario: ");
-            }
-            buf.append(node.getScenarioName());
-        }
-
-        if (node.getParent() != null && node.getParent().isOutlineScenario()) {
-
-            buf.append(node.getRowNumber()).append(" ")
-                    .append(node.getParent().getScenarioName()).append(":");
-        }
-
-        if (node.getLine() != null) {
-            buf.append(node.getLine());
-        }
-    }
-
-
-    private void buildMainReport(final ReportData data, final File reportDir)
-            throws IOException {
+    private void buildMainReport(final ReportData data, final File reportDir) throws IOException {
 
         log.debug("Building main report file.");
 
@@ -585,8 +374,7 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         final ExecutionStats stats = new ExecutionStats();
         stats.buildStats(data);
 
-        final SimpleDateFormat sdf = new SimpleDateFormat(
-                "EEE dd MMM yyyy HH:mm");
+        final SimpleDateFormat sdf = new SimpleDateFormat("EEE dd MMM yyyy HH:mm");
         final String dateTimeStr = sdf.format(new Date());
 
         vCtx.put("stats", stats);
@@ -597,7 +385,6 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
 
     }
 
-
     /**
      * @param reportDir
      * @param vCtx
@@ -605,12 +392,10 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
      * @param targetFilename
      * @throws IOException
      */
-    private void renderAndWriteToFile(final File reportDir,
-            final VelocityContext vCtx, final String vm,
+    private void renderAndWriteToFile(final File reportDir, final VelocityContext vCtx, final String vm,
             final String targetFilename) throws IOException {
 
-        final Writer writer = new BufferedWriter(new FileWriter(new File(
-                reportDir, targetFilename)));
+        final Writer writer = new BufferedWriter(new FileWriter(new File(reportDir, targetFilename)));
 
         final VelocityEngine velocityEngine = new VelocityEngine();
 
@@ -641,36 +426,29 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
         }
     }
 
-
-    public void copyResourcesRecursively(final URL originUrl,
-            final File destination) throws IOException {
+    public void copyResourcesRecursively(final URL originUrl, final File destination) throws IOException {
         final URLConnection urlConnection = originUrl.openConnection();
         if (urlConnection instanceof JarURLConnection) {
-            copyJarResourcesRecursively(destination,
-                    (JarURLConnection) urlConnection);
+            copyJarResourcesRecursively(destination, (JarURLConnection) urlConnection);
         } else if (urlConnection instanceof FileURLConnection) {
             FileUtils.copyDirectory(new File(originUrl.getPath()), destination);
         } else {
-            throw new RuntimeException("URLConnection["
-                    + urlConnection.getClass().getSimpleName()
+            throw new RuntimeException("URLConnection[" + urlConnection.getClass().getSimpleName()
                     + "] is not a recognized/implemented connection type.");
         }
     }
 
-
-    public void copyJarResourcesRecursively(final File destination,
-            final JarURLConnection jarConnection) throws IOException {
+    public void copyJarResourcesRecursively(final File destination, final JarURLConnection jarConnection)
+            throws IOException {
         final JarFile jarFile = jarConnection.getJarFile();
         for (final JarEntry entry : Collections.list(jarFile.entries())) {
             if (entry.getName().startsWith(jarConnection.getEntryName())) {
-                final String fileName = StringUtils.removeStart(
-                        entry.getName(), jarConnection.getEntryName());
+                final String fileName = StringUtils.removeStart(entry.getName(), jarConnection.getEntryName());
                 if (!entry.isDirectory()) {
                     InputStream entryInputStream = null;
                     try {
                         entryInputStream = jarFile.getInputStream(entry);
-                        FileUtils.copyInputStreamToFile(entryInputStream,
-                                new File(destination, fileName));
+                        FileUtils.copyInputStreamToFile(entryInputStream, new File(destination, fileName));
                     } finally {
                         IOUtils.closeQuietly(entryInputStream);
                     }
@@ -679,6 +457,12 @@ public class DefaultExecutionReportBuilder implements ExecutionReportBuilder {
                 }
             }
         }
+    }
+
+    @Override
+    public void addRootExecutionNode(ExecutionNode node) {
+
+        data.addRootExecutionNode(node);
     }
 
 }

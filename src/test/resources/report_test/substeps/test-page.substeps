@@ -1,0 +1,5 @@
+Define: Given I go to the test page
+	NavigateTo /test-page.html
+
+Define: Then I can see '<page_title>'
+    AssertPageTitle is "<page_title>" 	
