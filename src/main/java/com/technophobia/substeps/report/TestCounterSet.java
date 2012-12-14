@@ -18,12 +18,36 @@
  */
 package com.technophobia.substeps.report;
 
-public class TestCounterSet {
+import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
+import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.execution.node.ScenarioNode;
+import com.technophobia.substeps.execution.node.SubstepNode;
+
+public class TestCounterSet extends AbstractExecutionNodeVisitor<Void> {
+
     private String tag = null;
+    
     private TestCounters featureStats = new TestCounters();
     private TestCounters scenarioStats = new TestCounters();
     private TestCounters scenarioStepStats = new TestCounters();
 
+    public Void visit(FeatureNode featureNode) {
+
+        featureStats.apply(featureNode);
+        return null;
+    }
+
+    public Void visit(ScenarioNode scenarioNode) {
+
+        scenarioStats.apply(scenarioNode);
+        return null;
+    }
+
+    public Void visit(SubstepNode substepNode) {
+        
+        scenarioStepStats.apply(substepNode);
+        return null;
+    }
 
     public String getTag() {
         return tag;

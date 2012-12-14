@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarEntry;
@@ -53,13 +52,10 @@ import org.slf4j.LoggerFactory;
 
 import sun.net.www.protocol.file.FileURLConnection;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionResult;
+import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.RootNode;
 
 /**
  * @author ian
@@ -133,7 +129,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
             buildMainReport(data, reportDir);
 
-            buildTreeJSON(data, reportDir);
+            TreeJsonBuilder.writeTreeJson(data, new File(reportDir, JSON_DATA_FILENAME));
 
             DetailedJsonBuilder
                     .writeDetailJson(data, SCREENSHOT_FOLDER, new File(reportDir, JSON_DETAIL_DATA_FILENAME));
@@ -221,102 +217,6 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
     }
 
-    private Predicate<ExecutionNode> NODE_HAS_ERROR = new Predicate<ExecutionNode>() {
-
-        public boolean apply(ExecutionNode node) {
-            return node.hasError();
-        }
-    };
-    
-    private void buildTreeJSON(final ReportData reportData, final File reportDir) throws IOException {
-        
-        log.debug("Building tree json file.");
-
-        final File jsonFile = new File(reportDir, JSON_DATA_FILENAME);
-
-        final List<ExecutionNode> nodeList = reportData.getRootNodes();
-
-        JsonObject treeData = new JsonObject();
-
-        if (!nodeList.isEmpty()) {
-
-            boolean rootNodeInError = Iterables.any(nodeList, NODE_HAS_ERROR);
-
-            JsonObject data = new JsonObject();
-            treeData.add("data", data);
-            data.addProperty("title", "Substeps tests");
-
-            JsonObject attr = new JsonObject();
-            data.add("attr", attr);
-            attr.addProperty("id", "0");
-
-            String icon = rootNodeInError ? resultToImageMap.get(ExecutionResult.FAILED) : resultToImageMap.get(ExecutionResult.PASSED); 
-            data.addProperty("icon", icon);
-
-            if (rootNodeInError) {
-
-                data.addProperty("state", "open");
-            }
-
-            JsonArray children = new JsonArray();
-            treeData.add("children", children);
-
-            for (final ExecutionNode rootNode : nodeList) {
-
-                children.add(buildNodeJSON(rootNode));
-            }
-
-        }
-
-        writeTreeJson(jsonFile, treeData);
-    }
-
-    private JsonObject buildNodeJSON(final ExecutionNode node) throws IOException {
-
-        JsonObject json = new JsonObject();
-
-        JsonObject data = new JsonObject();
-        json.add("data", data);
-
-        data.addProperty("title", getDescriptionForNode(node));
-
-        JsonObject attr = new JsonObject();
-        data.add("attr", attr);
-        attr.addProperty("id", Long.toString(node.getId()));
-        data.addProperty("icon", getNodeImage(node));
-
-        if (node.hasChildren()) {
-
-            if (node.hasError()) {
-                json.addProperty("state", "open");
-            }
-
-            JsonArray children = new JsonArray();
-            json.add("children", children);
-
-            for (final ExecutionNode child : node.getChildren()) {
-
-                children.add(buildNodeJSON(child));
-            }
-        }
-
-        return json;
-    }
-
-    private void writeTreeJson(final File jsonFile, JsonObject treeData) throws IOException {
-        Writer writer = null;
-        try {
-
-            writer = new BufferedWriter(new FileWriter(jsonFile));
-            writer.append("var treeData = " + treeData.toString() + ";");
-
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-        }
-    }
-
     /**
      * @param reportDir
      * @throws IOException
@@ -331,36 +231,6 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
         }
 
         copyResourcesRecursively(staticURL, reportDir);
-    }
-
-    private String getNodeImage(final ExecutionNode node) {
-        return resultToImageMap.get(node.getResult().getResult());
-    }
-
-    private String getDescriptionForNode(final ExecutionNode node) {
-        final StringBuilder buf = new StringBuilder();
-
-        if (node.getParent() == null) {
-            if (node.getLine() != null) {
-                buf.append(node.getLine());
-            } else {
-                buf.append("executionNodeRoot");
-            }
-        } else {
-
-            ExecutionReportBuilder.buildDescriptionString(null, node, buf);
-
-        }
-        // return StringEscapeUtils.escapeHtml4(buf.toString());
-        // no need to escape this
-
-        // need to replace "
-        String msg = buf.toString();
-        if (msg.contains("\"")) {
-            msg = msg.replace("\"", "\\\"");
-        }
-
-        return msg;
     }
 
     private void buildMainReport(final ReportData data, final File reportDir) throws IOException {
@@ -385,13 +255,6 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
     }
 
-    /**
-     * @param reportDir
-     * @param vCtx
-     * @param vm
-     * @param targetFilename
-     * @throws IOException
-     */
     private void renderAndWriteToFile(final File reportDir, final VelocityContext vCtx, final String vm,
             final String targetFilename) throws IOException {
 
@@ -460,7 +323,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
     }
 
     @Override
-    public void addRootExecutionNode(ExecutionNode node) {
+    public void addRootExecutionNode(RootNode node) {
 
         data.addRootExecutionNode(node);
     }

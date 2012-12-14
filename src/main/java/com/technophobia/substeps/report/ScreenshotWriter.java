@@ -1,24 +1,23 @@
 package com.technophobia.substeps.report;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.execution.ExecutionNodeVisitor;
+import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
+import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.StepImplementationNode;
 
-public final class ScreenshotWriter implements ExecutionNodeVisitor {
+public final class ScreenshotWriter extends AbstractExecutionNodeVisitor<Void> {
 
     public static final String SCREENSHOT_SUFFIX = "node-failure.png";
 
     private File directoryForScreenshots;
 
-    private final static Logger logger = LoggerFactory.getLogger(ScreenshotWriter.class);
+    private final static Logger log = LoggerFactory.getLogger(ScreenshotWriter.class);
 
     public static void writeScreenshots(File directoryForScreenshots, ExecutionNode rootNode) {
 
@@ -31,8 +30,7 @@ public final class ScreenshotWriter implements ExecutionNodeVisitor {
         this.directoryForScreenshots = directoryForScreenshots;
     }
 
-    public void visit(ExecutionNode executionNode) {
-
+    public Void visit(StepImplementationNode executionNode) {
 
         if (executionNode.getResult() != null) {
 
@@ -46,17 +44,15 @@ public final class ScreenshotWriter implements ExecutionNodeVisitor {
 
                     IOUtils.write(screenshot, new FileOutputStream(screenshotFile));
 
-                } catch (FileNotFoundException e) {
+                } catch (Exception e) {
 
-                    // TODO
-                } catch (IOException e) {
-
-                    // TODO
+                    log.error("Unable to create screenshot", e);
                 }
 
             }
         }
-
+        
+        return null;
     }
 
 }

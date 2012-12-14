@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.joda.time.Duration;
@@ -13,48 +15,57 @@ import org.joda.time.format.PeriodFormatter;
 import com.google.common.io.Files;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionNodeResult;
 import com.technophobia.substeps.execution.ExecutionNodeVisitor;
+import com.technophobia.substeps.execution.node.BasicScenarioNode;
+import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.execution.node.OutlineScenarioNode;
+import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
+import com.technophobia.substeps.execution.node.RootNode;
+import com.technophobia.substeps.execution.node.StepImplementationNode;
+import com.technophobia.substeps.execution.node.SubstepNode;
 import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 
-public final class DetailedJsonBuilder implements ExecutionNodeVisitor {
+public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObject> {
 
     private final ReportData reportData;
     private final String screenshotFolder;
     private BufferedWriter writer;
 
     public static void writeDetailJson(ReportData reportData, String screenshotFolder, File jsonFile) {
-        
+
         new DetailedJsonBuilder(reportData, screenshotFolder).writeFile(jsonFile);
-        
+
     }
-    
+
     private DetailedJsonBuilder(ReportData reportData, String screenshotFolder) {
-        
+
         this.reportData = reportData;
         this.screenshotFolder = screenshotFolder;
     }
-    
+
     private void writeFile(File jsonFile) {
         try {
 
             writer = Files.newWriter(jsonFile, Charset.defaultCharset());
             writer.append("var detail = new Array();");
-            
-            for(ExecutionNode rootNode : reportData.getRootNodes()) {
-                
-                rootNode.accept(this);
-                
+
+            for (ExecutionNode rootNode : reportData.getRootNodes()) {
+
+                for (JsonObject nodeAsJson : rootNode.accept(this)) {
+
+                    writer.append("\ndetail[" + nodeAsJson.get("id") + "]=" + nodeAsJson.toString() + ";");
+                }
+
             }
-            
+
         } catch (IOException e) {
 
             throw new SubstepsRuntimeException("Failed writing to detail json file");
         } finally {
-            
-            if(writer != null)
-            {
+
+            if (writer != null) {
                 try {
                     writer.flush();
                     writer.close();
@@ -62,29 +73,69 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor {
                     throw new SubstepsRuntimeException("Failed writing to detail json file");
                 }
             }
-            
-        }
 
-    }
-    
-    public void visit(ExecutionNode executionNode) {
-
-        JsonObject nodeAsJson = createDetailJsonForNode(executionNode);
-        try {
-            
-            writer.append("\ndetail[" + nodeAsJson.get("id") + "]=" + nodeAsJson.toString() + ";");
-        
-        } catch (IOException e) {
-
-            throw new SubstepsRuntimeException("Failed writing to detail json file");
         }
 
     }
 
-    public JsonObject createDetailJsonForNode(ExecutionNode node) {
+    public JsonObject visit(RootNode rootNode) {
+
+        return createBasicDetailsWithChildDetails("Root node", rootNode, rootNode.getFeatures());
+    }
+
+    public JsonObject visit(FeatureNode featureNode) {
+
+        return createBasicDetailsWithChildDetails("Feature", featureNode, featureNode.getScenarios());
+    }
+
+    public JsonObject visit(BasicScenarioNode basicScenarioNode) {
+
+        return createBasicDetailsWithChildDetails("Scenario", basicScenarioNode,
+                basicScenarioNode.getStep().getSubsteps());
+    }
+
+    public JsonObject visit(OutlineScenarioNode outlineNode) {
+
+        return createBasicDetailsWithChildDetails("Scenario Outline", outlineNode, outlineNode.getOutlineRows());
+    }
+
+    public JsonObject visit(OutlineScenarioRowNode outlineScenarioRowNode) {
+
+        return createBasicDetailsWithChildDetails("Scenario Outline Row", outlineScenarioRowNode,
+                Collections.singletonList(outlineScenarioRowNode.getBasicScenarioNode()));
+    }
+
+    public JsonObject visit(SubstepNode substepNode) {
+
+        return createBasicDetailsWithChildDetails("Step", substepNode, substepNode.getSubsteps());
+    }
+
+    public JsonObject visit(StepImplementationNode stepImplementationNode) {
+
+        JsonObject json = createBasicDetails("Step", stepImplementationNode);
+        addLinkToScreenshot(stepImplementationNode.getResult(), json);
+
+        String methodInfo = createMethodInfo(stepImplementationNode);
+
+        json.addProperty("method", methodInfo);
+
+        return json;
+    }
+
+    private JsonObject createBasicDetailsWithChildDetails(String nodeType, ExecutionNode node,
+            List<? extends ExecutionNode> childNodes) {
+
+        JsonObject json = createBasicDetails(nodeType, node);
+        addDetailsForChildren(json, childNodes);
+
+        return json;
+    }
+
+    public JsonObject createBasicDetails(String nodeType, ExecutionNode node) {
+
         JsonObject thisNode = new JsonObject();
 
-        thisNode.addProperty("nodetype", node.getType());
+        thisNode.addProperty("nodetype", nodeType);
         thisNode.addProperty("filename", node.getFilename());
         thisNode.addProperty("result", node.getResult().getResult().toString());
         thisNode.addProperty("id", node.getId());
@@ -94,22 +145,11 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor {
         thisNode.addProperty("runningDurationMillis", node.getResult().getRunningDuration());
         thisNode.addProperty("runningDurationString", convert(node.getResult().getRunningDuration()));
 
-        addLinkToScreenshot(node.getResult(), thisNode);
-
-        String methodInfo = createMethodInfo(node);
-
-        thisNode.addProperty("method", methodInfo);
-
         String description = node.getDescription() == null ? null : node.getDescription().trim();
         String descriptionEscaped = replaceNewLines(StringEscapeUtils.escapeHtml4(description));
 
         thisNode.addProperty("description", descriptionEscaped);
 
-        JsonArray children = new JsonArray();
-        if (node.hasChildren()) {
-            addDetailsForChildren(node, children);
-        }
-        thisNode.add("children", children);
         return thisNode;
     }
 
@@ -132,8 +172,13 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor {
         return formatter.print(duration.toPeriod());
     }
 
-    private void addDetailsForChildren(ExecutionNode node, JsonArray children) {
-        for (ExecutionNode childNode : node.getChildren()) {
+    private void addDetailsForChildren(JsonObject json, List<? extends ExecutionNode> childNodes) {
+
+        JsonArray children = new JsonArray();
+        json.add("children", children);
+
+        for (ExecutionNode childNode : childNodes) {
+
             JsonObject childObject = new JsonObject();
             childObject.addProperty("result", childNode.getResult().getResult().toString());
             childObject.addProperty("description", StringEscapeUtils.escapeHtml4(childNode.getDescription()));
@@ -141,7 +186,7 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor {
         }
     }
 
-    private String createMethodInfo(ExecutionNode node) {
+    private String createMethodInfo(StepImplementationNode node) {
 
         final StringBuilder methodInfoBuffer = new StringBuilder();
         node.appendMethodInfo(methodInfoBuffer);

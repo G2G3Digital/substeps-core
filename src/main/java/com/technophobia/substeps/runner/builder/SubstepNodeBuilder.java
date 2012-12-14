@@ -1,22 +1,4 @@
-/*
- *	Copyright Technophobia Ltd 2012
- *
- *   This file is part of Substeps.
- *
- *    Substeps is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU Lesser General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    Substeps is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public License
- *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
- */
-package com.technophobia.substeps.runner;
+package com.technophobia.substeps.runner.builder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -32,173 +14,48 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.execution.Feature;
+import com.google.common.collect.Lists;
+import com.technophobia.substeps.execution.node.StepImplementationNode;
+import com.technophobia.substeps.execution.node.StepNode;
+import com.technophobia.substeps.execution.node.SubstepNode;
 import com.technophobia.substeps.model.ExampleParameter;
-import com.technophobia.substeps.model.FeatureFile;
 import com.technophobia.substeps.model.ParentStep;
 import com.technophobia.substeps.model.PatternMap;
-import com.technophobia.substeps.model.Scenario;
 import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.StepImplementation;
 import com.technophobia.substeps.model.SubSteps.StepParameter;
 import com.technophobia.substeps.model.Util;
 import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import com.technophobia.substeps.model.parameter.Converter;
+import com.technophobia.substeps.runner.TestParameters;
 
-/**
- * @author ian
- * 
- */
-public class ExecutionNodeTreeBuilder {
-    private final Logger log = LoggerFactory.getLogger(ExecutionNodeTreeBuilder.class);
 
+public class SubstepNodeBuilder {
+
+    private static final Logger log = LoggerFactory.getLogger(ScenarioNodeBuilder.class);
     private final TestParameters parameters;
 
+    SubstepNodeBuilder(TestParameters parameters) {
 
-    public ExecutionNodeTreeBuilder(final TestParameters parameters) {
         this.parameters = parameters;
     }
-
-
-    public ExecutionNode buildExecutionNodeTree() {
-
-        final ExecutionNode theRootNode = new ExecutionNode();
-
-        for (final FeatureFile ff : parameters.getFeatureFileList()) {
-
-            buildExecutionNodesForFeature(ff, theRootNode);
-        }
-        return theRootNode;
-    }
-
-
-    /**
-     * @param notifier
-     * @param ff
-     */
-    private void buildExecutionNodesForFeature(final FeatureFile ff, final ExecutionNode rootNode) {
-
-        if (parameters.isRunnable(ff)) {
-
-            final Feature feature = new Feature(ff.getName(), ff.getSourceFile().getName());
-
-            final ExecutionNode featureNode = new ExecutionNode();
-            featureNode.setFileUri(ff.getSourceFile().getAbsolutePath());
-            // The start of the file seems an appropriate place. 
-            featureNode.setLineNumber(0);
-            rootNode.addChild(featureNode);
-
-            featureNode.setFeature(feature);
-
-            featureNode.setTags(ff.getTags());
-
-            for (final Scenario sc : ff.getScenarios()) {
-
-                buildExectionNodeForScenario(sc, featureNode);
-            }
-        } else {
-            log.debug("feature not runnable: " + ff.toString());
-        }
-    }
-
-
-    // TODO - to turn off - @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    private void buildExectionNodeForScenario(final Scenario scenario, final ExecutionNode featureNode) {
-        if (scenario != null) {
-
-            if (parameters.isRunnable(scenario)) {
-
-                final ExecutionNode scenarioNode = new ExecutionNode();
-                featureNode.addChild(scenarioNode);
-
-                scenarioNode.setScenarioName(scenario.getDescription());
-                scenarioNode.setTags(scenario.getTags());
-
-                try {
-                    if (scenario.isOutline()) {
-
-                        log.debug("building scenario outline tree");
-
-                        int idx = 0;
-                        for (final ExampleParameter outlineParameters : scenario.getExampleParameters()) {
-                            // invoke the scenario with these parameters as a
-                            // context
-
-                            final ExecutionNode scenarioOutlineNode = new ExecutionNode();
-                            scenarioNode.addChild(scenarioOutlineNode);
-                            scenarioNode.setOutline(true);
-                            scenarioOutlineNode.setRowNumber(idx);
-
-                            buildExectionNodeForScenario(scenario, outlineParameters, scenarioOutlineNode);
-                            idx++;
-                        }
-                    }
-
-                    else {
-
-                        buildExectionNodeForScenario(scenario, null, scenarioNode);
-                    }
-                } catch (final Throwable t) {
-
-                    // something has gone wrong parsing this scenario, no point
-                    // running it so mark it as failed now
-                    scenarioNode.getResult().setFailedToParse(t);
-
-                    if (parameters.isFailParseErrorsImmediately()) {
-
-                        throw new SubstepsConfigurationException(t);
-                    }
-                }
-
-            } else {
-                log.debug("scenario not runnable: " + scenario.toString());
-            }
-        }
-    }
-
-
-    public void buildExectionNodeForScenario(final Scenario scenario, final ExampleParameter scenarioParameters,
-            final ExecutionNode scenarioNode) {
-        if (scenario.hasBackground()) {
-            log.debug("building scenario background steps");
-
-            processListOfSteps(scenario.getBackground().getSteps(), parameters.getSyntax().getSubStepsMap(), null,
-                    false, scenarioParameters, scenarioNode);
-        }
-
-        if (scenario.getSteps() != null && !scenario.getSteps().isEmpty()) {
-            log.debug("processing scenario: [" + scenario.getDescription() + "] steps");
-
-            processListOfSteps(scenario.getSteps(), parameters.getSyntax().getSubStepsMap(), null, true,
-                    scenarioParameters, scenarioNode);
-        }
-    }
-
-
-    private void processListOfSteps(final List<Step> steps, final PatternMap<ParentStep> subStepsMapLocal,
-            final ParentStep parent, final boolean nonBackground, final ExampleParameter parametersForSteps,
-            final ExecutionNode scenarioNode) {
+    
+    public SubstepNode build(final List<Step> steps, final PatternMap<ParentStep> subStepsMapLocal,
+            final ParentStep parent, final ExampleParameter parametersForSteps, boolean throwExceptionIfUnableToBuildMethodArgs) {
 
         if (steps == null || steps.isEmpty()) {
 
-            throw new SubstepsConfigurationException("Scenario: " + scenarioNode.getDebugStringForThisNode()
-                    + " has no steps");
+            // TODO how can we throw this?
+            // throw new SubstepsConfigurationException("Scenario: " +
+            // scenarioNode.getDebugStringForThisNode()
+            // + " has no steps");
         }
 
+        List<StepNode> substeps = Lists.newArrayList();
+        
         for (final Step step : steps) {
 
-            substituteStepParameters(parametersForSteps, step);
-
-            final ExecutionNode stepNode = new ExecutionNode();
-
-            if (nonBackground) {
-                scenarioNode.addChild(stepNode);
-                // ie 'real'
-            } else {
-                // ie background
-                scenarioNode.addBackground(stepNode);
-            }
+            substituteStepParametersIntoStep(parametersForSteps, step);
 
             // is this step defined as a root of some sub steps, ie a parent?
             ParentStep substepsParent = null;
@@ -209,16 +66,10 @@ public class ExecutionNodeTreeBuilder {
 
             if (substepsParent != null) {
 
-                // these are the child steps we want to execute
-
                 substepsParent.initialiseParamValues(-1, step.getParameterLine());
 
                 final ExampleParameter parametersForSubSteps = substepsParent.getParamValueMap();
 
-                stepNode.setLine(substepsParent.getParent().getParameterLine());
-                stepNode.setFileUri(substepsParent.getSubStepFileUri()); 
-                stepNode.setLineNumber(substepsParent.getSourceLineNumber());
-                		
                 final List<StepImplementation> list = parameters.getSyntax().checkForStepImplementations(
                         step.getKeyword(), step.getParameterLine());
 
@@ -238,22 +89,23 @@ public class ExecutionNodeTreeBuilder {
 
                 }
 
-                processListOfSteps(substepsParent.getSteps(), subStepsMapLocal, substepsParent, nonBackground,
-                        parametersForSubSteps, stepNode);
+                SubstepNode substepNode = build(substepsParent.getSteps(), subStepsMapLocal, substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs);
+                
+                substepNode.setLine(substepsParent.getParent().getParameterLine());
+                substepNode.setFileUri(substepsParent.getSubStepFileUri());
+                substepNode.setLineNumber(substepsParent.getSourceLineNumber());
+                
+                substeps.add(substepNode);
 
             } else {
 
-                executeStep(parent, nonBackground, step, stepNode);
+                substeps.add(buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs));
             }
         }
+        
+        return new SubstepNode(substeps);
     }
 
-
-    /**
-     * @param subStepsMapLocal
-     * @param step
-     * @return
-     */
     private ParentStep locateSubStepsParent(final PatternMap<ParentStep> subStepsMapLocal, final Step step) {
         ParentStep substepsParent = subStepsMapLocal.get(step.getLine(), 0);
 
@@ -281,8 +133,7 @@ public class ExecutionNodeTreeBuilder {
         return substepsParent;
     }
 
-
-    public void substituteStepParameters(final ExampleParameter parametersForSteps, final Step step) {
+    public void substituteStepParametersIntoStep(final ExampleParameter parametersForSteps, final Step step) {
         // if this is an outline, need to perform token replacement at this
         // level before passing down the chain
         if (parametersForSteps != null && !parametersForSteps.getParameters().isEmpty()) {
@@ -312,54 +163,54 @@ public class ExecutionNodeTreeBuilder {
         }
     }
 
+    public StepImplementationNode buildStepImplementationNode(final ParentStep parent, final Step step, boolean throwExceptionIfUnableToBuildMethodArgs) {
 
-    public void executeStep(final ParentStep parent, final boolean throwException, final Step step,
-            final ExecutionNode stepNode) {
-
+        
         log.debug("looking for impl for step: " + step.toString());
 
         if (parent != null && parent.getParamValueMap() != null) {
             step.setParameterLine(substitutePlaceholders(step.getLine(), parent.getParamValueMap().getParameters()));
         }
 
-        stepNode.setLine(step.getParameterLine());
 
         final StepImplementation execImpl = pickImplToExecute(step);
 
         if (execImpl != null) {
 
-            stepNode.setTargetClass(execImpl.getImplementedIn());
-            stepNode.setTargetMethod(execImpl.getMethod());
-            stepNode.setFileUri(step.getSource().getAbsolutePath());
-            stepNode.setLineNumber(step.getSourceLineNumber());
+            StepImplementationNode stepImplementationNode = new StepImplementationNode(execImpl.getImplementedIn(), execImpl.getMethod());
+
+            stepImplementationNode.setLine(step.getParameterLine());
+            stepImplementationNode.setFileUri(step.getSource().getAbsolutePath());
+            stepImplementationNode.setLineNumber(step.getSourceLineNumber());
 
             try {
                 setMethodParameters(execImpl, step.getParameterLine(), parent, step.getSubstitutedInlineTable(),
-                        stepNode);
+                        stepImplementationNode);
 
             } catch (final Throwable e) {
 
-                if (throwException) {
+                if (throwExceptionIfUnableToBuildMethodArgs) {
                     throw new RuntimeException(e);
                 } else {
                     log.debug(e.getMessage(), e);
                 }
             } finally {
+                
                 // need to clear this out for the next time around
                 step.setParameterLine(null);
             }
+            
+            return stepImplementationNode;
+            
         } else {
+
             log.error("Unable to locate an implementation for the step: " + step.toDebugString());
 
-            final SubstepsConfigurationException e = new SubstepsConfigurationException(
+            throw new SubstepsConfigurationException(
                     "Unable to locate an implementation for the step: " + step.toDebugString() + " in "
                             + step.getSource());
-
-            throw e;
-
         }
     }
-
 
     private StepImplementation pickImplToExecute(final Step step) {
 
@@ -388,9 +239,8 @@ public class ExecutionNodeTreeBuilder {
         return impl;
     }
 
-
     private void setMethodParameters(final StepImplementation execImpl, final String stepParameter,
-            final ParentStep parent, final List<Map<String, String>> inlineTable, final ExecutionNode stepNode)
+            final ParentStep parent, final List<Map<String, String>> inlineTable, final StepImplementationNode stepNode)
             throws IllegalArgumentException {
 
         final Method stepImplementationMethod = execImpl.getMethod();
@@ -416,11 +266,10 @@ public class ExecutionNodeTreeBuilder {
         }
     }
 
-
     private Object[] getStepMethodArguments(final String stepParameter, final Map<String, String> parentArguments,
             final String stepImplementationPattern, final List<Map<String, String>> inlineTable,
             final Class<?>[] parameterTypes, final Class<? extends Converter<?>>[] converterTypes,
-            final ExecutionNode stepNode) {
+            final StepImplementationNode stepNode) {
         // does the stepParameter contain any <> which require substitution ?
         log.debug("getStepMethodArguments for: " + stepParameter);
 
@@ -449,7 +298,6 @@ public class ExecutionNodeTreeBuilder {
         return arguments;
     }
 
-
     private Class<? extends Converter<?>>[] getParameterConverters(final Method method) {
 
         final Annotation[][] annotations = method.getParameterAnnotations();
@@ -467,7 +315,6 @@ public class ExecutionNodeTreeBuilder {
 
         return result;
     }
-
 
     public String substitutePlaceholders(final String stepParameter, final Map<String, String> parentArguments) {
         // is there anything to replace?
@@ -504,5 +351,6 @@ public class ExecutionNodeTreeBuilder {
 
         return rtn;
     }
+
 
 }

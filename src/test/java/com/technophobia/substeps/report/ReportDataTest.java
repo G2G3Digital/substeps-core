@@ -19,10 +19,13 @@
 
 package com.technophobia.substeps.report;
 
+import java.util.Collections;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.execution.node.RootNode;
 
 /**
  * @author ian
@@ -33,7 +36,7 @@ public class ReportDataTest {
     @Ignore("work in progress")
     @Test
     public void testCounts() {
-        final ExecutionNode root = new ExecutionNode();
+        final RootNode root = new RootNode(Collections.<FeatureNode>emptyList());
 
         final ReportData data = new ReportData();
         data.addRootExecutionNode(root);

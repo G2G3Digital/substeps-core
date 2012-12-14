@@ -21,7 +21,9 @@ package com.technophobia.substeps.report;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
+import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.RootNode;
 
 /**
  * @author ian
@@ -29,24 +31,24 @@ import com.technophobia.substeps.execution.ExecutionNode;
  */
 class ReportData {
 
-    private List<ExecutionNode> rootNodes;
+    private List<RootNode> rootNodes;
 
-    public void addRootExecutionNode(final ExecutionNode node) {
+    public void addRootExecutionNode(final RootNode node) {
         if (rootNodes == null) {
-            rootNodes = new ArrayList<ExecutionNode>();
+            rootNodes = new ArrayList<RootNode>();
         }
         rootNodes.add(node);
     }
 
-    private void flattenTree(final List<ExecutionNode> nodeList, final ExecutionNode node) {
+    private List<ExecutionNode> flattenTree(final ExecutionNode node) {
 
-        nodeList.add(node);
-
-        if (node.hasChildren()) {
-            for (final ExecutionNode child : node.getChildren()) {
-                flattenTree(nodeList, child);
+        return node.accept(new AbstractExecutionNodeVisitor<ExecutionNode>() {
+            
+            @Override
+            public ExecutionNode visit(ExecutionNode node) {
+                return node;
             }
-        }
+        });
     }
 
     /**
@@ -57,7 +59,7 @@ class ReportData {
         final List<ExecutionNode> nodeList = new ArrayList<ExecutionNode>();
 
         for (final ExecutionNode rootNode : this.rootNodes) {
-            flattenTree(nodeList, rootNode);
+            nodeList.addAll(flattenTree(rootNode));
         }
 
         return nodeList;
@@ -66,7 +68,7 @@ class ReportData {
     /**
      * @return the rootNodes
      */
-    public List<ExecutionNode> getRootNodes() {
+    public List<RootNode> getRootNodes() {
         return rootNodes;
     }
 

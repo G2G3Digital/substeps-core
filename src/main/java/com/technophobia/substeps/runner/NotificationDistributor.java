@@ -3,7 +3,7 @@ package com.technophobia.substeps.runner;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.node.ExecutionNode;
 
 /*
  *	Copyright Technophobia Ltd 2012

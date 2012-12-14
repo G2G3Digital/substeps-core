@@ -21,8 +21,8 @@ package com.technophobia.substeps.report;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.ExecutionNodeResult;
+import com.technophobia.substeps.execution.node.ExecutionNode;
 
 /**
  * @author ian

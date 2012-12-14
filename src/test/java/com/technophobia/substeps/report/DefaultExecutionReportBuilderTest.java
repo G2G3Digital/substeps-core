@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.technophobia.substeps.execution.ExecutionNode;
 import com.technophobia.substeps.execution.Feature;
+import com.technophobia.substeps.execution.node.BasicScenarioNode;
+import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.execution.node.RootNode;
+import com.technophobia.substeps.execution.node.ScenarioNode;
+import com.technophobia.substeps.execution.node.StepImplementationNode;
+import com.technophobia.substeps.execution.node.StepNode;
+import com.technophobia.substeps.execution.node.SubstepNode;
 
 /**
  * @author ian
@@ -67,7 +75,7 @@ public class DefaultExecutionReportBuilderTest {
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
 
-    ExecutionNode rootNode;
+    RootNode rootNode;
 
     List<ExecutionNode> featureNodes = Lists.newArrayList();
 
@@ -75,7 +83,7 @@ public class DefaultExecutionReportBuilderTest {
 
     List<ExecutionNode> stepNodes = Lists.newArrayList();
 
-    private Integer nodeIdOffset;
+    private Integer nodeIdOffset = Integer.MAX_VALUE;
 
     private String arrayCreationLine;
 
@@ -100,6 +108,38 @@ public class DefaultExecutionReportBuilderTest {
         builder = new DefaultExecutionReportBuilder();
         builder.setOutputDirectory(testFolder.getRoot());
 
+        rootNode = createRootNode();
+
+        builder.addRootExecutionNode(rootNode);
+
+
+
+    }
+
+    private RootNode createRootNode() {
+
+        return new RootNode(Collections.singletonList(createFeature(FEATURE_NAME, "test file")));
+    }
+
+    private FeatureNode createFeature(String name, String fileName) {
+
+        final Feature feature = new Feature(name, fileName);
+        final FeatureNode featureNode = new FeatureNode(feature, Collections.singletonList(createScenario(SCENARIO_NAME)));
+        featureNodes.add(featureNode);
+
+        return featureNode;
+    }
+
+    private ScenarioNode createScenario(String scenarioName) {
+
+        SubstepNode stepImpl = createSubstepNode();
+        ScenarioNode scenarioNode = new BasicScenarioNode(scenarioName, null, stepImpl);
+        scenarioNodes.add(scenarioNode);
+        return scenarioNode;
+    }
+
+    private SubstepNode createSubstepNode() {
+
         Method nonFailMethod = null;
         Method failMethod = null;
         try {
@@ -111,50 +151,21 @@ public class DefaultExecutionReportBuilderTest {
         Assert.assertNotNull(nonFailMethod);
         Assert.assertNotNull(failMethod);
 
-        rootNode = new ExecutionNode();
+        StepNode stepImpl1 = createStep(this.getClass(), nonFailMethod, STEP_NODE + "1");
+        StepNode stepImpl2 = createStep(this.getClass(), failMethod, STEP_NODE + "2");
+        StepNode stepImpl3 = createStep(this.getClass(), nonFailMethod, STEP_NODE + "3");
 
-        builder.addRootExecutionNode(rootNode);
-
-        ExecutionNode feature = addFeature(rootNode, FEATURE_NAME, "test file");
-        ExecutionNode scenario = addScenario(feature, SCENARIO_NAME);
-
-        addStep(scenario, this.getClass(), nonFailMethod, STEP_NODE + "1");
-        addStep(scenario, this.getClass(), failMethod, STEP_NODE + "2");
-        addStep(scenario, this.getClass(), nonFailMethod, STEP_NODE + "3");
-
+        return new SubstepNode(Lists.newArrayList(stepImpl1, stepImpl2, stepImpl3));
     }
 
-    private ExecutionNode addFeature(ExecutionNode node, String name, String fileName) {
+    private StepImplementationNode createStep(Class<?> stepClass, Method stepMethod, String stepLine) {
 
-        final ExecutionNode featureNode = new ExecutionNode();
-        final Feature feature = new Feature(name, fileName);
-        featureNodes.add(featureNode);
-        featureNode.setFeature(feature);
-        node.addChild(featureNode);
-
-        return featureNode;
-    }
-
-    private ExecutionNode addScenario(ExecutionNode feature, String scenarioName) {
-
-        ExecutionNode scenarioNode = new ExecutionNode();
-        scenarioNodes.add(scenarioNode);
-        scenarioNode.setScenarioName(scenarioName);
-        scenarioNode.setOutline(true);
-        feature.addChild(scenarioNode);
-        return scenarioNode;
-    }
-
-    private void addStep(ExecutionNode scenario, Class<?> stepClass, Method stepMethod, String stepLine) {
-
-        final ExecutionNode stepNode = new ExecutionNode();
+        final StepImplementationNode stepNode = new StepImplementationNode(stepClass, stepMethod);
         stepNode.getResult().setStarted();
         stepNodes.add(stepNode);
         stepNode.setLine(stepLine);
-        stepNode.setTargetClass(stepClass);
-        stepNode.setTargetMethod(stepMethod);
-        scenario.addChild(stepNode);
         stepNode.getResult().setFinished();
+        return stepNode;
     }
 
     @Test
@@ -166,12 +177,12 @@ public class DefaultExecutionReportBuilderTest {
 
         Assert.assertEquals("The array creation line was not as expected", ARRAY_CREATION_LINE, arrayCreationLine);
         assertThereAreAsManyDetailsInTheReportAsNodesCreated();
-        assertRootNodeAsExpected(1 + nodeIdOffset);
-        assertFeatureNodeAsExpected(2 + nodeIdOffset);
-        assertScenarioNodeAsExpected(3 + nodeIdOffset);
-        assertStepNodeAsExpected(4 + nodeIdOffset, STEP_NODE + "1");
-        assertStepNodeAsExpected(5 + nodeIdOffset, STEP_NODE + "2");
-        assertStepNodeAsExpected(6 + nodeIdOffset, STEP_NODE + "3");
+        assertRootNodeAsExpected(7 + nodeIdOffset);
+        assertFeatureNodeAsExpected(6 + nodeIdOffset);
+        assertScenarioNodeAsExpected(5 + nodeIdOffset);
+        assertStepNodeAsExpected(3 + nodeIdOffset, STEP_NODE + "3");
+        assertStepNodeAsExpected(2 + nodeIdOffset, STEP_NODE + "2");
+        assertStepNodeAsExpected(1 + nodeIdOffset, STEP_NODE + "1");
     }
 
     private void assertRootNodeAsExpected(int index) {
@@ -231,8 +242,7 @@ public class DefaultExecutionReportBuilderTest {
         assertBasics(index, stepNode, "Step", PASSED);
         Assert.assertEquals(description, stepNode.get(DESCRIPTION).getAsString());
 
-        JsonArray children = stepNode.getAsJsonArray("children");
-        Assert.assertEquals(0, children.size());
+        Assert.assertFalse(stepNode.has("children"));
     }
 
     private void assertBasics(int index, JsonObject node, String nodeType, String result) {
@@ -245,7 +255,7 @@ public class DefaultExecutionReportBuilderTest {
 
     private void assertThereAreAsManyDetailsInTheReportAsNodesCreated() {
 
-        int numberOfNodes = 1 + featureNodes.size() + scenarioNodes.size() + stepNodes.size();
+        int numberOfNodes = 1 + featureNodes.size() + (scenarioNodes.size() * 2) + stepNodes.size();
 
         Assert.assertEquals("There should have been a detail line for each node", numberOfNodes, details.size());
     }
@@ -293,9 +303,7 @@ public class DefaultExecutionReportBuilderTest {
 
                 int indexInt = Integer.valueOf(index);
 
-                if (nodeIdOffset == null) {
-                    nodeIdOffset = indexInt - 1;
-                }
+                nodeIdOffset = indexInt < nodeIdOffset ? indexInt - 1 : nodeIdOffset;
 
                 details.put(indexInt, json);
             }

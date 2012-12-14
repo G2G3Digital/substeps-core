@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.technophobia.substeps.execution.ExecutionNode;
+import com.technophobia.substeps.execution.node.ExecutionNode;
 
 /**
  * @author ian
@@ -59,14 +59,10 @@ public class ExecutionStats {
                     testStats.add(testStatSet);
                 }
             }
+
             for (final TestCounterSet testStatSet : testStats) {
-                if (node.isFeature()) {
-                    testStatSet.getFeatureStats().apply(node);
-                } else if (node.isScenario()) {
-                    testStatSet.getScenarioStats().apply(node);
-                } else if (node.isStep()) {
-                    testStatSet.getScenarioStepStats().apply(node);
-                }
+                
+                node.dispatch(testStatSet);
             }
         }
     }

@@ -202,5 +202,11 @@ public class Scenario extends RootFeature {
     public void setSourceStartLineNumber(final int sourceStartLineNumber) {
         this.sourceStartLineNumber = sourceStartLineNumber;
     }
+    
+    public boolean hasSteps() {
+        
+        return steps != null && !steps.isEmpty();
+        
+    }
 
 }

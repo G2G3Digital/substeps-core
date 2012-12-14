@@ -28,11 +28,12 @@ import javax.management.NotificationBroadcasterSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.runner.SubstepsExecutionConfig;
+import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.runner.ExecutionNodeRunner;
 import com.technophobia.substeps.runner.INotifier;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
+import com.technophobia.substeps.runner.SubstepsExecutionConfig;
 
 /**
  * @author ian
@@ -162,7 +163,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
         doNotification(node);
     }
 
-    public ExecutionNode getRootNode() {
+    public RootNode getRootNode() {
 
         return this.nodeRunner.getRootNode();
     }
