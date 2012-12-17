@@ -11,7 +11,9 @@ import java.util.Properties;
  */
 abstract class ExecutionConfigDecorator extends SubstepsExecutionConfig {
 
-    private SubstepsExecutionConfig decoratedConfig;
+    private static final long serialVersionUID = 1L;
+
+    private final SubstepsExecutionConfig decoratedConfig;
 
     protected ExecutionConfigDecorator(SubstepsExecutionConfig executionConfig) {
         this.decoratedConfig = executionConfig;

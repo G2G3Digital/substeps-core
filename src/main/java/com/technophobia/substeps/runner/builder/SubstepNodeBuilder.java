@@ -29,7 +29,6 @@ import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import com.technophobia.substeps.model.parameter.Converter;
 import com.technophobia.substeps.runner.TestParameters;
 
-
 public class SubstepNodeBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(ScenarioNodeBuilder.class);
@@ -39,20 +38,18 @@ public class SubstepNodeBuilder {
 
         this.parameters = parameters;
     }
-    
-    public SubstepNode build(final List<Step> steps, final PatternMap<ParentStep> subStepsMapLocal,
-            final ParentStep parent, final ExampleParameter parametersForSteps, boolean throwExceptionIfUnableToBuildMethodArgs) {
+
+    public SubstepNode build(String scenarioDescription, final List<Step> steps,
+            final PatternMap<ParentStep> subStepsMapLocal, final ParentStep parent,
+            final ExampleParameter parametersForSteps, boolean throwExceptionIfUnableToBuildMethodArgs, int depth) {
 
         if (steps == null || steps.isEmpty()) {
 
-            // TODO how can we throw this?
-            // throw new SubstepsConfigurationException("Scenario: " +
-            // scenarioNode.getDebugStringForThisNode()
-            // + " has no steps");
+            throw new SubstepsConfigurationException("There are no steps for " + scenarioDescription + " or a substep");
         }
 
         List<StepNode> substeps = Lists.newArrayList();
-        
+
         for (final Step step : steps) {
 
             substituteStepParametersIntoStep(parametersForSteps, step);
@@ -89,21 +86,23 @@ public class SubstepNodeBuilder {
 
                 }
 
-                SubstepNode substepNode = build(substepsParent.getSteps(), subStepsMapLocal, substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs);
-                
+                SubstepNode substepNode = build(scenarioDescription, substepsParent.getSteps(), subStepsMapLocal,
+                        substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs, depth + 1);
+
                 substepNode.setLine(substepsParent.getParent().getParameterLine());
                 substepNode.setFileUri(substepsParent.getSubStepFileUri());
                 substepNode.setLineNumber(substepsParent.getSourceLineNumber());
-                
+
                 substeps.add(substepNode);
 
             } else {
 
-                substeps.add(buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs));
+                substeps.add(buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs,
+                        depth + 1));
             }
         }
-        
-        return new SubstepNode(substeps);
+
+        return new SubstepNode(substeps, depth);
     }
 
     private ParentStep locateSubStepsParent(final PatternMap<ParentStep> subStepsMapLocal, final Step step) {
@@ -163,21 +162,21 @@ public class SubstepNodeBuilder {
         }
     }
 
-    public StepImplementationNode buildStepImplementationNode(final ParentStep parent, final Step step, boolean throwExceptionIfUnableToBuildMethodArgs) {
+    public StepImplementationNode buildStepImplementationNode(final ParentStep parent, final Step step,
+            boolean throwExceptionIfUnableToBuildMethodArgs, int depth) {
 
-        
         log.debug("looking for impl for step: " + step.toString());
 
         if (parent != null && parent.getParamValueMap() != null) {
             step.setParameterLine(substitutePlaceholders(step.getLine(), parent.getParamValueMap().getParameters()));
         }
 
-
         final StepImplementation execImpl = pickImplToExecute(step);
 
         if (execImpl != null) {
 
-            StepImplementationNode stepImplementationNode = new StepImplementationNode(execImpl.getImplementedIn(), execImpl.getMethod());
+            StepImplementationNode stepImplementationNode = new StepImplementationNode(execImpl.getImplementedIn(),
+                    execImpl.getMethod(), depth);
 
             stepImplementationNode.setLine(step.getParameterLine());
             stepImplementationNode.setFileUri(step.getSource().getAbsolutePath());
@@ -195,20 +194,19 @@ public class SubstepNodeBuilder {
                     log.debug(e.getMessage(), e);
                 }
             } finally {
-                
+
                 // need to clear this out for the next time around
                 step.setParameterLine(null);
             }
-            
+
             return stepImplementationNode;
-            
+
         } else {
 
             log.error("Unable to locate an implementation for the step: " + step.toDebugString());
 
-            throw new SubstepsConfigurationException(
-                    "Unable to locate an implementation for the step: " + step.toDebugString() + " in "
-                            + step.getSource());
+            throw new SubstepsConfigurationException("Unable to locate an implementation for the step: "
+                    + step.toDebugString() + " in " + step.getSource());
         }
     }
 
@@ -303,6 +301,7 @@ public class SubstepNodeBuilder {
         final Annotation[][] annotations = method.getParameterAnnotations();
         final int size = annotations.length;
 
+        @SuppressWarnings("unchecked")
         final Class<? extends Converter<?>>[] result = new Class[size];
 
         for (int i = 0; i < size; i++) {
@@ -351,6 +350,5 @@ public class SubstepNodeBuilder {
 
         return rtn;
     }
-
 
 }

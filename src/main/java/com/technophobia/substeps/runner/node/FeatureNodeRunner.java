@@ -20,9 +20,9 @@ public class FeatureNodeRunner extends AbstractNodeRunner<FeatureNode, Boolean> 
 
         this.context = context;
         
-        boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getScenarios(), context);
+        boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getChildren(), context);
         
-        for (ScenarioNode scenario : node.getScenarios()) {
+        for (ScenarioNode<?> scenario : node.getChildren()) {
             
             success &= scenario.dispatch(this);
         }

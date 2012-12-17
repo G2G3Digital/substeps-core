@@ -26,25 +26,27 @@ import com.technophobia.substeps.execution.node.SubstepNode;
 public class TestCounterSet extends AbstractExecutionNodeVisitor<Void> {
 
     private String tag = null;
-    
+
     private TestCounters featureStats = new TestCounters();
     private TestCounters scenarioStats = new TestCounters();
     private TestCounters scenarioStepStats = new TestCounters();
 
+    @Override
     public Void visit(FeatureNode featureNode) {
 
         featureStats.apply(featureNode);
         return null;
     }
 
-    public Void visit(ScenarioNode scenarioNode) {
+    public Void visit(ScenarioNode<?> scenarioNode) {
 
         scenarioStats.apply(scenarioNode);
         return null;
     }
 
+    @Override
     public Void visit(SubstepNode substepNode) {
-        
+
         scenarioStepStats.apply(substepNode);
         return null;
     }
@@ -53,36 +55,29 @@ public class TestCounterSet extends AbstractExecutionNodeVisitor<Void> {
         return tag;
     }
 
-
     public void setTag(final String tag) {
         this.tag = tag;
     }
-
 
     public TestCounters getFeatureStats() {
         return featureStats;
     }
 
-
     public void setFeatureStats(final TestCounters featureStats) {
         this.featureStats = featureStats;
     }
-
 
     public TestCounters getScenarioStats() {
         return scenarioStats;
     }
 
-
     public void setScenarioStats(final TestCounters scenarioStats) {
         this.scenarioStats = scenarioStats;
     }
 
-
     public TestCounters getScenarioStepStats() {
         return scenarioStepStats;
     }
-
 
     public void setScenarioStepStats(final TestCounters scenarioStepStats) {
         this.scenarioStepStats = scenarioStepStats;

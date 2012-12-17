@@ -6,13 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
-import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.IExecutionNode;
 import com.technophobia.substeps.execution.node.NodeExecutionContext;
 import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.runner.ExecutionContext;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 
-public abstract class AbstractNodeRunner<NODE_TYPE extends ExecutionNode, VISITOR_RETURN_TYPE> extends
+public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISITOR_RETURN_TYPE> extends
         AbstractExecutionNodeVisitor<VISITOR_RETURN_TYPE> {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractNodeRunner.class);
@@ -111,15 +111,15 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends ExecutionNode, VISITO
         }
     }
 
-    protected boolean addExpectedChildrenFailureIfNoChildren(NODE_TYPE node, List<? extends ExecutionNode> children, NodeExecutionContext context) {
+    protected boolean addExpectedChildrenFailureIfNoChildren(NODE_TYPE node, List<? extends IExecutionNode> children,
+            NodeExecutionContext context) {
 
         boolean hasChildren = children != null && !children.isEmpty();
-        if(!hasChildren)
-        {
+        if (!hasChildren) {
             context.addFailure(new SubstepExecutionFailure(new IllegalStateException(
                     "node should have children but doesn't"), node));
         }
-        
+
         return hasChildren;
     }
 

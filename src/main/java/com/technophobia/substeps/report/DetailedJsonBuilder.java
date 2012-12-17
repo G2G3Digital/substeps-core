@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -15,19 +14,16 @@ import org.joda.time.format.PeriodFormatter;
 import com.google.common.io.Files;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
 import com.technophobia.substeps.execution.ExecutionNodeResult;
-import com.technophobia.substeps.execution.ExecutionNodeVisitor;
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.ExecutionNode;
-import com.technophobia.substeps.execution.node.FeatureNode;
-import com.technophobia.substeps.execution.node.OutlineScenarioNode;
-import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
-import com.technophobia.substeps.execution.node.RootNode;
+import com.technophobia.substeps.execution.node.IExecutionNode;
+import com.technophobia.substeps.execution.node.NodeWithChildren;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
-import com.technophobia.substeps.execution.node.SubstepNode;
 import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 
-public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObject> {
+public final class DetailedJsonBuilder extends AbstractExecutionNodeVisitor<JsonObject> {
 
     private final ReportData reportData;
     private final String screenshotFolder;
@@ -78,38 +74,21 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObjec
 
     }
 
-    public JsonObject visit(RootNode rootNode) {
+    @Override
+    public JsonObject visit(NodeWithChildren<?> node) {
 
-        return createBasicDetailsWithChildDetails("Root node", rootNode, rootNode.getFeatures());
+        return createBasicDetailsWithChildDetails(node.getClass().getSimpleName().toString(), node, node.getChildren());
     }
 
-    public JsonObject visit(FeatureNode featureNode) {
-
-        return createBasicDetailsWithChildDetails("Feature", featureNode, featureNode.getScenarios());
-    }
-
+    @Override
     public JsonObject visit(BasicScenarioNode basicScenarioNode) {
 
+        //We want to ignore the step in the middle and instead use its children
         return createBasicDetailsWithChildDetails("Scenario", basicScenarioNode,
-                basicScenarioNode.getStep().getSubsteps());
+                basicScenarioNode.getStep().getChildren());
     }
 
-    public JsonObject visit(OutlineScenarioNode outlineNode) {
-
-        return createBasicDetailsWithChildDetails("Scenario Outline", outlineNode, outlineNode.getOutlineRows());
-    }
-
-    public JsonObject visit(OutlineScenarioRowNode outlineScenarioRowNode) {
-
-        return createBasicDetailsWithChildDetails("Scenario Outline Row", outlineScenarioRowNode,
-                Collections.singletonList(outlineScenarioRowNode.getBasicScenarioNode()));
-    }
-
-    public JsonObject visit(SubstepNode substepNode) {
-
-        return createBasicDetailsWithChildDetails("Step", substepNode, substepNode.getSubsteps());
-    }
-
+    @Override
     public JsonObject visit(StepImplementationNode stepImplementationNode) {
 
         JsonObject json = createBasicDetails("Step", stepImplementationNode);
@@ -122,8 +101,8 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObjec
         return json;
     }
 
-    private JsonObject createBasicDetailsWithChildDetails(String nodeType, ExecutionNode node,
-            List<? extends ExecutionNode> childNodes) {
+    private JsonObject createBasicDetailsWithChildDetails(String nodeType, IExecutionNode node,
+            List<? extends IExecutionNode> childNodes) {
 
         JsonObject json = createBasicDetails(nodeType, node);
         addDetailsForChildren(json, childNodes);
@@ -131,7 +110,7 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObjec
         return json;
     }
 
-    public JsonObject createBasicDetails(String nodeType, ExecutionNode node) {
+    public JsonObject createBasicDetails(String nodeType, IExecutionNode node) {
 
         JsonObject thisNode = new JsonObject();
 
@@ -172,12 +151,12 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObjec
         return formatter.print(duration.toPeriod());
     }
 
-    private void addDetailsForChildren(JsonObject json, List<? extends ExecutionNode> childNodes) {
+    private void addDetailsForChildren(JsonObject json, List<? extends IExecutionNode> childNodes) {
 
         JsonArray children = new JsonArray();
         json.add("children", children);
 
-        for (ExecutionNode childNode : childNodes) {
+        for (IExecutionNode childNode : childNodes) {
 
             JsonObject childObject = new JsonObject();
             childObject.addProperty("result", childNode.getResult().getResult().toString());
@@ -199,7 +178,7 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObjec
         return replaceNewLines(methodInfo);
     }
 
-    private String getExceptionMessage(ExecutionNode node) {
+    private String getExceptionMessage(IExecutionNode node) {
         String exceptionMessage = "";
 
         if (node.getResult().getThrown() != null) {
@@ -213,7 +192,7 @@ public final class DetailedJsonBuilder implements ExecutionNodeVisitor<JsonObjec
         return exceptionMessage;
     }
 
-    private String getStackTrace(ExecutionNode node) {
+    private String getStackTrace(IExecutionNode node) {
         String stackTrace = "";
 
         if (node.getResult().getThrown() != null) {

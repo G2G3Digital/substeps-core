@@ -13,9 +13,9 @@ public class RootNodeRunner extends AbstractNodeRunner<RootNode, Void> {
     @Override
     protected boolean execute(RootNode node, NodeExecutionContext context) {
 
-        boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getFeatures(), context);
+        boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getChildren(), context);
         
-        for(FeatureNode feature : node.getFeatures()) {
+        for(FeatureNode feature : node.getChildren()) {
             
             success &= featureNodeRunner.run(feature, context);
         }

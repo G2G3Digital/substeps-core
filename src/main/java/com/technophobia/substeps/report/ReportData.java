@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
 import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.IExecutionNode;
 import com.technophobia.substeps.execution.node.RootNode;
 
 /**
@@ -40,12 +41,12 @@ class ReportData {
         rootNodes.add(node);
     }
 
-    private List<ExecutionNode> flattenTree(final ExecutionNode node) {
+    private List<IExecutionNode> flattenTree(final IExecutionNode node) {
 
-        return node.accept(new AbstractExecutionNodeVisitor<ExecutionNode>() {
+        return node.accept(new AbstractExecutionNodeVisitor<IExecutionNode>() {
             
             @Override
-            public ExecutionNode visit(ExecutionNode node) {
+            public IExecutionNode visit(IExecutionNode node) {
                 return node;
             }
         });
@@ -54,9 +55,9 @@ class ReportData {
     /**
      * @return the nodeList
      */
-    public List<ExecutionNode> getNodeList() {
+    public List<IExecutionNode> getNodeList() {
 
-        final List<ExecutionNode> nodeList = new ArrayList<ExecutionNode>();
+        final List<IExecutionNode> nodeList = new ArrayList<IExecutionNode>();
 
         for (final ExecutionNode rootNode : this.rootNodes) {
             nodeList.addAll(flattenTree(rootNode));

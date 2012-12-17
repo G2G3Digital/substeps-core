@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.IExecutionNode;
 
 /**
  * @author ian
@@ -42,7 +42,7 @@ public class ExecutionStats {
     private List<TestCounterSet> sortedList = null;
 
     public void buildStats(final ReportData data) {
-        for (final ExecutionNode node : data.getNodeList()) {
+        for (final IExecutionNode node : data.getNodeList()) {
             final List<TestCounterSet> testStats = new ArrayList<TestCounterSet>();
 
             testStats.add(totals);
@@ -61,7 +61,7 @@ public class ExecutionStats {
             }
 
             for (final TestCounterSet testStatSet : testStats) {
-                
+
                 node.dispatch(testStatSet);
             }
         }
@@ -169,7 +169,8 @@ public class ExecutionStats {
      */
     public List<TestCounterSet> getSortedList() {
 
-        if (taggedStats != null) { // FIXME RB Removed && !taggedStats.isEmpty()
+        if (taggedStats != null) {
+
             sortedList = new ArrayList<TestCounterSet>();
             sortedList.addAll(taggedStats.values());
 

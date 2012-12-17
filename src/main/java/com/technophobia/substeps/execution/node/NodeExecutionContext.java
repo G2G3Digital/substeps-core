@@ -1,3 +1,21 @@
+/*
+ *  Copyright Technophobia Ltd 2012
+ *
+ *   This file is part of Substeps.
+ *
+ *    Substeps is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Substeps is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.technophobia.substeps.execution.node;
 
 import java.util.List;
@@ -5,50 +23,46 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.execution.MethodExecutor;
 import com.technophobia.substeps.runner.INotificationDistributor;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 import com.technophobia.substeps.runner.TagManager;
 import com.technophobia.substeps.runner.setupteardown.SetupAndTearDown;
 
-
 public class NodeExecutionContext {
 
     private static final Logger log = LoggerFactory.getLogger(NodeExecutionContext.class);
 
-    
     private boolean testsRun = false;
     private final INotificationDistributor notificationDistributor;
     private final List<SubstepExecutionFailure> failures;
     private final SetupAndTearDown setupAndTeardown;
     private final TagManager nonFatalTagmanager;
-    private final MethodExecutor methodExecutor = new ImplementationCache();
+    private final MethodExecutor methodExecutor;
 
-    
     public NodeExecutionContext(INotificationDistributor notificationDistributor,
-            List<SubstepExecutionFailure> failures, SetupAndTearDown setupAndTeardown, TagManager nonFatalTagmanager) {
+            List<SubstepExecutionFailure> failures, SetupAndTearDown setupAndTeardown, TagManager nonFatalTagmanager,
+            MethodExecutor methodExecutor) {
 
         this.notificationDistributor = notificationDistributor;
         this.failures = failures;
         this.setupAndTeardown = setupAndTeardown;
         this.nonFatalTagmanager = nonFatalTagmanager;
+        this.methodExecutor = methodExecutor;
     }
-    
+
     public INotificationDistributor getNotificationDistributor() {
         return notificationDistributor;
     }
 
-    
     public List<SubstepExecutionFailure> getFailures() {
         return failures;
     }
 
-    
     public SetupAndTearDown getSetupAndTeardown() {
         return setupAndTeardown;
     }
-    
+
     public void addFailure(final SubstepExecutionFailure failure) {
 
         failures.add(failure);
@@ -87,15 +101,12 @@ public class NodeExecutionContext {
                 stackTraceBuilder.append("\tat ").append(failureTrace[i]).append("\n");
             }
 
-            //TODO RB 20121213 This should be using getDebugString
-            log.info("SubstepExecutionFailure @ " + failure.getExeccutionNode().getDescription() + "\n"
+            log.info("SubstepExecutionFailure @ " + failure.getExeccutionNode().toDebugString() + "\n"
                     + stackTraceBuilder.toString());
 
         } else {
             // fallback position - just normal logging
-            //TODO RB 20121213 This should be using getDebugString
-            log.info("SubstepExecutionFailure @ " + failure.getExeccutionNode().getDescription(),
-                    failureCause);
+            log.info("SubstepExecutionFailure @ " + failure.getExeccutionNode().toDebugString(), failureCause);
         }
 
     }
@@ -105,12 +116,12 @@ public class NodeExecutionContext {
     }
 
     public void setTestsHaveRun() {
-        
+
         testsRun = true;
     }
-    
+
     public boolean haveTestsBeenRun() {
-        
+
         return testsRun;
     }
 

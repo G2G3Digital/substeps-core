@@ -42,7 +42,6 @@ import com.google.common.collect.Lists;
 import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.execution.Feature;
 import com.technophobia.substeps.execution.ImplementationCache;
-import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.ExecutionNode;
 import com.technophobia.substeps.execution.node.FeatureNode;
 import com.technophobia.substeps.execution.node.NodeExecutionContext;
@@ -50,9 +49,11 @@ import com.technophobia.substeps.execution.node.OutlineScenarioNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
 import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.execution.node.ScenarioNode;
-import com.technophobia.substeps.execution.node.StepImplementationNode;
-import com.technophobia.substeps.execution.node.StepNode;
-import com.technophobia.substeps.execution.node.SubstepNode;
+import com.technophobia.substeps.execution.node.TestBasicScenarioNodeBuilder;
+import com.technophobia.substeps.execution.node.TestFeatureNodeBuilder;
+import com.technophobia.substeps.execution.node.TestOutlineScenarioNodeBuilder;
+import com.technophobia.substeps.execution.node.TestOutlineScenarioRowNodeBuilder;
+import com.technophobia.substeps.execution.node.TestRootNodeBuilder;
 import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import com.technophobia.substeps.model.exception.UnimplementedStepException;
 import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
@@ -82,8 +83,8 @@ public class ExecutionNodeRunnerTest {
         // check the rootNode tree is in the state we expect
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
 
-        final FeatureNode featureNode = rootNode.getFeatures().get(0);
-        final ScenarioNode scenarioNode = featureNode.getScenarios().get(0);
+        final FeatureNode featureNode = rootNode.getChildren().get(0);
+        final ScenarioNode<?> scenarioNode = featureNode.getChildren().get(0);
 
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
@@ -115,8 +116,8 @@ public class ExecutionNodeRunnerTest {
         // check the rootNode tree is in the state we expect
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
 
-        final FeatureNode featureNode = rootNode.getFeatures().get(0);
-        final ScenarioNode scenarioNode = featureNode.getScenarios().get(0);
+        final FeatureNode featureNode = rootNode.getChildren().get(0);
+        final ScenarioNode<?> scenarioNode = featureNode.getChildren().get(0);
 
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
@@ -156,10 +157,9 @@ public class ExecutionNodeRunnerTest {
         // check the rootNode tree is in the state we expect
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
 
-        final FeatureNode featureNode = rootNode.getFeatures().get(0);
-        final ScenarioNode scenarioNode = featureNode.getScenarios().get(0);
+        final FeatureNode featureNode = rootNode.getChildren().get(0);
 
-        final OutlineScenarioNode scenarioOutlineNode2 = (OutlineScenarioNode) featureNode.getScenarios().get(1); //TODO RB20121213 I expect this won't work, previously it was scenarioNode.getChild(1);
+        final OutlineScenarioNode scenarioOutlineNode2 = (OutlineScenarioNode) featureNode.getChildren().get(1);
 
         Assert.assertThat(scenarioOutlineNode2.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
@@ -257,8 +257,9 @@ public class ExecutionNodeRunnerTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getPrivateField(Object object, String fieldName) {
-        
+
         Field field;
         try {
             field = object.getClass().getDeclaredField(fieldName);
@@ -267,11 +268,11 @@ public class ExecutionNodeRunnerTest {
         } catch (Exception e) {
             Assert.fail(e.getMessage());
             e.printStackTrace();
-            return null; //Unreachable
+            return null; // Unreachable
         }
-        
+
     }
-    
+
     /**
      * If we use a root node with no children, we should get two failures, one
      * for there being no children on a node which should have children, another
@@ -282,12 +283,13 @@ public class ExecutionNodeRunnerTest {
 
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
-        final RootNode node = new RootNode(Collections.<FeatureNode>emptyList());
+        final RootNode node = new RootNode(Collections.<FeatureNode> emptyList());
 
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
 
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor, Lists.<SubstepExecutionFailure>newArrayList(), setupAndTearDown, null);
+        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", node);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
@@ -303,21 +305,22 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(failures.size(), is(2));
     }
-    
+
     @Test
     public void testScenarioOutlineFailsWithNoExamples() {
 
-
-        final OutlineScenarioNode outlineNode = new OutlineScenarioNode("scenarioName", Collections.<OutlineScenarioRowNode>emptyList()); //TODO RB20121213 This shouldn't work
-        final FeatureNode featureNode = new FeatureNode(new Feature("test feature", "file"), Collections.<ScenarioNode>singletonList(outlineNode));
+        final OutlineScenarioNode outlineNode = new OutlineScenarioNode("scenarioName",
+                Collections.<OutlineScenarioRowNode> emptyList(), 2);
+        final FeatureNode featureNode = new FeatureNode(new Feature("test feature", "file"),
+                Collections.<ScenarioNode<?>> singletonList(outlineNode));
         final ExecutionNode rootNode = new RootNode(Collections.singletonList(featureNode));
 
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
-
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor, Lists.<SubstepExecutionFailure>newArrayList(), setupAndTearDown, null);
+        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", rootNode);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
@@ -358,7 +361,7 @@ public class ExecutionNodeRunnerTest {
     }
 
     private Method getNonFailMethod() {
-        
+
         return getMethodOrFail("nonFailingMethod");
     }
 
@@ -366,20 +369,20 @@ public class ExecutionNodeRunnerTest {
 
         return getMethodOrFail("failingMethod");
     }
-    
+
     private Method getMethodOrFail(String method) {
-        
+
         try {
 
             return this.getClass().getMethod(method);
-        
+
         } catch (final Exception e) {
-        
+
             Assert.fail(e.getMessage());
-            return null; //Unreachable
+            return null; // Unreachable
         }
     }
-    
+
     @Test
     public void testStepFailureFailsFeature() {
 
@@ -388,29 +391,28 @@ public class ExecutionNodeRunnerTest {
         Assert.assertNotNull(nonFailMethod);
         Assert.assertNotNull(failMethod);
 
-        final StepImplementationNode stepNode1A = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final StepImplementationNode stepNode1B = new StepImplementationNode(this.getClass(), failMethod);
-        final StepImplementationNode stepNode1C = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final SubstepNode row1SubstepNode = new SubstepNode(Lists.<StepNode>newArrayList(stepNode1A, stepNode1B, stepNode1C));
-        final BasicScenarioNode basicScenarioForRow1 = new BasicScenarioNode("scenarioName", null, row1SubstepNode);
-        final OutlineScenarioRowNode outlineRow1 = new OutlineScenarioRowNode(1, basicScenarioForRow1);
-        
-        final StepImplementationNode stepNode2A = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final StepImplementationNode stepNode2B = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final StepImplementationNode stepNode2C = new StepImplementationNode(this.getClass(), nonFailMethod);
-        SubstepNode row2SubstepNode = new SubstepNode(Lists.<StepNode>newArrayList(stepNode2A, stepNode2B, stepNode2C));
-        BasicScenarioNode basicScenarioForRow2 = new BasicScenarioNode("scenarioName", null, row2SubstepNode);
-        OutlineScenarioRowNode outlineRow2 = new OutlineScenarioRowNode(2, basicScenarioForRow2);
+        String scenarioName = "scenarioName";
+        TestRootNodeBuilder rootNodeBuilder = new TestRootNodeBuilder();
+        TestFeatureNodeBuilder featureBuilder = rootNodeBuilder.addFeature(new Feature("test feature", "file"));
 
-        final OutlineScenarioNode outlineNode = new OutlineScenarioNode("scenarioName", Lists.newArrayList(outlineRow1, outlineRow2));
-        final FeatureNode featureNode = new FeatureNode(new Feature("test feature", "file"), Collections.<ScenarioNode>singletonList(outlineNode));
-        final RootNode rootNode = new RootNode(Collections.singletonList(featureNode));
+        TestOutlineScenarioNodeBuilder outlineScenarioBuilder = featureBuilder.addOutlineScenario(scenarioName);
+        TestOutlineScenarioRowNodeBuilder rowBuilder1 = outlineScenarioBuilder.addRow(1);
+        TestOutlineScenarioRowNodeBuilder rowBuilder2 = outlineScenarioBuilder.addRow(2);
+
+        TestBasicScenarioNodeBuilder row1ScenarioBuilder = rowBuilder1.setBasicScenario(scenarioName);
+        row1ScenarioBuilder.addSubsteps().addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod)
+                .addStepImpl(getClass(), nonFailMethod);
+        TestBasicScenarioNodeBuilder row2ScenarioBuilder = rowBuilder2.setBasicScenario(scenarioName);
+        row2ScenarioBuilder.addSubsteps().addStepImpls(3, getClass(), nonFailMethod);
+
+        RootNode rootNode = rootNodeBuilder.build();
 
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor, Lists.<SubstepExecutionFailure>newArrayList(), setupAndTearDown, null);
+        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", rootNode);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
@@ -418,20 +420,26 @@ public class ExecutionNodeRunnerTest {
         final List<SubstepExecutionFailure> failures = runner.run();
 
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(featureNode.getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(basicScenarioForRow1.getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(basicScenarioForRow2.getResult().getResult(), is(ExecutionResult.PASSED));
-        Assert.assertThat(outlineRow1.getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(outlineRow2.getResult().getResult(), is(ExecutionResult.PASSED));
-        
-        Assert.assertThat(outlineNode.getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(stepNode1A.getResult().getResult(), is(ExecutionResult.PASSED));
-        Assert.assertThat(stepNode1B.getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(stepNode1C.getResult().getResult(), is(ExecutionResult.NOT_RUN));
+        Assert.assertThat(featureBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+        Assert.assertThat(row1ScenarioBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+        Assert.assertThat(row2ScenarioBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.PASSED));
+        Assert.assertThat(rowBuilder1.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+        Assert.assertThat(rowBuilder2.getBuilt().getResult().getResult(), is(ExecutionResult.PASSED));
 
-        Assert.assertThat(stepNode2A.getResult().getResult(), is(ExecutionResult.PASSED));
-        Assert.assertThat(stepNode2B.getResult().getResult(), is(ExecutionResult.PASSED));
-        Assert.assertThat(stepNode2C.getResult().getResult(), is(ExecutionResult.PASSED));
+        Assert.assertThat(outlineScenarioBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+        Assert.assertThat(row1ScenarioBuilder.getBuilt().getStep().getChildren().get(0).getResult().getResult(),
+                is(ExecutionResult.PASSED));
+        Assert.assertThat(row1ScenarioBuilder.getBuilt().getStep().getChildren().get(1).getResult().getResult(),
+                is(ExecutionResult.FAILED));
+        Assert.assertThat(row1ScenarioBuilder.getBuilt().getStep().getChildren().get(2).getResult().getResult(),
+                is(ExecutionResult.NOT_RUN));
+
+        Assert.assertThat(row2ScenarioBuilder.getBuilt().getStep().getChildren().get(0).getResult().getResult(),
+                is(ExecutionResult.PASSED));
+        Assert.assertThat(row2ScenarioBuilder.getBuilt().getStep().getChildren().get(1).getResult().getResult(),
+                is(ExecutionResult.PASSED));
+        Assert.assertThat(row2ScenarioBuilder.getBuilt().getStep().getChildren().get(2).getResult().getResult(),
+                is(ExecutionResult.PASSED));
 
         Assert.assertFalse("expecting some failures", failures.isEmpty());
 
@@ -454,23 +462,22 @@ public class ExecutionNodeRunnerTest {
         Assert.assertNotNull(nonFailMethod);
         Assert.assertNotNull(failMethod);
 
-        final StepImplementationNode stepNode1A = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final StepImplementationNode stepNode1B = new StepImplementationNode(this.getClass(), failMethod);
-        final StepImplementationNode stepNode1C = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final SubstepNode row1SubstepNode = new SubstepNode(Lists.<StepNode>newArrayList(stepNode1A, stepNode1B, stepNode1C));
-        final BasicScenarioNode basicScenarioForRow1 = new BasicScenarioNode("scenarioName", null, row1SubstepNode);
-        final OutlineScenarioRowNode outlineRow1 = new OutlineScenarioRowNode(1, basicScenarioForRow1);
-        
-        final StepImplementationNode stepNode2A = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final StepImplementationNode stepNode2B = new StepImplementationNode(this.getClass(), nonFailMethod);
-        final StepImplementationNode stepNode2C = new StepImplementationNode(this.getClass(), nonFailMethod);
-        SubstepNode row2SubstepNode = new SubstepNode(Lists.<StepNode>newArrayList(stepNode2A, stepNode2B, stepNode2C));
-        BasicScenarioNode basicScenarioForRow2 = new BasicScenarioNode("scenarioName", null, row2SubstepNode);
-        OutlineScenarioRowNode outlineRow2 = new OutlineScenarioRowNode(1, basicScenarioForRow2);
+        String scenarioName = "scenarioName";
+        TestRootNodeBuilder rootNodeBuilder = new TestRootNodeBuilder();
+        TestFeatureNodeBuilder featureBuilder = rootNodeBuilder.addFeature(new Feature("test feature", "file"));
 
-        final OutlineScenarioNode outlineNode = new OutlineScenarioNode("scenarioName", Lists.newArrayList(outlineRow1, outlineRow2));
-        final FeatureNode featureNode = new FeatureNode(new Feature("test feature", "file"), Collections.<ScenarioNode>singletonList(outlineNode));
-        final RootNode rootNode = new RootNode(Collections.singletonList(featureNode));
+        TestOutlineScenarioNodeBuilder outlineScenarioBuilder = featureBuilder.addOutlineScenario(scenarioName);
+        TestOutlineScenarioRowNodeBuilder rowBuilder1 = outlineScenarioBuilder.addRow(1);
+        TestOutlineScenarioRowNodeBuilder rowBuilder2 = outlineScenarioBuilder.addRow(2);
+
+        TestBasicScenarioNodeBuilder row1ScenarioBuilder = rowBuilder1.setBasicScenario(scenarioName);
+        row1ScenarioBuilder.addSubsteps().addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod)
+                .addStepImpl(getClass(), nonFailMethod);
+        TestBasicScenarioNodeBuilder row2ScenarioBuilder = rowBuilder2.setBasicScenario(scenarioName);
+        row2ScenarioBuilder.addSubsteps().addStepImpl(getClass(), nonFailMethod)
+                .addStepImpls(3, getClass(), failMethod);
+
+        RootNode rootNode = rootNodeBuilder.build();
 
         final Class<?>[] setupClasses = new Class[] { this.getClass() };
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(setupClasses, new ImplementationCache());
@@ -478,7 +485,8 @@ public class ExecutionNodeRunnerTest {
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor, Lists.<SubstepExecutionFailure>newArrayList(), setupAndTearDown, null);
+        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", rootNode);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
@@ -486,7 +494,7 @@ public class ExecutionNodeRunnerTest {
         final List<SubstepExecutionFailure> failures = runner.run();
 
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(featureNode.getResult().getResult(), is(ExecutionResult.NOT_RUN));
+        Assert.assertThat(featureBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.NOT_RUN));
 
         Assert.assertFalse("expecting some failures", failures.isEmpty());
 

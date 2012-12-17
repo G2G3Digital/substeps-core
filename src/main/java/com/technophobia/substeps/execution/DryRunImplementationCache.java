@@ -20,24 +20,15 @@ package com.technophobia.substeps.execution;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 
-public interface MethodExecutor {
+public class DryRunImplementationCache extends ImplementationCache {
 
-    /**
-     * @param setupAndTearDownMethods
-     */
-    void executeMethods(List<Method> setupAndTearDownMethods) throws Exception;
+    @Override
+    public void executeMethod(final Class<?> targetClass, final Method targetMethod, final Object[] methodArgs)
+            throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 
-    void addImplementationClasses(final Class<?>... implementationClasses);
+        addImplementationClasses(targetClass);
 
-    <T> T getImplementation(Class<T> implementationClass);
-
-    /**
-     * @param targetClass
-     * @param targetMethod
-     * @param methodArgs
-     */
-    void executeMethod(final Class<?> targetClass, final Method targetMethod, final Object[] methodArgs)
-            throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
+        instanceMap.get(targetClass);
+    }
 }

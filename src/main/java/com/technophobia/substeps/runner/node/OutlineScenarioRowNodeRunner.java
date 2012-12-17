@@ -12,7 +12,7 @@ public class OutlineScenarioRowNodeRunner extends AbstractNodeRunner<OutlineScen
     @Override
     protected boolean execute(OutlineScenarioRowNode node, NodeExecutionContext context) {
 
-        return basicScenarioNodeRunner.run(node.getBasicScenarioNode(), context); //TODO RB20121213 Execute rather than run?
+        return basicScenarioNodeRunner.run(node.getBasicScenarioNode(), context);
         
     }
     @Override

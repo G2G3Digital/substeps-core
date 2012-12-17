@@ -24,10 +24,10 @@ public class SubstepNodeRunner extends AbstractNodeRunner<SubstepNode, Boolean> 
     @Override
     protected boolean execute(SubstepNode node, NodeExecutionContext context) {
 
-        boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getSubsteps(), context);
+        boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getChildren(), context);
         this.context = context;
         
-        Iterator<StepNode> substepsIt = node.getSubsteps().iterator();
+        Iterator<StepNode> substepsIt = node.getChildren().iterator();
         
         while(success && substepsIt.hasNext()) {
             

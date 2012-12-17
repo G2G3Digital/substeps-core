@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,19 +13,17 @@ import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.technophobia.substeps.execution.ExecutionNodeVisitor;
+import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
 import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.ExecutionNode;
-import com.technophobia.substeps.execution.node.FeatureNode;
-import com.technophobia.substeps.execution.node.OutlineScenarioNode;
-import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
+import com.technophobia.substeps.execution.node.IExecutionNode;
+import com.technophobia.substeps.execution.node.NodeWithChildren;
 import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
-import com.technophobia.substeps.execution.node.SubstepNode;
 import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 
-public class TreeJsonBuilder implements ExecutionNodeVisitor<JsonObject> {
+public class TreeJsonBuilder extends AbstractExecutionNodeVisitor<JsonObject> {
 
     private final ReportData reportData;
 
@@ -118,7 +115,7 @@ public class TreeJsonBuilder implements ExecutionNodeVisitor<JsonObject> {
         return tree;
     }
 
-    private JsonObject createJsonWithBasicNodeDetails(ExecutionNode node) {
+    private JsonObject createJsonWithBasicNodeDetails(IExecutionNode node) {
 
         JsonObject json = new JsonObject();
         JsonObject data = new JsonObject();
@@ -131,48 +128,30 @@ public class TreeJsonBuilder implements ExecutionNodeVisitor<JsonObject> {
         return json;
     }
 
-    public JsonObject visit(RootNode node) {
+    @Override
+    public JsonObject visit(NodeWithChildren<?> node) {
 
-        return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(), node.getFeatures());
+        return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(), node.getChildren());
     }
 
-    public JsonObject visit(FeatureNode node) {
-
-        return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(), node.getScenarios());
-    }
-
+    @Override
     public JsonObject visit(BasicScenarioNode node) {
 
         return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(),
-                node.getStep().getSubsteps());
+                node.getStep().getChildren());
     }
 
-    public JsonObject visit(OutlineScenarioNode node) {
-
-        return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(), node.getOutlineRows());
-    }
-
-    public JsonObject visit(OutlineScenarioRowNode node) {
-
-        return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(),
-                Collections.singletonList(node.getBasicScenarioNode()));
-    }
-
-    public JsonObject visit(SubstepNode node) {
-
-        return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(), node.getSubsteps());
-    }
-
+    @Override
     public JsonObject visit(StepImplementationNode node) {
 
         return createJsonWithBasicNodeDetails(node);
     }
 
-    private String getNodeImage(final ExecutionNode node) {
+    private String getNodeImage(final IExecutionNode node) {
         return resultToImageMap.get(node.getResult().getResult());
     }
 
-    private String getDescriptionForNode(final ExecutionNode node) {
+    private String getDescriptionForNode(final IExecutionNode node) {
 
         final StringBuilder buf = new StringBuilder();
 
@@ -187,7 +166,7 @@ public class TreeJsonBuilder implements ExecutionNodeVisitor<JsonObject> {
         return msg;
     }
 
-    JsonObject addChildren(JsonObject json, boolean hasError, List<? extends ExecutionNode> childNodes) {
+    JsonObject addChildren(JsonObject json, boolean hasError, List<? extends IExecutionNode> childNodes) {
 
         if (childNodes != null && !childNodes.isEmpty()) {
 
@@ -197,7 +176,7 @@ public class TreeJsonBuilder implements ExecutionNodeVisitor<JsonObject> {
 
             JsonArray children = new JsonArray();
 
-            for (ExecutionNode node : childNodes) {
+            for (IExecutionNode node : childNodes) {
 
                 children.add(node.dispatch(this));
             }

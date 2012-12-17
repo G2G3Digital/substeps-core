@@ -20,7 +20,6 @@
 package com.technophobia.substeps.jmx;
 
 import java.lang.management.ManagementFactory;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -77,12 +76,6 @@ public class SubstepsJMXServer {
             mbs.registerMBean(mBeanImpl, name);
 
             this.log.trace("bean registered");
-
-            // works String url = "service:jmx:rmi://localhost";
-            final String url = "service:jmx:rmi:///jndi/rmi://localhost";
-
-            // final JMXServiceURL serviceURL = new JMXServiceURL(url);
-            final Map<String, ?> environment = null;
 
             while (this.shutdownSignal.getCount() > 0) {
                 try {

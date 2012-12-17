@@ -163,6 +163,7 @@ public class SetupAndTearDown {
             runBeforeScenarios();
             break;
         }
+        case SCENARIO_OUTLINE:
         default: {
             // no op STEP, SCENARIO_BACKGROUND
         }
@@ -197,6 +198,7 @@ public class SetupAndTearDown {
             // gets run an extra time each...
             break;
         }
+        case SCENARIO_OUTLINE:
         default: {
             // no op STEP, SCENARIO_BACKGROUND
         }

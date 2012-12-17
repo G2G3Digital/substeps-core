@@ -19,17 +19,15 @@
 package com.technophobia.substeps.runner;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.technophobia.substeps.execution.DryRunImplementationCache;
 import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.execution.MethodExecutor;
-import com.technophobia.substeps.execution.node.ExecutionNode;
 import com.technophobia.substeps.execution.node.NodeExecutionContext;
 import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.model.Scope;
@@ -48,6 +46,8 @@ import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
  */
 public class ExecutionNodeRunner implements SubstepsRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(ExecutionNodeRunner.class);
+    
     private RootNode rootNode;
 
     private final INotificationDistributor notificationDistributor = new NotificationDistributor();
@@ -100,18 +100,18 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
         ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY, notificationDistributor);
 
-        // TODO RB Put dry run back in
-        // final String dryRunProperty = System.getProperty("dryRun");
-        // if (dryRunProperty != null && Boolean.parseBoolean(dryRunProperty)) {
-        //
-        // log.info("**** DRY RUN ONLY **");
-        //
-        // setupAndTearDown.setDryRun(true);
-        // setDryRun(true);
-        // }
+         final String dryRunProperty = System.getProperty("dryRun");
+         boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
+
+         setupAndTearDown.setDryRun(dryRun);
+         MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : methodExecutor;
+         
+         if (dryRun) {
+             log.info("**** DRY RUN ONLY **");
+         }
 
         nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
-                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager);
+                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager, methodExecutorToUse);
     }
 
     public List<SubstepExecutionFailure> run() {

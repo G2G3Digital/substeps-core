@@ -124,16 +124,16 @@ public class DefaultExecutionReportBuilderTest {
     private FeatureNode createFeature(String name, String fileName) {
 
         final Feature feature = new Feature(name, fileName);
-        final FeatureNode featureNode = new FeatureNode(feature, Collections.singletonList(createScenario(SCENARIO_NAME)));
+        final FeatureNode featureNode = new FeatureNode(feature, Collections.<ScenarioNode<?>>singletonList(createScenario(SCENARIO_NAME)));
         featureNodes.add(featureNode);
 
         return featureNode;
     }
 
-    private ScenarioNode createScenario(String scenarioName) {
+    private BasicScenarioNode createScenario(String scenarioName) {
 
         SubstepNode stepImpl = createSubstepNode();
-        ScenarioNode scenarioNode = new BasicScenarioNode(scenarioName, null, stepImpl);
+        BasicScenarioNode scenarioNode = new BasicScenarioNode(scenarioName, null, stepImpl, 2);
         scenarioNodes.add(scenarioNode);
         return scenarioNode;
     }
@@ -155,12 +155,12 @@ public class DefaultExecutionReportBuilderTest {
         StepNode stepImpl2 = createStep(this.getClass(), failMethod, STEP_NODE + "2");
         StepNode stepImpl3 = createStep(this.getClass(), nonFailMethod, STEP_NODE + "3");
 
-        return new SubstepNode(Lists.newArrayList(stepImpl1, stepImpl2, stepImpl3));
+        return new SubstepNode(Lists.newArrayList(stepImpl1, stepImpl2, stepImpl3), 3);
     }
 
     private StepImplementationNode createStep(Class<?> stepClass, Method stepMethod, String stepLine) {
 
-        final StepImplementationNode stepNode = new StepImplementationNode(stepClass, stepMethod);
+        final StepImplementationNode stepNode = new StepImplementationNode(stepClass, stepMethod, 3);
         stepNode.getResult().setStarted();
         stepNodes.add(stepNode);
         stepNode.setLine(stepLine);
@@ -191,7 +191,7 @@ public class DefaultExecutionReportBuilderTest {
 
         Assert.assertNotNull(rootNode);
 
-        assertBasics(index, rootNode, "Root node", NOT_RUN);
+        assertBasics(index, rootNode, "RootNode", NOT_RUN);
 
         JsonArray children = rootNode.getAsJsonArray("children");
         Assert.assertEquals(1, children.size());
@@ -203,7 +203,7 @@ public class DefaultExecutionReportBuilderTest {
     private void assertFeatureNodeAsExpected(int index) {
 
         JsonObject featureNode = details.get(index);
-        assertBasics(index, featureNode, "Feature", NOT_RUN);
+        assertBasics(index, featureNode, "FeatureNode", NOT_RUN);
 
         Assert.assertEquals(FEATURE_NAME, featureNode.get(DESCRIPTION).getAsString());
 

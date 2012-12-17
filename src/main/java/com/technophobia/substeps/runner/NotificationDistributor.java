@@ -3,7 +3,7 @@ package com.technophobia.substeps.runner;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.technophobia.substeps.execution.node.ExecutionNode;
+import com.technophobia.substeps.execution.node.IExecutionNode;
 
 /*
  *	Copyright Technophobia Ltd 2012
@@ -41,7 +41,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
      * .substeps.execution.ExecutionNode, java.lang.Throwable)
      */
-    public final void notifyNodeFailed(final ExecutionNode node, final Throwable cause) {
+    public final void notifyNodeFailed(final IExecutionNode node, final Throwable cause) {
 
         notifyListenersTestFailed(node, cause);
 
@@ -54,7 +54,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public final void notifyNodeStarted(final ExecutionNode node) {
+    public final void notifyNodeStarted(final IExecutionNode node) {
 
         notifyListenersTestStarted(node);
     }
@@ -65,7 +65,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
      * technophobia.substeps.execution.ExecutionNode)
      */
-    public final void notifyNodeFinished(final ExecutionNode node) {
+    public final void notifyNodeFinished(final IExecutionNode node) {
 
         notifyListenersTestFinished(node);
 
@@ -78,7 +78,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public final void notifyNodeIgnored(final ExecutionNode node) {
+    public final void notifyNodeIgnored(final IExecutionNode node) {
 
         notifyListenersTestIgnored(node);
 
@@ -89,7 +89,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * @param junitDescription
      * @param cause
      */
-    private void notifyListenersTestFailed(final ExecutionNode node, final Throwable cause) {
+    private void notifyListenersTestFailed(final IExecutionNode node, final Throwable cause) {
         if (this.listeners != null) {
             for (final INotifier listener : this.listeners) {
                 listener.notifyNodeFailed(node, cause);
@@ -101,7 +101,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * @param listeners2
      * @param junitDescription
      */
-    private void notifyListenersTestIgnored(final ExecutionNode node) {
+    private void notifyListenersTestIgnored(final IExecutionNode node) {
         if (this.listeners != null) {
             for (final INotifier listener : this.listeners) {
                 listener.notifyNodeIgnored(node);
@@ -113,7 +113,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * @param listeners2
      * @param junitDescription
      */
-    private void notifyListenersTestFinished(final ExecutionNode node) {
+    private void notifyListenersTestFinished(final IExecutionNode node) {
         if (this.listeners != null) {
             for (final INotifier listener : this.listeners) {
                 listener.notifyNodeFinished(node);
@@ -121,7 +121,7 @@ public class NotificationDistributor implements INotificationDistributor {
         }
     }
 
-    private void notifyListenersTestStarted(final ExecutionNode node) {
+    private void notifyListenersTestStarted(final IExecutionNode node) {
         if (this.listeners != null) {
             for (final INotifier listener : this.listeners) {
                 listener.notifyNodeStarted(node);
