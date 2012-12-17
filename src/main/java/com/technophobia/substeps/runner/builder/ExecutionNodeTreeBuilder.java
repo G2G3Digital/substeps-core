@@ -40,7 +40,7 @@ public class ExecutionNodeTreeBuilder {
         this.featureNodeBuilder = new FeatureNodeBuilder(parameters);
     }
 
-    public RootNode buildExecutionNodeTree() {
+    public RootNode buildExecutionNodeTree(String description) {
 
         List<FeatureNode> features = Lists.newArrayListWithExpectedSize(parameters.getFeatureFileList().size());
 
@@ -53,7 +53,7 @@ public class ExecutionNodeTreeBuilder {
             }
         }
 
-        return new RootNode(features);
+        return new RootNode(description, features);
     }
 
 }

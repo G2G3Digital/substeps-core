@@ -36,7 +36,7 @@ public class ReportDataTest {
     @Ignore("work in progress")
     @Test
     public void testCounts() {
-        final RootNode root = new RootNode(Collections.<FeatureNode>emptyList());
+        final RootNode root = new RootNode("Description", Collections.<FeatureNode> emptyList());
 
         final ReportData data = new ReportData();
         data.addRootExecutionNode(root);

@@ -112,19 +112,18 @@ public class DefaultExecutionReportBuilderTest {
 
         builder.addRootExecutionNode(rootNode);
 
-
-
     }
 
     private RootNode createRootNode() {
 
-        return new RootNode(Collections.singletonList(createFeature(FEATURE_NAME, "test file")));
+        return new RootNode("Description", Collections.singletonList(createFeature(FEATURE_NAME, "test file")));
     }
 
     private FeatureNode createFeature(String name, String fileName) {
 
         final Feature feature = new Feature(name, fileName);
-        final FeatureNode featureNode = new FeatureNode(feature, Collections.<ScenarioNode<?>>singletonList(createScenario(SCENARIO_NAME)));
+        final FeatureNode featureNode = new FeatureNode(feature,
+                Collections.<ScenarioNode<?>> singletonList(createScenario(SCENARIO_NAME)));
         featureNodes.add(featureNode);
 
         return featureNode;

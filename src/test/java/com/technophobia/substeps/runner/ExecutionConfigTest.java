@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -36,6 +37,9 @@ import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
  * 
  */
 public class ExecutionConfigTest {
+
+    private static final String MUST_COME_BEFORE_AND_AFTER = " must come before and after ";
+    private static final String THE_ORDER_IS_INVALID_AS = "The order is invalid as ";
 
     public static class InitClass1 {
     }
@@ -52,40 +56,64 @@ public class ExecutionConfigTest {
     public static class InitClass5 {
     }
 
+    public static class InitClass6 {
+    }
+
     @StepImplementations(requiredInitialisationClasses = { InitClass1.class })
     public static class StepImplsClass1 {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass2.class, InitClass1.class })
-    public static class StepImplsClass2 {
+    public static class StepImplsClass2_1 {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass3.class, InitClass2.class })
-    public static class StepImplsClass3 {
+    public static class StepImplsClass3_2 {
+    }
+
+    @StepImplementations(requiredInitialisationClasses = { InitClass3.class, InitClass4.class, InitClass5.class })
+    public static class StepImplsClass3_4_5 {
+    }
+
+    @StepImplementations(requiredInitialisationClasses = { InitClass3.class, InitClass6.class })
+    public static class StepImplsClass3_6 {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass3.class, InitClass2.class })
-    public static class StepImplsClass4 {
+    public static class StepImplsClass3_2_Duplicate {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass2.class, InitClass3.class })
-    public static class StepImplsClassA {
+    public static class StepImplsClass1_2_3 {
+    }
+
+    @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass2.class, InitClass3.class,
+            InitClass4.class })
+    public static class StepImplsClass1_2_3_4 {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass2.class, InitClass3.class })
-    public static class StepImplsClassB {
+    public static class StepImplsClass2_3 {
+    }
+
+    @StepImplementations(requiredInitialisationClasses = { InitClass2.class, InitClass5.class, InitClass6.class })
+    public static class StepImplsClass2_5_6 {
+    }
+
+    @StepImplementations(requiredInitialisationClasses = { InitClass5.class, InitClass6.class, InitClass1.class })
+    public static class StepImplsClass5_6_1 {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass4.class })
-    public static class StepImplsClassC {
+    public static class StepImplsClass1_4 {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass5.class, InitClass2.class })
-    public static class StepImplsClassD {
+    public static class StepImplsClass1_5_2 {
     }
 
     @StepImplementations(requiredInitialisationClasses = { InitClass2.class, InitClass5.class })
-    public static class StepImplsClassE {
+    public static class StepImplsClass2_5 {
     }
 
     @Test
@@ -95,23 +123,30 @@ public class ExecutionConfigTest {
 
         final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
 
-        stepImplClasses.add(StepImplsClassA.class);
-        stepImplClasses.add(StepImplsClassB.class);
-        stepImplClasses.add(StepImplsClassC.class);
-        stepImplClasses.add(StepImplsClassD.class);
+        stepImplClasses.add(StepImplsClass1_2_3.class);
+        stepImplClasses.add(StepImplsClass2_3.class);
+        stepImplClasses.add(StepImplsClass1_4.class);
+        stepImplClasses.add(StepImplsClass1_5_2.class);
 
         config.setStepImplementationClasses(stepImplClasses);
 
-        final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
+        final List<Class<?>> initialisationClasses = Arrays.asList(config.determineInitialisationClasses());
 
-        Assert.assertThat(initialisationClasses.length, is(5));
+        Assert.assertThat(initialisationClasses.size(), is(5));
 
-        int idx = 0;
-        Assert.assertEquals(initialisationClasses[idx++], InitClass1.class);
-        Assert.assertEquals(initialisationClasses[idx++], InitClass5.class);
-        Assert.assertEquals(initialisationClasses[idx++], InitClass2.class);
-        Assert.assertEquals(initialisationClasses[idx++], InitClass3.class);
-        Assert.assertEquals(initialisationClasses[idx++], InitClass4.class);
+        assertThat(initialisationClasses, InitClass3.class, InitClass2.class);
+        assertThat(initialisationClasses, InitClass2.class, InitClass1.class);
+        assertThat(initialisationClasses, InitClass4.class, InitClass1.class);
+        assertThat(initialisationClasses, InitClass2.class, InitClass5.class);
+        assertThat(initialisationClasses, InitClass5.class, InitClass1.class);
+
+    }
+
+    public void assertThat(List<Class<?>> within, Class<?> initialisationClass, Class<?> isPreceededBy) {
+
+        int index = within.indexOf(initialisationClass);
+        List<Class<?>> range = within.subList(0, index);
+        Assert.assertTrue(range.contains(isPreceededBy));
     }
 
     @Test(expected = SubstepsConfigurationException.class)
@@ -121,16 +156,23 @@ public class ExecutionConfigTest {
 
         final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
 
-        stepImplClasses.add(StepImplsClassA.class);
-        stepImplClasses.add(StepImplsClassB.class);
-        stepImplClasses.add(StepImplsClassC.class);
-        stepImplClasses.add(StepImplsClassD.class);
-        stepImplClasses.add(StepImplsClassE.class);
+        stepImplClasses.add(StepImplsClass1_2_3.class);
+        stepImplClasses.add(StepImplsClass2_3.class);
+        stepImplClasses.add(StepImplsClass1_4.class);
+        stepImplClasses.add(StepImplsClass1_5_2.class);
+        stepImplClasses.add(StepImplsClass2_5.class);
 
         config.setStepImplementationClasses(stepImplClasses);
 
-        final Class<?>[] initialisationClasses = config.determineInitialisationClasses();
+        try {
+            config.determineInitialisationClasses();
 
+        } catch (SubstepsConfigurationException exception) {
+
+            Assert.assertEquals(THE_ORDER_IS_INVALID_AS + InitClass5.class.getName() + MUST_COME_BEFORE_AND_AFTER
+                    + InitClass2.class.getName(), exception.getMessage());
+            throw exception;
+        }
     }
 
     @Test
@@ -141,8 +183,8 @@ public class ExecutionConfigTest {
         final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
 
         stepImplClasses.add(StepImplsClass1.class);
-        stepImplClasses.add(StepImplsClass2.class);
-        stepImplClasses.add(StepImplsClass3.class);
+        stepImplClasses.add(StepImplsClass2_1.class);
+        stepImplClasses.add(StepImplsClass3_2.class);
 
         config.setStepImplementationClasses(stepImplClasses);
 
@@ -169,6 +211,57 @@ public class ExecutionConfigTest {
 
         Assert.assertEquals(initialisationClasses[0], String.class);
         Assert.assertEquals(initialisationClasses[1], BigDecimal.class);
+
+    }
+
+    @Test
+    public void testDermineClassesForTPCLA223() {
+
+        final ExecutionConfigWrapper config = new ExecutionConfigWrapper(new SubstepsExecutionConfig());
+
+        final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
+
+        stepImplClasses.add(StepImplsClass1_2_3_4.class);
+        stepImplClasses.add(StepImplsClass2_5_6.class);
+        stepImplClasses.add(StepImplsClass3_6.class);
+
+        config.setStepImplementationClasses(stepImplClasses);
+
+        final List<Class<?>> initialisationClasses = Arrays.asList(config.determineInitialisationClasses());
+
+        Assert.assertThat(initialisationClasses.size(), is(6));
+
+        assertThat(initialisationClasses, InitClass4.class, InitClass3.class);
+        assertThat(initialisationClasses, InitClass3.class, InitClass2.class);
+        assertThat(initialisationClasses, InitClass2.class, InitClass1.class);
+        assertThat(initialisationClasses, InitClass6.class, InitClass5.class);
+        assertThat(initialisationClasses, InitClass5.class, InitClass2.class);
+        assertThat(initialisationClasses, InitClass6.class, InitClass3.class);
+
+        System.out.println(initialisationClasses);
+    }
+
+    @Test(expected = SubstepsConfigurationException.class)
+    public void testDetermineClassesForInvalidLoop() {
+
+        final ExecutionConfigWrapper config = new ExecutionConfigWrapper(new SubstepsExecutionConfig());
+
+        final List<Class<?>> stepImplClasses = new ArrayList<Class<?>>();
+
+        stepImplClasses.add(StepImplsClass1_2_3.class);
+        stepImplClasses.add(StepImplsClass3_4_5.class);
+        stepImplClasses.add(StepImplsClass5_6_1.class);
+
+        config.setStepImplementationClasses(stepImplClasses);
+
+        try {
+            config.determineInitialisationClasses();
+        } catch (SubstepsConfigurationException sce) {
+
+            Assert.assertEquals(THE_ORDER_IS_INVALID_AS + InitClass1.class.getName() + MUST_COME_BEFORE_AND_AFTER
+                    + InitClass6.class.getName(), sce.getMessage());
+            throw sce;
+        }
 
     }
 }

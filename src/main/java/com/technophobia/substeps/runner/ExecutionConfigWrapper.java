@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.junit.Assert;
 
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
-import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 
 /**
  * Wraps an ExecutionConfig providing extra functionality for core
@@ -101,61 +100,30 @@ public class ExecutionConfigWrapper extends ExecutionConfigDecorator {
 
             initialisationClassList = new ArrayList<Class<?>>();
 
+            InitialisationClassOrderer orderer = new InitialisationClassOrderer();
+
             for (final Class<?> c : getStepImplementationClasses()) {
 
                 final StepImplementations annotation = c.getAnnotation(StepImplementations.class);
+
                 if (annotation != null) {
                     final Class<?>[] initClasses = annotation.requiredInitialisationClasses();
 
                     if (initClasses != null) {
 
-                        Class<?> predecessor = null;
-                        // for (final Class<?> initClass : initClasses){
-                        for (int i = initClasses.length; i > 0; i--) {
-
-                            final Class<?> initClass = initClasses[i - 1];
-
-                            if (predecessor == null) {
-                                // can just put this one at the end
-                                if (!initialisationClassList.contains(initClass)) {
-                                    initialisationClassList.add(initClass);
-                                }
-                            } else {
-
-                                // put this class before the predecessor
-                                final int predecessorIdx = initialisationClassList.indexOf(predecessor);
-
-                                // is this class already in ?
-                                if (initialisationClassList.contains(initClass)) {
-
-                                    // don't need to add, just need to make sure
-                                    // the sequencing is ok
-                                    final int thisIdx = initialisationClassList.indexOf(initClass);
-
-                                    if (thisIdx > predecessorIdx) {
-
-                                        // TODO - build up a message
-
-                                        throw new SubstepsConfigurationException("Incompatible initialisation sequence");
-                                    }
-                                } else {
-                                    initialisationClassList.add(predecessorIdx, initClass);
-                                }
-                            }
-                            predecessor = initClass;
-                        }
+                        orderer.addOrderedInitialisationClasses(initClasses);
                     }
                 }
             }
+
+            initialisationClassList = orderer.getOrderedList();
         }
         if (initialisationClassList == null && getInitialisationClass() != null) {
             initialisationClassList = getClassesFromConfig(getInitialisationClass());
         }
 
         if (initialisationClassList != null) {
-            // what do we need to execute the runner
-            setInitialisationClasses(new Class<?>[initialisationClassList.size()]);
-            setInitialisationClasses(initialisationClassList.toArray(getInitialisationClasses()));
+            setInitialisationClasses(initialisationClassList.toArray(new Class<?>[] {}));
         }
 
         return getInitialisationClasses();

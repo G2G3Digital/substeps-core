@@ -47,7 +47,7 @@ import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
 public class ExecutionNodeRunner implements SubstepsRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ExecutionNodeRunner.class);
-    
+
     private RootNode rootNode;
 
     private final INotificationDistributor notificationDistributor = new NotificationDistributor();
@@ -55,7 +55,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
     private NodeExecutionContext nodeExecutionContext;
 
     private final MethodExecutor methodExecutor = new ImplementationCache();
-    
+
     private final RootNodeRunner rootNodeRunner = new RootNodeRunner();
 
     public void addNotifier(final INotifier notifier) {
@@ -96,22 +96,22 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         final ExecutionNodeTreeBuilder nodeTreeBuilder = new ExecutionNodeTreeBuilder(parameters);
 
         // building the tree can throw critical failures if exceptions are found
-        rootNode = nodeTreeBuilder.buildExecutionNodeTree();
+        rootNode = nodeTreeBuilder.buildExecutionNodeTree(theConfig.getDescription());
 
         ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY, notificationDistributor);
 
-         final String dryRunProperty = System.getProperty("dryRun");
-         boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
+        final String dryRunProperty = System.getProperty("dryRun");
+        boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
 
-         setupAndTearDown.setDryRun(dryRun);
-         MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : methodExecutor;
-         
-         if (dryRun) {
-             log.info("**** DRY RUN ONLY **");
-         }
+        MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : methodExecutor;
+
+        if (dryRun) {
+            log.info("**** DRY RUN ONLY **");
+        }
 
         nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
-                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager, methodExecutorToUse);
+                Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager,
+                methodExecutorToUse);
     }
 
     public List<SubstepExecutionFailure> run() {
