@@ -27,13 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.technophobia.substeps.execution.node.IExecutionNode;
+import com.google.common.collect.Sets;
+import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
+import com.technophobia.substeps.execution.node.BasicScenarioNode;
+import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.execution.node.RootNode;
+import com.technophobia.substeps.execution.node.SubstepNode;
 
 /**
  * @author ian
  * 
  */
-public class ExecutionStats {
+public class ExecutionStats extends AbstractExecutionNodeVisitor<Void> {
 
     private final TestCounterSet totals = new TestCounterSet();
 
@@ -42,29 +47,65 @@ public class ExecutionStats {
     private List<TestCounterSet> sortedList = null;
 
     public void buildStats(final ReportData data) {
-        for (final IExecutionNode node : data.getNodeList()) {
-            final List<TestCounterSet> testStats = new ArrayList<TestCounterSet>();
 
-            testStats.add(totals);
+        for (RootNode rootNode : data.getRootNodes()) {
 
-            final Set<String> tags = node.getTags();
-            if (tags != null) {
-                for (final String tag : tags) {
-                    TestCounterSet testStatSet = taggedStats.get(tag);
-                    if (testStatSet == null) {
-                        testStatSet = new TestCounterSet();
-                        testStatSet.setTag(tag);
-                        taggedStats.put(tag, testStatSet);
-                    }
-                    testStats.add(testStatSet);
-                }
-            }
-
-            for (final TestCounterSet testStatSet : testStats) {
-
-                node.dispatch(testStatSet);
-            }
+            rootNode.accept(this);
         }
+    }
+
+    @Override
+    public Void visit(FeatureNode featureNode) {
+
+        for (TestCounterSet stats : getAllStatsForTags(featureNode.getTags())) {
+
+            stats.getFeatureStats().apply(featureNode);
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visit(BasicScenarioNode scenarioNode) {
+
+        for (TestCounterSet stats : getAllStatsForTags(scenarioNode.getTags())) {
+
+            stats.getScenarioStats().apply(scenarioNode);
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visit(SubstepNode substepNode) {
+
+        for (TestCounterSet stats : getAllStatsForTags(substepNode.getTags())) {
+
+            System.out.println(stats.getTag() + "=============== " + substepNode.getDescription());
+            stats.getScenarioStepStats().apply(substepNode);
+        }
+
+        return null;
+    }
+
+    private Set<TestCounterSet> getAllStatsForTags(Set<String> tags) {
+
+        Set<TestCounterSet> testStats = Sets.newHashSetWithExpectedSize(tags.size() + 1);
+        testStats.add(totals);
+        for (String tag : tags) {
+            testStats.add(getOrCreateStatsForTag(tag));
+        }
+        return testStats;
+    }
+
+    private TestCounterSet getOrCreateStatsForTag(String tag) {
+        if (taggedStats.get(tag) == null) {
+            TestCounterSet newStats = new TestCounterSet();
+            newStats.setTag(tag);
+            taggedStats.put(tag, newStats);
+        }
+
+        return taggedStats.get(tag);
     }
 
     public int getTotalFeatures() {
@@ -182,3 +223,28 @@ public class ExecutionStats {
         return sortedList;
     }
 }
+// for (final IExecutionNode node : data.getNodeList()) {
+// final List<TestCounterSet> testStats = new ArrayList<TestCounterSet>();
+//
+// testStats.add(totals);
+//
+// final Set<String> tags = node.getTags();
+//
+// if (tags != null) {
+//
+// for (final String tag : tags) {
+// TestCounterSet testStatSet = taggedStats.get(tag);
+// if (testStatSet == null) {
+// testStatSet = new TestCounterSet();
+// testStatSet.setTag(tag);
+// taggedStats.put(tag, testStatSet);
+// }
+// testStats.add(testStatSet);
+// }
+// }
+//
+// for (final TestCounterSet testStatSet : testStats) {
+//
+// node.dispatch(testStatSet);
+// }
+// }

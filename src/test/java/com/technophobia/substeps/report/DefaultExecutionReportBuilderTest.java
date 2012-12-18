@@ -123,7 +123,8 @@ public class DefaultExecutionReportBuilderTest {
 
         final Feature feature = new Feature(name, fileName);
         final FeatureNode featureNode = new FeatureNode(feature,
-                Collections.<ScenarioNode<?>> singletonList(createScenario(SCENARIO_NAME)));
+                Collections.<ScenarioNode<?>> singletonList(createScenario(SCENARIO_NAME)),
+                Collections.<String> emptySet());
         featureNodes.add(featureNode);
 
         return featureNode;
@@ -132,7 +133,8 @@ public class DefaultExecutionReportBuilderTest {
     private BasicScenarioNode createScenario(String scenarioName) {
 
         SubstepNode stepImpl = createSubstepNode();
-        BasicScenarioNode scenarioNode = new BasicScenarioNode(scenarioName, null, stepImpl, 2);
+        BasicScenarioNode scenarioNode = new BasicScenarioNode(scenarioName, null, stepImpl,
+                Collections.<String> emptySet(), 2);
         scenarioNodes.add(scenarioNode);
         return scenarioNode;
     }
@@ -154,7 +156,7 @@ public class DefaultExecutionReportBuilderTest {
         StepNode stepImpl2 = createStep(this.getClass(), failMethod, STEP_NODE + "2");
         StepNode stepImpl3 = createStep(this.getClass(), nonFailMethod, STEP_NODE + "3");
 
-        return new SubstepNode(Lists.newArrayList(stepImpl1, stepImpl2, stepImpl3), 3);
+        return new SubstepNode(Lists.newArrayList(stepImpl1, stepImpl2, stepImpl3), Collections.<String> emptySet(), 3);
     }
 
     private StepImplementationNode createStep(Class<?> stepClass, Method stepMethod, String stepLine) {

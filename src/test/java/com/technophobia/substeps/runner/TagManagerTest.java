@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.google.common.collect.Sets;
 import com.technophobia.substeps.model.FeatureFile;
 import com.technophobia.substeps.model.Scenario;
 import com.technophobia.substeps.steps.TestStepImplementations;
@@ -43,7 +45,7 @@ import com.technophobia.substeps.steps.TestStepImplementations;
  */
 public class TagManagerTest {
 
-    final String[] empty = null;
+    final Set<String> empty = Collections.emptySet();
 
     @Test
     public void testEmptyTagManager() {
@@ -51,8 +53,8 @@ public class TagManagerTest {
         final TagManager tMgr = new TagManager("");
 
         Assert.assertTrue(tMgr.acceptTaggedScenario(empty));
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@fred"));
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@fred", "@bob"));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred")));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred", "@bob")));
 
     }
 
@@ -63,9 +65,9 @@ public class TagManagerTest {
         final TagManager tMgr = new TagManager(runTags);
 
         Assert.assertFalse(tMgr.acceptTaggedScenario(empty));
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@fred"));
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@bob"));
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@fred", "@bob"));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred")));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@bob")));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred", "@bob")));
 
     }
 
@@ -76,9 +78,9 @@ public class TagManagerTest {
         final TagManager tMgr = new TagManager(runTags);
 
         Assert.assertFalse(tMgr.acceptTaggedScenario(empty));
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@fred"));
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@bob"));
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@fred", "@bob"));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred")));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@bob")));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred", "@bob")));
 
     }
 
@@ -88,10 +90,10 @@ public class TagManagerTest {
 
         final TagManager tMgr = new TagManager(runTags);
 
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@fred"));
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@fred", "@bob"));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred")));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred", "@bob")));
         Assert.assertTrue(tMgr.acceptTaggedScenario(empty));
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@bob"));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@bob")));
 
     }
 
@@ -101,14 +103,13 @@ public class TagManagerTest {
 
         final TagManager tMgr = new TagManager(runTags);
 
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@fred"));
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@bob"));
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@bill"));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred")));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@bob")));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@bill")));
 
         tMgr.insertTagOverlay("@bill @bob");
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@bill", "@fred", "@bob"));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@bill", "@fred", "@bob")));
     }
-
 
     @Test
     public void testNegativeTagOverlay() {
@@ -116,14 +117,13 @@ public class TagManagerTest {
 
         final TagManager tMgr = new TagManager(runTags);
 
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@fred"));
-        Assert.assertTrue(tMgr.acceptTaggedScenario("@bob"));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred")));
+        Assert.assertTrue(tMgr.acceptTaggedScenario(Sets.newHashSet("@bob")));
 
         tMgr.insertTagOverlay("--@bob");
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@fred"));
-        Assert.assertFalse(tMgr.acceptTaggedScenario("@bob"));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@fred")));
+        Assert.assertFalse(tMgr.acceptTaggedScenario(Sets.newHashSet("@bob")));
     }
-
 
     @Test
     @Ignore
@@ -156,64 +156,64 @@ public class TagManagerTest {
 
     }
 
-	@Test
-	public void testTagAnnotations() {
+    @Test
+    public void testTagAnnotations() {
 
+        final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
+        stepImplsList.add(TestStepImplementations.class);
 
-		final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
-		stepImplsList.add(TestStepImplementations.class);
+        // pass in the stuff that would normally be placed in the annotation
 
-		// pass in the stuff that would normally be placed in the annotation
+        final TagManager tagManager = new TagManager(null);
+        final TestParameters testParams = new TestParameters(tagManager, null,
+                "./target/test-classes/features/tagged.feature");
+        testParams.init();
 
-		final TagManager tagManager = new TagManager(null);
-		final TestParameters testParams = new TestParameters(tagManager, null, "./target/test-classes/features/tagged.feature");
-		testParams.init();
-		
-		List<FeatureFile> featureFileList = testParams.getFeatureFileList();
+        List<FeatureFile> featureFileList = testParams.getFeatureFileList();
 
-		List<Scenario> scenarios = featureFileList.get(0).getScenarios();
-		Assert.assertThat(scenarios.size(), is(4));
+        List<Scenario> scenarios = featureFileList.get(0).getScenarios();
+        Assert.assertThat(scenarios.size(), is(4));
 
-		for (final Scenario sc : scenarios) {
-			if (! tagManager.acceptTaggedScenario(sc.getTags())) {
-				Assert.fail("all scenarios should be runnable");
-			}
-		}
+        for (final Scenario sc : scenarios) {
+            if (!tagManager.acceptTaggedScenario(sc.getTags())) {
+                Assert.fail("all scenarios should be runnable");
+            }
+        }
 
+        final TagManager tagManager2 = new TagManager("@runme");
+        final TestParameters testParams2 = new TestParameters(tagManager2, null,
+                "./target/test-classes/features/tagged.feature");
+        testParams2.init();
 
-		final TagManager tagManager2 = new TagManager("@runme");
-		final TestParameters testParams2 = new TestParameters(tagManager2, null, "./target/test-classes/features/tagged.feature");
-		testParams2.init();
-		
-		featureFileList = testParams2.getFeatureFileList();
+        featureFileList = testParams2.getFeatureFileList();
 
-		scenarios = featureFileList.get(0).getScenarios();
-		Assert.assertThat(scenarios.size(), is(4));
+        scenarios = featureFileList.get(0).getScenarios();
+        Assert.assertThat(scenarios.size(), is(4));
 
-		final Set<String> excludedTaggedScenarios = new HashSet<String>();
+        final Set<String> excludedTaggedScenarios = new HashSet<String>();
 
-		excludedTaggedScenarios.add("An excluded tagged scenario");
-		excludedTaggedScenarios.add("An untagged scenario");
-		excludedTaggedScenarios.add("multilined tagged scenario");
+        excludedTaggedScenarios.add("An excluded tagged scenario");
+        excludedTaggedScenarios.add("An untagged scenario");
+        excludedTaggedScenarios.add("multilined tagged scenario");
 
-		for (final Scenario sc : scenarios) {
-			
-			if (tagManager2.acceptTaggedScenario(sc.getTags())) {
-//			if (runner.isRunnable(sc)) {
-				Assert.assertThat(sc.getDescription(), is("A tagged scenario"));
-			} else {
-				if (!excludedTaggedScenarios.contains(sc.getDescription())) {
-					Assert.fail("expecting some excluded tags: " + sc.getDescription());
-				}
-			}
-		}
+        for (final Scenario sc : scenarios) {
 
-		// check that the multiline tagged scenario works ok
-		final Scenario scenario = featureFileList.get(0).getScenarios().get(3);
+            if (tagManager2.acceptTaggedScenario(sc.getTags())) {
+                // if (runner.isRunnable(sc)) {
+                Assert.assertThat(sc.getDescription(), is("A tagged scenario"));
+            } else {
+                if (!excludedTaggedScenarios.contains(sc.getDescription())) {
+                    Assert.fail("expecting some excluded tags: " + sc.getDescription());
+                }
+            }
+        }
 
-		Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@all"));
-		Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@searchcontracts"));
-		Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@searchcontracts_30"));
-	}
+        // check that the multiline tagged scenario works ok
+        final Scenario scenario = featureFileList.get(0).getScenarios().get(3);
+
+        Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@all"));
+        Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@searchcontracts"));
+        Assert.assertThat("expecting a tag to be present", scenario.getTags(), hasItem("@searchcontracts_30"));
+    }
 
 }

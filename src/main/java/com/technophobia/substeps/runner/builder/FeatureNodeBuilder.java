@@ -47,7 +47,7 @@ public class FeatureNodeBuilder {
 
             if (scenario != null) {
 
-                ScenarioNode<?> scenarioNode = scenarioNodeBuilder.build(scenario, 2);
+                ScenarioNode<?> scenarioNode = scenarioNodeBuilder.build(scenario, featureFile.getTags(), 2);
                 if (scenarioNode != null) {
 
                     scenarioNodes.add(scenarioNode);
@@ -57,11 +57,10 @@ public class FeatureNodeBuilder {
 
         final Feature feature = new Feature(featureFile.getName(), featureFile.getSourceFile().getName());
 
-        final FeatureNode featureNode = new FeatureNode(feature, scenarioNodes);
+        final FeatureNode featureNode = new FeatureNode(feature, scenarioNodes, featureFile.getTags());
 
         featureNode.setFileUri(featureFile.getSourceFile().getAbsolutePath());
         featureNode.setLineNumber(0);
-        featureNode.setTags(featureFile.getTags());
 
         return featureNode;
     }

@@ -312,7 +312,7 @@ public class ExecutionNodeRunnerTest {
         final OutlineScenarioNode outlineNode = new OutlineScenarioNode("scenarioName",
                 Collections.<OutlineScenarioRowNode> emptyList(), 2);
         final FeatureNode featureNode = new FeatureNode(new Feature("test feature", "file"),
-                Collections.<ScenarioNode<?>> singletonList(outlineNode));
+                Collections.<ScenarioNode<?>> singletonList(outlineNode), Collections.<String> emptySet());
         final ExecutionNode rootNode = new RootNode("Description", Collections.singletonList(featureNode));
 
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();

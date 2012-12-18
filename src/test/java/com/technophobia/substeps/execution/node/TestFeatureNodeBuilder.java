@@ -11,10 +11,10 @@ import com.technophobia.substeps.execution.Feature;
 public class TestFeatureNodeBuilder {
 
     private final Feature feature;
-    
+
     private FeatureNode built;
-    
-    private Set<String> tags = Sets.newHashSet();
+
+    private final Set<String> tags = Sets.newHashSet();
 
     List<TestScenarioNodeBuilder<?>> scenarioBuilders = Lists.newArrayList();
 
@@ -28,9 +28,9 @@ public class TestFeatureNodeBuilder {
         scenarioBuilders.add(testBasicScenarioNodeBuilder);
         return testBasicScenarioNodeBuilder;
     }
-    
+
     public TestOutlineScenarioNodeBuilder addOutlineScenario(String scenarioName) {
-        
+
         TestOutlineScenarioNodeBuilder outlineBuilder = new TestOutlineScenarioNodeBuilder(scenarioName, 2);
         scenarioBuilders.add(outlineBuilder);
         return outlineBuilder;
@@ -40,16 +40,16 @@ public class TestFeatureNodeBuilder {
 
         List<ScenarioNode<?>> scenarioNodes = Lists.newArrayListWithCapacity(scenarioBuilders.size());
         for (TestScenarioNodeBuilder<?> builder : scenarioBuilders) {
-        
+
+            builder.addTags(this.tags);
             scenarioNodes.add(builder.build());
         }
-        built = new FeatureNode(feature, scenarioNodes);
-        built.setTags(tags);
+        built = new FeatureNode(feature, scenarioNodes, tags);
         return built;
     }
 
     public FeatureNode getBuilt() {
-        
+
         return built;
     }
 

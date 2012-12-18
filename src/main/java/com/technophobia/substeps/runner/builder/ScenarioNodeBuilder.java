@@ -1,11 +1,13 @@
 package com.technophobia.substeps.runner.builder;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
@@ -30,11 +32,11 @@ public class ScenarioNodeBuilder {
     }
 
     // TODO - to turn off - @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    public ScenarioNode<?> build(final Scenario scenario, int depth) {
+    public ScenarioNode<?> build(final Scenario scenario, final Set<String> inheritedTags, int depth) {
 
         if (parameters.isRunnable(scenario)) {
 
-            return buildRunnableScenarioNode(scenario, depth);
+            return buildRunnableScenarioNode(scenario, inheritedTags, depth);
 
         } else {
 
@@ -43,24 +45,24 @@ public class ScenarioNodeBuilder {
         }
     }
 
-    private ScenarioNode<?> buildRunnableScenarioNode(final Scenario scenario, int depth) {
+    private ScenarioNode<?> buildRunnableScenarioNode(final Scenario scenario, Set<String> inheritedTags, int depth) {
 
         ScenarioNode<?> scenarioNode = null;
 
         try {
             if (scenario.isOutline()) {
 
-                scenarioNode = buildOutlineScenarioNode(scenario, depth);
+                scenarioNode = buildOutlineScenarioNode(scenario, inheritedTags, depth);
 
             } else {
 
-                scenarioNode = buildBasicScenarioNode(scenario, null, depth);
+                scenarioNode = buildBasicScenarioNode(scenario, null, inheritedTags, depth);
             }
         } catch (final Throwable t) {
 
             // something has gone wrong parsing this scenario, no point
             // running it so mark it as failed now
-            scenarioNode = new BasicScenarioNode(scenario.getDescription(), null, null, depth);
+            scenarioNode = new BasicScenarioNode(scenario.getDescription(), null, null, null, depth);
             scenarioNode.getResult().setFailedToParse(t);
 
             if (parameters.isFailParseErrorsImmediately()) {
@@ -72,7 +74,7 @@ public class ScenarioNodeBuilder {
         return scenarioNode;
     }
 
-    public OutlineScenarioNode buildOutlineScenarioNode(final Scenario scenario, int depth) {
+    public OutlineScenarioNode buildOutlineScenarioNode(final Scenario scenario, Set<String> inheritedTags, int depth) {
 
         int idx = 0;
         List<OutlineScenarioRowNode> outlineRowNodes = Lists.newArrayListWithExpectedSize(scenario
@@ -80,7 +82,8 @@ public class ScenarioNodeBuilder {
 
         for (final ExampleParameter outlineParameters : scenario.getExampleParameters()) {
 
-            BasicScenarioNode basicSenarioNode = buildBasicScenarioNode(scenario, outlineParameters, depth + 2);
+            BasicScenarioNode basicSenarioNode = buildBasicScenarioNode(scenario, outlineParameters, inheritedTags,
+                    depth + 2);
             outlineRowNodes.add(new OutlineScenarioRowNode(idx++, basicSenarioNode, depth + 1));
         }
 
@@ -88,17 +91,25 @@ public class ScenarioNodeBuilder {
     }
 
     public BasicScenarioNode buildBasicScenarioNode(final Scenario scenario, final ExampleParameter scenarioParameters,
-            int depth) {
+            Set<String> inheritedTags, int depth) {
+
+        Set<String> allTags = Sets.newHashSet();
+        allTags.addAll(inheritedTags);
+
+        if (scenario.getTags() != null) {
+
+            allTags.addAll(scenario.getTags());
+        }
 
         SubstepNode background = scenario.hasBackground() ? substepNodeBuilder.build(scenario.getDescription(),
                 scenario.getBackground().getSteps(), parameters.getSyntax().getSubStepsMap(), null, scenarioParameters,
-                true, depth + 1) : null;
+                true, allTags, depth + 1) : null;
 
         SubstepNode step = scenario.hasSteps() ? substepNodeBuilder.build(scenario.getDescription(),
-                scenario.getSteps(), parameters.getSyntax().getSubStepsMap(), null, scenarioParameters, false,
+                scenario.getSteps(), parameters.getSyntax().getSubStepsMap(), null, scenarioParameters, false, allTags,
                 depth + 1) : null;
 
-        return new BasicScenarioNode(scenario.getDescription(), background, step, depth);
+        return new BasicScenarioNode(scenario.getDescription(), background, step, allTags, depth);
     }
 
 }

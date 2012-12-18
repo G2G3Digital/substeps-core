@@ -20,6 +20,8 @@ package com.technophobia.substeps.model;
 
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+
 /**
  * 
  * 
@@ -28,33 +30,33 @@ import java.util.Set;
  */
 public abstract class RootFeature {
 
-	private String rawText;
-	private Set<String> tags;
+    private String rawText;
+    private Set<String> tags = Sets.newHashSet();
 
-	/**
-	 * @return the tags
-	 */
-	public Set<String> getTags() {
-		return tags;
-	}
+    /**
+     * @return the tags
+     */
+    public Set<String> getTags() {
+        return tags;
+    }
 
-	public void setRawText(final String rawText) {
-		this.rawText = rawText;
-	}
+    public void setRawText(final String rawText) {
+        this.rawText = rawText;
+    }
 
-	/**
-	 * @param currentTags
-	 */
-	public void setTags(final Set<String> currentTags) {
+    /**
+     * @param currentTags
+     */
+    public void setTags(final Set<String> currentTags) {
 
-		tags = currentTags;
+        tags = currentTags;
 
-	}
+    }
 
-	/**
-	 * @return
-	 */
-	public String getRawText() {
-		return rawText;
-	}
+    /**
+     * @return
+     */
+    public String getRawText() {
+        return rawText;
+    }
 }

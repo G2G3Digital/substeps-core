@@ -71,7 +71,7 @@ public class NodeExecutionContext {
         // set the criticality of this failure
 
         if (!failure.isSetupOrTearDown() && this.nonFatalTagmanager != null
-                && nonFatalTagmanager.acceptTaggedScenario(failure.getExeccutionNode().getTags())) {
+                && nonFatalTagmanager.isApplicable(failure.getExeccutionNode())) {
 
             failure.setNonCritical(true);
         }

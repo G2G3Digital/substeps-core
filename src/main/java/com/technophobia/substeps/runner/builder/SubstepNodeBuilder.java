@@ -41,7 +41,8 @@ public class SubstepNodeBuilder {
 
     public SubstepNode build(String scenarioDescription, final List<Step> steps,
             final PatternMap<ParentStep> subStepsMapLocal, final ParentStep parent,
-            final ExampleParameter parametersForSteps, boolean throwExceptionIfUnableToBuildMethodArgs, int depth) {
+            final ExampleParameter parametersForSteps, boolean throwExceptionIfUnableToBuildMethodArgs,
+            Set<String> tags, int depth) {
 
         if (steps == null || steps.isEmpty()) {
 
@@ -87,7 +88,7 @@ public class SubstepNodeBuilder {
                 }
 
                 SubstepNode substepNode = build(scenarioDescription, substepsParent.getSteps(), subStepsMapLocal,
-                        substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs, depth + 1);
+                        substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs, tags, depth + 1);
 
                 substepNode.setLine(substepsParent.getParent().getParameterLine());
                 substepNode.setFileUri(substepsParent.getSubStepFileUri());
@@ -102,7 +103,7 @@ public class SubstepNodeBuilder {
             }
         }
 
-        return new SubstepNode(substeps, depth);
+        return new SubstepNode(substeps, tags, depth);
     }
 
     private ParentStep locateSubStepsParent(final PatternMap<ParentStep> subStepsMapLocal, final Step step) {
