@@ -15,7 +15,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
 import com.technophobia.substeps.execution.ExecutionResult;
-import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.ExecutionNode;
 import com.technophobia.substeps.execution.node.IExecutionNode;
 import com.technophobia.substeps.execution.node.NodeWithChildren;
@@ -37,7 +36,7 @@ public class TreeJsonBuilder extends AbstractExecutionNodeVisitor<JsonObject> {
         resultToImageMap.put(ExecutionResult.FAILED, "img/FAILED.png");
     }
 
-    private Predicate<ExecutionNode> NODE_HAS_ERROR = new Predicate<ExecutionNode>() {
+    private final Predicate<ExecutionNode> NODE_HAS_ERROR = new Predicate<ExecutionNode>() {
 
         public boolean apply(ExecutionNode node) {
             return node.hasError();
@@ -132,13 +131,6 @@ public class TreeJsonBuilder extends AbstractExecutionNodeVisitor<JsonObject> {
     public JsonObject visit(NodeWithChildren<?> node) {
 
         return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(), node.getChildren());
-    }
-
-    @Override
-    public JsonObject visit(BasicScenarioNode node) {
-
-        return addChildren(createJsonWithBasicNodeDetails(node), node.hasError(),
-                node.getStep().getChildren());
     }
 
     @Override

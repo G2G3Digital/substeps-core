@@ -53,57 +53,75 @@ public class SubstepNodeBuilder {
 
         for (final Step step : steps) {
 
-            substituteStepParametersIntoStep(parametersForSteps, step);
+            substeps.add(buildStepNode(scenarioDescription, step, subStepsMapLocal, parent, parametersForSteps,
+                    throwExceptionIfUnableToBuildMethodArgs, tags, depth));
 
-            // is this step defined as a root of some sub steps, ie a parent?
-            ParentStep substepsParent = null;
-
-            if (subStepsMapLocal != null) {
-                substepsParent = locateSubStepsParent(subStepsMapLocal, step);
-            }
-
-            if (substepsParent != null) {
-
-                substepsParent.initialiseParamValues(-1, step.getParameterLine());
-
-                final ExampleParameter parametersForSubSteps = substepsParent.getParamValueMap();
-
-                final List<StepImplementation> list = parameters.getSyntax().checkForStepImplementations(
-                        step.getKeyword(), step.getParameterLine());
-
-                if (list != null && !list.isEmpty()) {
-                    final StepImplementation problem = list.get(0);
-
-                    // we've got a step implementation that matches a parent
-                    // step, ie a step that has substeps
-                    // fail immediately or mark as parse error
-
-                    final String msg = "line: [" + step.getParameterLine() + "] in [" + step.getSource()
-                            + "] matches step implementation method: [" + problem.getMethod().toString()
-                            + "] AND matches a sub step definition: [" + substepsParent.getParent().getParameterLine()
-                            + "] in [" + substepsParent.getSubStepFile() + "]";
-
-                    throw new SubstepsConfigurationException(msg);
-
-                }
-
-                SubstepNode substepNode = build(scenarioDescription, substepsParent.getSteps(), subStepsMapLocal,
-                        substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs, tags, depth + 1);
-
-                substepNode.setLine(substepsParent.getParent().getParameterLine());
-                substepNode.setFileUri(substepsParent.getSubStepFileUri());
-                substepNode.setLineNumber(substepsParent.getSourceLineNumber());
-
-                substeps.add(substepNode);
-
-            } else {
-
-                substeps.add(buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs,
-                        depth + 1));
-            }
         }
 
         return new SubstepNode(substeps, tags, depth);
+    }
+
+    public StepNode buildStepNode(String scenarioDescription, Step step, final PatternMap<ParentStep> subStepsMapLocal,
+            final ParentStep parent, ExampleParameter parametersForSteps,
+            boolean throwExceptionIfUnableToBuildMethodArgs, Set<String> tags, int depth) {
+
+        substituteStepParametersIntoStep(parametersForSteps, step);
+
+        // is this step defined as a root of some sub steps, ie a parent?
+        ParentStep substepsParent = null;
+
+        if (subStepsMapLocal != null) {
+            substepsParent = locateSubStepsParent(subStepsMapLocal, step);
+        }
+
+        StepNode stepNode;
+
+        if (substepsParent != null) {
+
+            stepNode = buildSubstepNode(scenarioDescription, step, subStepsMapLocal,
+                    throwExceptionIfUnableToBuildMethodArgs, tags, depth, substepsParent);
+
+        } else {
+
+            stepNode = buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs, depth);
+        }
+
+        return stepNode;
+    }
+
+    private SubstepNode buildSubstepNode(String scenarioDescription, Step step,
+            final PatternMap<ParentStep> subStepsMapLocal, boolean throwExceptionIfUnableToBuildMethodArgs,
+            Set<String> tags, int depth, ParentStep substepsParent) {
+        substepsParent.initialiseParamValues(-1, step.getParameterLine());
+
+        final ExampleParameter parametersForSubSteps = substepsParent.getParamValueMap();
+
+        final List<StepImplementation> list = parameters.getSyntax().checkForStepImplementations(step.getKeyword(),
+                step.getParameterLine());
+
+        if (list != null && !list.isEmpty()) {
+            final StepImplementation problem = list.get(0);
+
+            // we've got a step implementation that matches a parent
+            // step, ie a step that has substeps
+            // fail immediately or mark as parse error
+
+            final String msg = "line: [" + step.getParameterLine() + "] in [" + step.getSource()
+                    + "] matches step implementation method: [" + problem.getMethod().toString()
+                    + "] AND matches a sub step definition: [" + substepsParent.getParent().getParameterLine()
+                    + "] in [" + substepsParent.getSubStepFile() + "]";
+
+            throw new SubstepsConfigurationException(msg);
+
+        }
+
+        SubstepNode substepNode = build(scenarioDescription, substepsParent.getSteps(), subStepsMapLocal,
+                substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs, tags, depth);
+
+        substepNode.setLine(substepsParent.getParent().getParameterLine());
+        substepNode.setFileUri(substepsParent.getSubStepFileUri());
+        substepNode.setLineNumber(substepsParent.getSourceLineNumber());
+        return substepNode;
     }
 
     private ParentStep locateSubStepsParent(final PatternMap<ParentStep> subStepsMapLocal, final Step step) {

@@ -17,6 +17,13 @@ public class TestSubstepNodeBuilder implements TestStepNodeBuilder<SubstepNode> 
         this.depth = depth;
     }
 
+    public TestSubstepNodeBuilder addSubstep() {
+
+        TestSubstepNodeBuilder testSubstepBuilder = new TestSubstepNodeBuilder(depth + 1);
+        stepNodeBuilders.add(testSubstepBuilder);
+        return testSubstepBuilder;
+    }
+
     public TestSubstepNodeBuilder addStepImpl(Class<?> targetClass, Method targetMethod, Object... methodArgs) {
 
         TestStepImplementationNodeBuilder testStepImplementationNodeBuilder = new TestStepImplementationNodeBuilder(

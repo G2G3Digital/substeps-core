@@ -16,7 +16,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
 import com.technophobia.substeps.execution.ExecutionNodeResult;
-import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.ExecutionNode;
 import com.technophobia.substeps.execution.node.IExecutionNode;
 import com.technophobia.substeps.execution.node.NodeWithChildren;
@@ -78,14 +77,6 @@ public final class DetailedJsonBuilder extends AbstractExecutionNodeVisitor<Json
     public JsonObject visit(NodeWithChildren<?> node) {
 
         return createBasicDetailsWithChildDetails(node.getClass().getSimpleName().toString(), node, node.getChildren());
-    }
-
-    @Override
-    public JsonObject visit(BasicScenarioNode basicScenarioNode) {
-
-        //We want to ignore the step in the middle and instead use its children
-        return createBasicDetailsWithChildDetails("Scenario", basicScenarioNode,
-                basicScenarioNode.getStep().getChildren());
     }
 
     @Override

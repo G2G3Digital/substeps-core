@@ -26,6 +26,12 @@ public class TestOutlineScenarioRowNodeBuilder {
         return basicScenarioBuilder;
     }
 
+    public TestBasicScenarioNodeBuilder setBasicScenario(TestBasicScenarioNodeBuilder scenarioBuilder) {
+
+        basicScenarioBuilder = scenarioBuilder;
+        return basicScenarioBuilder;
+    }
+
     public OutlineScenarioRowNode build() {
 
         if (basicScenarioBuilder != null) {
@@ -34,7 +40,7 @@ public class TestOutlineScenarioRowNodeBuilder {
         }
 
         BasicScenarioNode basicScenario = basicScenarioBuilder != null ? basicScenarioBuilder.build() : null;
-        return built = new OutlineScenarioRowNode(rowIndex, basicScenario, depth);
+        return built = new OutlineScenarioRowNode(rowIndex, basicScenario, tags, depth);
     }
 
     public OutlineScenarioRowNode getBuilt() {

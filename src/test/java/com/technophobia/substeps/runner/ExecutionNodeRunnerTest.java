@@ -310,7 +310,7 @@ public class ExecutionNodeRunnerTest {
     public void testScenarioOutlineFailsWithNoExamples() {
 
         final OutlineScenarioNode outlineNode = new OutlineScenarioNode("scenarioName",
-                Collections.<OutlineScenarioRowNode> emptyList(), 2);
+                Collections.<OutlineScenarioRowNode> emptyList(), Collections.<String> emptySet(), 2);
         final FeatureNode featureNode = new FeatureNode(new Feature("test feature", "file"),
                 Collections.<ScenarioNode<?>> singletonList(outlineNode), Collections.<String> emptySet());
         final ExecutionNode rootNode = new RootNode("Description", Collections.singletonList(featureNode));
@@ -400,10 +400,10 @@ public class ExecutionNodeRunnerTest {
         TestOutlineScenarioRowNodeBuilder rowBuilder2 = outlineScenarioBuilder.addRow(2);
 
         TestBasicScenarioNodeBuilder row1ScenarioBuilder = rowBuilder1.setBasicScenario(scenarioName);
-        row1ScenarioBuilder.addSubsteps().addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod)
+        row1ScenarioBuilder.addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod)
                 .addStepImpl(getClass(), nonFailMethod);
         TestBasicScenarioNodeBuilder row2ScenarioBuilder = rowBuilder2.setBasicScenario(scenarioName);
-        row2ScenarioBuilder.addSubsteps().addStepImpls(3, getClass(), nonFailMethod);
+        row2ScenarioBuilder.addStepImpls(3, getClass(), nonFailMethod);
 
         RootNode rootNode = rootNodeBuilder.build();
 
@@ -427,18 +427,18 @@ public class ExecutionNodeRunnerTest {
         Assert.assertThat(rowBuilder2.getBuilt().getResult().getResult(), is(ExecutionResult.PASSED));
 
         Assert.assertThat(outlineScenarioBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
-        Assert.assertThat(row1ScenarioBuilder.getBuilt().getStep().getChildren().get(0).getResult().getResult(),
+        Assert.assertThat(row1ScenarioBuilder.getBuilt().getChildren().get(0).getResult().getResult(),
                 is(ExecutionResult.PASSED));
-        Assert.assertThat(row1ScenarioBuilder.getBuilt().getStep().getChildren().get(1).getResult().getResult(),
+        Assert.assertThat(row1ScenarioBuilder.getBuilt().getChildren().get(1).getResult().getResult(),
                 is(ExecutionResult.FAILED));
-        Assert.assertThat(row1ScenarioBuilder.getBuilt().getStep().getChildren().get(2).getResult().getResult(),
+        Assert.assertThat(row1ScenarioBuilder.getBuilt().getChildren().get(2).getResult().getResult(),
                 is(ExecutionResult.NOT_RUN));
 
-        Assert.assertThat(row2ScenarioBuilder.getBuilt().getStep().getChildren().get(0).getResult().getResult(),
+        Assert.assertThat(row2ScenarioBuilder.getBuilt().getChildren().get(0).getResult().getResult(),
                 is(ExecutionResult.PASSED));
-        Assert.assertThat(row2ScenarioBuilder.getBuilt().getStep().getChildren().get(1).getResult().getResult(),
+        Assert.assertThat(row2ScenarioBuilder.getBuilt().getChildren().get(1).getResult().getResult(),
                 is(ExecutionResult.PASSED));
-        Assert.assertThat(row2ScenarioBuilder.getBuilt().getStep().getChildren().get(2).getResult().getResult(),
+        Assert.assertThat(row2ScenarioBuilder.getBuilt().getChildren().get(2).getResult().getResult(),
                 is(ExecutionResult.PASSED));
 
         Assert.assertFalse("expecting some failures", failures.isEmpty());
@@ -471,11 +471,10 @@ public class ExecutionNodeRunnerTest {
         TestOutlineScenarioRowNodeBuilder rowBuilder2 = outlineScenarioBuilder.addRow(2);
 
         TestBasicScenarioNodeBuilder row1ScenarioBuilder = rowBuilder1.setBasicScenario(scenarioName);
-        row1ScenarioBuilder.addSubsteps().addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod)
+        row1ScenarioBuilder.addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod)
                 .addStepImpl(getClass(), nonFailMethod);
         TestBasicScenarioNodeBuilder row2ScenarioBuilder = rowBuilder2.setBasicScenario(scenarioName);
-        row2ScenarioBuilder.addSubsteps().addStepImpl(getClass(), nonFailMethod)
-                .addStepImpls(3, getClass(), failMethod);
+        row2ScenarioBuilder.addStepImpl(getClass(), nonFailMethod).addStepImpls(3, getClass(), failMethod);
 
         RootNode rootNode = rootNodeBuilder.build();
 

@@ -12,9 +12,11 @@ import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
 import com.technophobia.substeps.execution.node.ScenarioNode;
+import com.technophobia.substeps.execution.node.StepNode;
 import com.technophobia.substeps.execution.node.SubstepNode;
 import com.technophobia.substeps.model.ExampleParameter;
 import com.technophobia.substeps.model.Scenario;
+import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import com.technophobia.substeps.runner.TestParameters;
 
@@ -80,14 +82,20 @@ public class ScenarioNodeBuilder {
         List<OutlineScenarioRowNode> outlineRowNodes = Lists.newArrayListWithExpectedSize(scenario
                 .getExampleParameters().size());
 
-        for (final ExampleParameter outlineParameters : scenario.getExampleParameters()) {
+        Set<String> allTags = Sets.newHashSet();
+        allTags.addAll(inheritedTags);
 
-            BasicScenarioNode basicSenarioNode = buildBasicScenarioNode(scenario, outlineParameters, inheritedTags,
-                    depth + 2);
-            outlineRowNodes.add(new OutlineScenarioRowNode(idx++, basicSenarioNode, depth + 1));
+        if (scenario.getTags() != null) {
+            allTags.addAll(scenario.getTags());
         }
 
-        return new OutlineScenarioNode(scenario.getDescription(), outlineRowNodes, depth);
+        for (final ExampleParameter outlineParameters : scenario.getExampleParameters()) {
+
+            BasicScenarioNode basicSenarioNode = buildBasicScenarioNode(scenario, outlineParameters, allTags, depth + 2);
+            outlineRowNodes.add(new OutlineScenarioRowNode(idx++, basicSenarioNode, allTags, depth + 1));
+        }
+
+        return new OutlineScenarioNode(scenario.getDescription(), outlineRowNodes, allTags, depth);
     }
 
     public BasicScenarioNode buildBasicScenarioNode(final Scenario scenario, final ExampleParameter scenarioParameters,
@@ -105,11 +113,19 @@ public class ScenarioNodeBuilder {
                 scenario.getBackground().getSteps(), parameters.getSyntax().getSubStepsMap(), null, scenarioParameters,
                 true, allTags, depth + 1) : null;
 
-        SubstepNode step = scenario.hasSteps() ? substepNodeBuilder.build(scenario.getDescription(),
-                scenario.getSteps(), parameters.getSyntax().getSubStepsMap(), null, scenarioParameters, false, allTags,
-                depth + 1) : null;
+        List<StepNode> steps = Lists.newArrayList();
 
-        return new BasicScenarioNode(scenario.getDescription(), background, step, allTags, depth);
+        if (scenario.hasSteps()) {
+
+            for (Step step : scenario.getSteps()) {
+
+                steps.add(substepNodeBuilder.buildStepNode(scenario.getDescription(), step, parameters.getSyntax()
+                        .getSubStepsMap(), null, scenarioParameters, false, allTags, depth + 1));
+            }
+
+        }
+
+        return new BasicScenarioNode(scenario.getDescription(), background, steps, allTags, depth);
     }
 
 }

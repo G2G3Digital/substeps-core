@@ -31,8 +31,11 @@ import com.google.common.collect.Sets;
 import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.execution.node.OutlineScenarioNode;
+import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
 import com.technophobia.substeps.execution.node.RootNode;
-import com.technophobia.substeps.execution.node.SubstepNode;
+import com.technophobia.substeps.execution.node.ScenarioNode;
+import com.technophobia.substeps.execution.node.StepNode;
 
 /**
  * @author ian
@@ -50,39 +53,59 @@ public class ExecutionStats extends AbstractExecutionNodeVisitor<Void> {
 
         for (RootNode rootNode : data.getRootNodes()) {
 
-            rootNode.accept(this);
+            buildStatsForRootNode(rootNode);
         }
     }
 
-    @Override
-    public Void visit(FeatureNode featureNode) {
+    private void buildStatsForRootNode(RootNode rootNode) {
+
+        for (FeatureNode featureNode : rootNode.getChildren()) {
+
+            buildStatsForFeatureNode(featureNode);
+
+            for (ScenarioNode<?> scenarioNode : featureNode.getChildren()) {
+
+                buildStatsForScenarioNode(scenarioNode);
+            }
+        }
+    }
+
+    private void buildStatsForScenarioNode(ScenarioNode<?> scenarioNode) {
+        for (TestCounterSet stats : getAllStatsForTags(scenarioNode.getTags())) {
+            stats.getScenarioStats().apply(scenarioNode);
+        }
+        scenarioNode.dispatch(this);
+    }
+
+    private void buildStatsForFeatureNode(FeatureNode featureNode) {
 
         for (TestCounterSet stats : getAllStatsForTags(featureNode.getTags())) {
-
             stats.getFeatureStats().apply(featureNode);
         }
-
-        return null;
     }
 
     @Override
     public Void visit(BasicScenarioNode scenarioNode) {
 
-        for (TestCounterSet stats : getAllStatsForTags(scenarioNode.getTags())) {
+        Set<TestCounterSet> testStats = getAllStatsForTags(scenarioNode.getTags());
 
-            stats.getScenarioStats().apply(scenarioNode);
+        for (StepNode childNode : scenarioNode.getChildren()) {
+
+            for (TestCounterSet stats : testStats) {
+
+                stats.getScenarioStepStats().apply(childNode);
+            }
         }
 
         return null;
     }
 
     @Override
-    public Void visit(SubstepNode substepNode) {
+    public Void visit(OutlineScenarioNode outlineScenarioNode) {
 
-        for (TestCounterSet stats : getAllStatsForTags(substepNode.getTags())) {
+        for (OutlineScenarioRowNode row : outlineScenarioNode.getChildren()) {
 
-            System.out.println(stats.getTag() + "=============== " + substepNode.getDescription());
-            stats.getScenarioStepStats().apply(substepNode);
+            visit(row.getBasicScenarioNode());
         }
 
         return null;
@@ -223,28 +246,3 @@ public class ExecutionStats extends AbstractExecutionNodeVisitor<Void> {
         return sortedList;
     }
 }
-// for (final IExecutionNode node : data.getNodeList()) {
-// final List<TestCounterSet> testStats = new ArrayList<TestCounterSet>();
-//
-// testStats.add(totals);
-//
-// final Set<String> tags = node.getTags();
-//
-// if (tags != null) {
-//
-// for (final String tag : tags) {
-// TestCounterSet testStatSet = taggedStats.get(tag);
-// if (testStatSet == null) {
-// testStatSet = new TestCounterSet();
-// testStatSet.setTag(tag);
-// taggedStats.put(tag, testStatSet);
-// }
-// testStats.add(testStatSet);
-// }
-// }
-//
-// for (final TestCounterSet testStatSet : testStats) {
-//
-// node.dispatch(testStatSet);
-// }
-// }

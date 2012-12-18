@@ -1,14 +1,17 @@
 package com.technophobia.substeps.execution.node;
 
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class TestBasicScenarioNodeBuilder implements TestScenarioNodeBuilder<BasicScenarioNode> {
 
     private final String scenarioName;
     private TestSubstepNodeBuilder backgroundBuilder;
-    private TestSubstepNodeBuilder substepBuilder;
+    private final List<TestStepNodeBuilder<?>> stepBuilders = Lists.newArrayList();
     private final Set<String> tags = Sets.newHashSet();
 
     private BasicScenarioNode built;
@@ -26,10 +29,29 @@ public class TestBasicScenarioNodeBuilder implements TestScenarioNodeBuilder<Bas
         return backgroundBuilder;
     }
 
-    public TestSubstepNodeBuilder addSubsteps() {
+    public TestSubstepNodeBuilder addSubstep() {
 
-        substepBuilder = new TestSubstepNodeBuilder(depth + 1);
-        return substepBuilder;
+        TestSubstepNodeBuilder testSubstepBuilder = new TestSubstepNodeBuilder(depth + 1);
+        this.stepBuilders.add(testSubstepBuilder);
+        return testSubstepBuilder;
+    }
+
+    public TestBasicScenarioNodeBuilder addStepImpl(Class<?> targetClass, Method targetMethod, Object... methodArgs) {
+
+        TestStepImplementationNodeBuilder testStepImplementationNodeBuilder = new TestStepImplementationNodeBuilder(
+                targetClass, targetMethod, depth, methodArgs);
+        stepBuilders.add(testStepImplementationNodeBuilder);
+        return this;
+    }
+
+    public TestBasicScenarioNodeBuilder addStepImpls(int numberOfIdenticalStepsImpls, Class<?> targetClass,
+            Method targetMethod) {
+
+        for (int i = 0; i < numberOfIdenticalStepsImpls; i++) {
+
+            addStepImpl(targetClass, targetMethod);
+        }
+        return this;
     }
 
     public void addTag(String tag) {
@@ -45,9 +67,15 @@ public class TestBasicScenarioNodeBuilder implements TestScenarioNodeBuilder<Bas
     public BasicScenarioNode build() {
 
         SubstepNode backgroundNode = backgroundBuilder != null ? backgroundBuilder.build() : null;
-        SubstepNode substepNode = substepBuilder != null ? substepBuilder.build() : null;
 
-        return built = new BasicScenarioNode(scenarioName, backgroundNode, substepNode, tags, depth);
+        List<StepNode> stepNodes = Lists.newArrayList();
+
+        for (TestStepNodeBuilder<?> builder : stepBuilders) {
+
+            stepNodes.add(builder.build());
+        }
+
+        return built = new BasicScenarioNode(scenarioName, backgroundNode, stepNodes, tags, depth);
     }
 
     public BasicScenarioNode getBuilt() {

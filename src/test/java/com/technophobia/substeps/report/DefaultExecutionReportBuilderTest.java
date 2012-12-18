@@ -53,7 +53,6 @@ import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.execution.node.ScenarioNode;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
 import com.technophobia.substeps.execution.node.StepNode;
-import com.technophobia.substeps.execution.node.SubstepNode;
 
 /**
  * @author ian
@@ -132,14 +131,13 @@ public class DefaultExecutionReportBuilderTest {
 
     private BasicScenarioNode createScenario(String scenarioName) {
 
-        SubstepNode stepImpl = createSubstepNode();
-        BasicScenarioNode scenarioNode = new BasicScenarioNode(scenarioName, null, stepImpl,
+        BasicScenarioNode scenarioNode = new BasicScenarioNode(scenarioName, null, createSteps(),
                 Collections.<String> emptySet(), 2);
         scenarioNodes.add(scenarioNode);
         return scenarioNode;
     }
 
-    private SubstepNode createSubstepNode() {
+    private List<StepNode> createSteps() {
 
         Method nonFailMethod = null;
         Method failMethod = null;
@@ -156,7 +154,7 @@ public class DefaultExecutionReportBuilderTest {
         StepNode stepImpl2 = createStep(this.getClass(), failMethod, STEP_NODE + "2");
         StepNode stepImpl3 = createStep(this.getClass(), nonFailMethod, STEP_NODE + "3");
 
-        return new SubstepNode(Lists.newArrayList(stepImpl1, stepImpl2, stepImpl3), Collections.<String> emptySet(), 3);
+        return Lists.newArrayList(stepImpl1, stepImpl2, stepImpl3);
     }
 
     private StepImplementationNode createStep(Class<?> stepClass, Method stepMethod, String stepLine) {
@@ -178,9 +176,9 @@ public class DefaultExecutionReportBuilderTest {
 
         Assert.assertEquals("The array creation line was not as expected", ARRAY_CREATION_LINE, arrayCreationLine);
         assertThereAreAsManyDetailsInTheReportAsNodesCreated();
-        assertRootNodeAsExpected(7 + nodeIdOffset);
-        assertFeatureNodeAsExpected(6 + nodeIdOffset);
-        assertScenarioNodeAsExpected(5 + nodeIdOffset);
+        assertRootNodeAsExpected(6 + nodeIdOffset);
+        assertFeatureNodeAsExpected(5 + nodeIdOffset);
+        assertScenarioNodeAsExpected(4 + nodeIdOffset);
         assertStepNodeAsExpected(3 + nodeIdOffset, STEP_NODE + "3");
         assertStepNodeAsExpected(2 + nodeIdOffset, STEP_NODE + "2");
         assertStepNodeAsExpected(1 + nodeIdOffset, STEP_NODE + "1");
@@ -218,7 +216,7 @@ public class DefaultExecutionReportBuilderTest {
     private void assertScenarioNodeAsExpected(int index) {
 
         JsonObject scenarioNode = details.get(index);
-        assertBasics(index, scenarioNode, "Scenario", NOT_RUN);
+        assertBasics(index, scenarioNode, "BasicScenarioNode", NOT_RUN);
         Assert.assertEquals(SCENARIO_NAME, scenarioNode.get(DESCRIPTION).getAsString());
 
         JsonArray children = scenarioNode.getAsJsonArray("children");
@@ -256,7 +254,7 @@ public class DefaultExecutionReportBuilderTest {
 
     private void assertThereAreAsManyDetailsInTheReportAsNodesCreated() {
 
-        int numberOfNodes = 1 + featureNodes.size() + (scenarioNodes.size() * 2) + stepNodes.size();
+        int numberOfNodes = 1 + featureNodes.size() + scenarioNodes.size() + stepNodes.size();
 
         Assert.assertEquals("There should have been a detail line for each node", numberOfNodes, details.size());
     }

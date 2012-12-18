@@ -36,7 +36,7 @@ public class TestOutlineScenarioNodeBuilder implements TestScenarioNodeBuilder<O
             builder.addTags(tags);
             outlineRows.add(builder.build());
         }
-        return built = new OutlineScenarioNode(scenarioName, outlineRows, depth);
+        return built = new OutlineScenarioNode(scenarioName, outlineRows, tags, depth);
     }
 
     public OutlineScenarioNode getBuilt() {
