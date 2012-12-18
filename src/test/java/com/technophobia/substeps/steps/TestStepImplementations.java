@@ -36,69 +36,71 @@ import com.technophobia.substeps.model.SubSteps.StepImplementations;
 @Ignore
 public class TestStepImplementations {
 
+    public static boolean somethingCalled = false;
+
     public String passedParameter1;
     public String passedParameter2;
     @SuppressWarnings("unused")
     private List<Map<String, String>> table;
 
-
     @Step("Given something")
     public void given() {
+        somethingCalled = true;
         System.out.println("given");
     }
 
-
     @Step("When an event occurs")
     public void when() {
+        somethingCalled = true;
         System.out.println("when");
     }
 
-
     @Step("Then bad things happen")
     public void then() {
+        somethingCalled = true;
         System.out.println("then");
     }
 
-
     @Step("And people get upset")
     public void and() {
+        somethingCalled = true;
         System.out.println("and");
     }
 
-
     @Step("And a parameter ([^\"]*) is supplied")
     public void param(final String param) {
+        somethingCalled = true;
         System.out.println("param: " + param);
     }
 
-
     @Step("Then method with param ([^\"]*)")
     public void meth1(final String name1) {
+        somethingCalled = true;
         System.out.println("meth1 param " + name1);
     }
 
-
     @Step("Then another method with param ([^\"]*)")
     public void meth2(final String name2) {
+        somethingCalled = true;
         System.out.println("meth2 param " + name2);
     }
 
-
     @Step("Whatever yee hah")
     public void whatever() {
+        somethingCalled = true;
         System.out.println("yeah whatever!!!");
     }
 
-
     @Step("ClearAndSendKeys \"([^\"]*)\" to id ([^\"]*)")
     public void sendKeysById(final String value, final String id) {
+        somethingCalled = true;
         passedParameter1 = value;
         passedParameter2 = id;
     }
 
-
     @Step("Given a step with a table argument")
     public void methodWithTableArgument(final List<Map<String, String>> table) {
+        somethingCalled = true;
         this.table = table;
     }
 }

@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.technophobia.substeps.model.SubSteps.StepImplementations;
 import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
 import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryFeature;
 import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
@@ -23,11 +24,11 @@ public class DryRunTest {
     public void configureRunner() {
 
         TestInitialisationClass.reset();
+        TestStepImplementations.somethingCalled = false;
 
         SubstepsExecutionConfig theConfig = new SubstepsExecutionConfig();
 
         theConfig.setDescription("Feature set");
-        theConfig.setInitialisationClass(new String[] { TestInitialisationClass.class.toString() });
 
         final String feature = "./target/test-classes/features/example.feature";
         final String substeps = "./target/test-classes/substeps/simple.substeps";
@@ -37,6 +38,7 @@ public class DryRunTest {
 
         final List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
         stepImplementationClasses.add(TestStepImplementations.class);
+        stepImplementationClasses.add(TestInitialisationClass.class);
 
         theConfig.setStepImplementationClasses(stepImplementationClasses);
 
@@ -47,66 +49,84 @@ public class DryRunTest {
     @Test
     public void testSetupTearDownAndImplsAreCalledIfNotOnDryRun() {
 
+        TestInitialisationClass.failOnAccess = false;
+
         runner.run();
 
-        Assert.assertTrue(TestInitialisationClass.accessed);
+        Assert.assertTrue(TestInitialisationClass.setupCalled);
+        Assert.assertTrue(TestInitialisationClass.tearDownCalled);
+        Assert.assertTrue(TestStepImplementations.somethingCalled);
     }
 
     @Test
-    public void testNoSetupIsCalled() {
+    public void testNoSetupOrTearDownIsCalled() {
 
-    }
+        try {
+            System.setProperty("dryRun", "true");
 
-    @Test
-    public void testNoTearDownIsCalled() {
+            runner.run();
 
+            Assert.assertFalse(TestInitialisationClass.setupCalled);
+            Assert.assertFalse(TestInitialisationClass.tearDownCalled);
+        } finally {
+
+            System.clearProperty("dryRun");
+        }
     }
 
     @Test
     public void testNoTestImplementationsAreCalled() {
 
-        // TestRootNodeBuilder rootNodeBuilder = new TestRootNodeBuilder();
-        // TestFeatureNodeBuilder featureNodeBuilder =
-        // rootNodeBuilder.addFeature(new Feature("a feature", "a filename"));
-        // featureNodeBuilder.addBasicScenario("basic scenario").addSubsteps()
-        // .addStepImpl(targetClass, targetMethod, methodArgs);
+        try {
+            System.setProperty("dryRun", "true");
+
+            runner.run();
+
+            Assert.assertFalse(TestStepImplementations.somethingCalled);
+        } finally {
+
+            System.clearProperty("dryRun");
+        }
 
     }
 
-    private static class TestInitialisationClass {
+    @StepImplementations(requiredInitialisationClasses = TestInitialisationClass.class)
+    public static class TestInitialisationClass {
 
-        private static boolean failOnAccess = true;
+        static boolean failOnAccess = true;
 
-        private static boolean accessed = false;
-
-        static void setFailOnAccess(boolean failOnAccess) {
-            TestInitialisationClass.failOnAccess = failOnAccess;
-        }
-
-        static boolean hasBeenAccessed() {
-            return accessed;
-        }
+        static boolean setupCalled = false;
+        static boolean tearDownCalled = false;
 
         static void reset() {
             failOnAccess = true;
-            accessed = false;
+            setupCalled = false;
+            tearDownCalled = false;
         }
 
         @BeforeAllFeatures
         @BeforeEveryFeature
         @BeforeEveryScenario
+        public void setupMethod() {
+
+            if (failOnAccess) {
+                Assert.fail("Setup method should not have been invoked since we were on a dry run");
+            }
+
+            setupCalled = true;
+        }
+
         @AfterEveryScenario
         @AfterEveryFeature
         @AfterAllFeatures
-        public void setupAndTeardownMethod() {
+        public void tearDownMethod() {
 
             if (failOnAccess) {
-                Assert.fail("Method should not have been invoked since we were on a dry run");
+                Assert.fail("Tear down method should not have been invoked since we were on a dry run");
             }
 
-            accessed = true;
+            tearDownCalled = true;
         }
-
     }
 
 }

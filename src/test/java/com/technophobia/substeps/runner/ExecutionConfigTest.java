@@ -87,6 +87,10 @@ public class ExecutionConfigTest {
     public static class StepImplsClass1_2_3 {
     }
 
+    @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass4.class, InitClass3.class })
+    public static class StepImplsClass1_4_3 {
+    }
+
     @StepImplementations(requiredInitialisationClasses = { InitClass1.class, InitClass2.class, InitClass3.class,
             InitClass4.class })
     public static class StepImplsClass1_2_3_4 {
@@ -264,4 +268,5 @@ public class ExecutionConfigTest {
         }
 
     }
+
 }

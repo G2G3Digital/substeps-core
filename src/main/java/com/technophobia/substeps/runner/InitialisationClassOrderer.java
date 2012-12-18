@@ -18,8 +18,12 @@
  */
 package com.technophobia.substeps.runner;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -34,13 +38,17 @@ import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
  * same time a parent and child of another node. Such a condition is equivalent
  * to a class which must be executed both before and after another.
  * 
- * 
+ * Once this graph is fully built it is converted into a list by traversing the
+ * graph only adding nodes whose parents have already been added, it keeps doing
+ * this until all nodes have been added.
  * 
  * @author rbarefield
  */
 public class InitialisationClassOrderer {
 
     private final InitialisationClassNode root = new InitialisationClassNode(null);
+
+    protected static final Logger log = LoggerFactory.getLogger(InitialisationClassOrderer.class);
 
     public void addOrderedInitialisationClasses(Class<?>... classes) {
 
@@ -63,11 +71,7 @@ public class InitialisationClassOrderer {
                             + parentNode.getInitialisationClass().getName());
                 }
 
-                if (!existingNode.hasParent(parentNode)) {
-
-                    existingNode.getParentNode().removeChild(existingNode);
-                    parentNode.addChild(existingNode);
-                }
+                parentNode.addChild(existingNode);
 
             } else {
                 parentNode.addChild(newNode);
@@ -94,7 +98,7 @@ public class InitialisationClassOrderer {
 
 class InitialisationClassNode {
 
-    private InitialisationClassNode parentNode;
+    private final Set<InitialisationClassNode> parentNodes = Sets.newHashSet();
     private final Set<InitialisationClassNode> childNodes = Sets.newHashSet();
     private final Class<?> initialisationClass;
 
@@ -105,22 +109,29 @@ class InitialisationClassNode {
 
     public boolean hasParent(InitialisationClassNode parent) {
 
-        if (this.parentNode == null && parent != null) {
-
-            return false;
-        }
-
-        if (this.parentNode == parent) {
-            return true;
-        } else {
-            return this.parentNode.hasParent(parent);
-        }
+        return getAllParents().contains(parent);
 
     }
 
-    public InitialisationClassNode getParentNode() {
+    private Collection<InitialisationClassNode> getAllParents() {
 
-        return this.parentNode;
+        List<InitialisationClassNode> parents = Lists.newArrayList(this);
+
+        int i = 0;
+        while (i < parents.size()) {
+
+            InitialisationClassNode node = parents.get(i);
+
+            Set<InitialisationClassNode> parentsOfNodes = node.parentNodes;
+            for (InitialisationClassNode parentOfNode : parentsOfNodes) {
+                if (!parents.contains(parentOfNode)) {
+                    parents.add(parentOfNode);
+                }
+            }
+            i++;
+        }
+
+        return parents;
     }
 
     public Class<?> getInitialisationClass() {
@@ -130,13 +141,13 @@ class InitialisationClassNode {
     public void removeChild(InitialisationClassNode child) {
 
         this.childNodes.remove(child);
-        child.parentNode = null;
+        child.parentNodes.remove(this);
     }
 
     public void addChild(InitialisationClassNode child) {
 
         this.childNodes.add(child);
-        child.parentNode = this;
+        child.parentNodes.add(this);
     }
 
     public boolean hasChild(InitialisationClassNode child) {
@@ -170,22 +181,54 @@ class InitialisationClassNode {
         }
     }
 
+    private boolean hasParentNotIn(Collection<InitialisationClassNode> nodes) {
+
+        for (InitialisationClassNode parent : parentNodes) {
+            if (!nodes.contains(parent)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addChildren(List<InitialisationClassNode> nodes) {
+
+        boolean complete = true;
+
+        for (InitialisationClassNode child : childNodes) {
+
+            if (!child.hasParentNotIn(nodes)) {
+
+                if (!nodes.contains(child)) {
+
+                    nodes.add(child);
+                }
+                complete &= child.addChildren(nodes);
+            }
+        }
+
+        return complete;
+    }
+
     public List<InitialisationClassNode> linerize() {
 
-        int index = 0;
+        List<InitialisationClassNode> allNodes = Lists.newArrayList();
 
-        List<InitialisationClassNode> allNodes = Lists.newArrayList(this);
+        allNodes.add(this);
 
-        while (index < allNodes.size()) {
+        int safetyCount = 0;
 
-            InitialisationClassNode node = allNodes.get(index);
-
-            allNodes.addAll(node.childNodes);
-
-            index++;
+        while (!this.addChildren(allNodes)) {
+            safetyCount++;
+            if (safetyCount > 100) {
+                String message = "Unable to resolve class initialisation order, please log this as a bug with substeps";
+                InitialisationClassOrderer.log.error(message);
+                throw new RuntimeException(message);
+            }
         }
 
         return allNodes;
+
     }
 
     @Override

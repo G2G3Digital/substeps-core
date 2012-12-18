@@ -46,6 +46,8 @@ import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
  */
 public class ExecutionNodeRunner implements SubstepsRunner {
 
+    private static final String DRY_RUN_KEY = "dryRun";
+
     private static final Logger log = LoggerFactory.getLogger(ExecutionNodeRunner.class);
 
     private RootNode rootNode;
@@ -100,7 +102,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
         ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY, notificationDistributor);
 
-        final String dryRunProperty = System.getProperty("dryRun");
+        final String dryRunProperty = System.getProperty(DRY_RUN_KEY);
         boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
 
         MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : methodExecutor;
