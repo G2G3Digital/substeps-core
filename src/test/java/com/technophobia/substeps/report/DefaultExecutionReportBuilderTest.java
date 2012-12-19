@@ -159,7 +159,8 @@ public class DefaultExecutionReportBuilderTest {
 
     private StepImplementationNode createStep(Class<?> stepClass, Method stepMethod, String stepLine) {
 
-        final StepImplementationNode stepNode = new StepImplementationNode(stepClass, stepMethod, 3);
+        final StepImplementationNode stepNode = new StepImplementationNode(stepClass, stepMethod,
+                Collections.<String> emptySet(), 3);
         stepNode.getResult().setStarted();
         stepNodes.add(stepNode);
         stepNode.setLine(stepLine);

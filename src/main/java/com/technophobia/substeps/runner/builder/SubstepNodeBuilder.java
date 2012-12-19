@@ -83,7 +83,7 @@ public class SubstepNodeBuilder {
 
         } else {
 
-            stepNode = buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs, depth);
+            stepNode = buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs, tags, depth);
         }
 
         return stepNode;
@@ -182,7 +182,7 @@ public class SubstepNodeBuilder {
     }
 
     public StepImplementationNode buildStepImplementationNode(final ParentStep parent, final Step step,
-            boolean throwExceptionIfUnableToBuildMethodArgs, int depth) {
+            boolean throwExceptionIfUnableToBuildMethodArgs, final Set<String> tags, int depth) {
 
         log.debug("looking for impl for step: " + step.toString());
 
@@ -195,7 +195,7 @@ public class SubstepNodeBuilder {
         if (execImpl != null) {
 
             StepImplementationNode stepImplementationNode = new StepImplementationNode(execImpl.getImplementedIn(),
-                    execImpl.getMethod(), depth);
+                    execImpl.getMethod(), tags, depth);
 
             stepImplementationNode.setLine(step.getParameterLine());
             stepImplementationNode.setFileUri(step.getSource().getAbsolutePath());

@@ -72,6 +72,9 @@ public class TestBasicScenarioNodeBuilder implements TestScenarioNodeBuilder<Bas
 
         for (TestStepNodeBuilder<?> builder : stepBuilders) {
 
+            for (String myTag : tags) {
+                builder.addTag(myTag);
+            }
             stepNodes.add(builder.build());
         }
 
