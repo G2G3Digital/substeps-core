@@ -60,12 +60,14 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
     private final RootNodeRunner rootNodeRunner = new RootNodeRunner();
 
+    private List<SubstepExecutionFailure> failures;
+
     public void addNotifier(final INotifier notifier) {
 
         notificationDistributor.addListener(notifier);
     }
 
-    public void prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
+    public RootNode prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
 
         ExecutionConfigWrapper config = new ExecutionConfigWrapper(theConfig);
         config.initProperties();
@@ -114,9 +116,11 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager,
                 methodExecutorToUse);
+
+        return rootNode;
     }
 
-    public List<SubstepExecutionFailure> run() {
+    public RootNode run() {
 
         // TODO - why is this here twice?
         ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY, notificationDistributor);
@@ -132,12 +136,14 @@ public class ExecutionNodeRunner implements SubstepsRunner {
             nodeExecutionContext.addFailure(new SubstepExecutionFailure(t, rootNode));
         }
 
-        return nodeExecutionContext.getFailures();
-    }
-
-    public RootNode getRootNode() {
+        failures = nodeExecutionContext.getFailures();
 
         return this.rootNode;
+    }
+
+    public List<SubstepExecutionFailure> getFailures() {
+
+        return this.failures;
     }
 
 }

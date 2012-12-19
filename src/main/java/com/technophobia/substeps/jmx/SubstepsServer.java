@@ -64,10 +64,10 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technopobia.substeps.jmx.SubstepsMBean#prepareExecutionConfig(com
      * .technophobia.substeps.runner.ExecutionConfig)
      */
-    public void prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
+    public RootNode prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
         // TODO - synchronise around the init call ?
         this.nodeRunner = new ExecutionNodeRunner();
-        this.nodeRunner.prepareExecutionConfig(theConfig);
+        return this.nodeRunner.prepareExecutionConfig(theConfig);
     }
 
     /*
@@ -75,14 +75,14 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * 
      * @see com.technopobia.substeps.jmx.SubstepsMBean#run()
      */
-    public List<SubstepExecutionFailure> run() {
+    public RootNode run() {
 
         // attach a result listener to broadcast
 
         this.nodeRunner.addNotifier(this);
-        final List<SubstepExecutionFailure> failures;
+        final RootNode rootNode;
         try {
-            failures = this.nodeRunner.run();
+            rootNode = this.nodeRunner.run();
         } finally {
             // now send the final notification
 
@@ -92,7 +92,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
 
             sendNotification(n);
         }
-        return failures;
+        return rootNode;
 
     }
 
@@ -163,9 +163,9 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
         doNotification(node);
     }
 
-    public RootNode getRootNode() {
+    public List<SubstepExecutionFailure> getFailures() {
 
-        return this.nodeRunner.getRootNode();
+        return this.nodeRunner.getFailures();
     }
 
     public void addNotifier(INotifier notifier) {

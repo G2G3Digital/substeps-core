@@ -224,9 +224,9 @@ public class ExecutionNodeRunnerTest {
 
         runner.prepareExecutionConfig(executionConfig);
 
-        final List<SubstepExecutionFailure> localFailures = runner.run();
+        final RootNode rootNode = runner.run();
 
-        final RootNode rootNode = runner.getRootNode();
+        final List<SubstepExecutionFailure> localFailures = runner.getFailures();
 
         failures.addAll(localFailures);
 
@@ -297,7 +297,8 @@ public class ExecutionNodeRunnerTest {
         final INotifier mockNotifer = mock(INotifier.class);
         runner.addNotifier(mockNotifer);
 
-        final List<SubstepExecutionFailure> failures = runner.run();
+        runner.run();
+        final List<SubstepExecutionFailure> failures = runner.getFailures();
 
         verify(mockNotifer, times(2)).notifyNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
 
@@ -328,7 +329,8 @@ public class ExecutionNodeRunnerTest {
         final INotifier mockNotifer = mock(INotifier.class);
         runner.addNotifier(mockNotifer);
 
-        final List<SubstepExecutionFailure> failures = runner.run();
+        runner.run();
+        final List<SubstepExecutionFailure> failures = runner.getFailures();
 
         // the failure is called on the root twice, once for the child not
         // having tests, the other for
@@ -417,7 +419,8 @@ public class ExecutionNodeRunnerTest {
         setPrivateField(runner, "rootNode", rootNode);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
 
-        final List<SubstepExecutionFailure> failures = runner.run();
+        runner.run();
+        final List<SubstepExecutionFailure> failures = runner.getFailures();
 
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
         Assert.assertThat(featureBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
@@ -490,7 +493,8 @@ public class ExecutionNodeRunnerTest {
         setPrivateField(runner, "rootNode", rootNode);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
 
-        final List<SubstepExecutionFailure> failures = runner.run();
+        runner.run();
+        final List<SubstepExecutionFailure> failures = runner.getFailures();
 
         Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
         Assert.assertThat(featureBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.NOT_RUN));

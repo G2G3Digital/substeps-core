@@ -54,7 +54,7 @@ public class SubstepNodeBuilder {
         for (final Step step : steps) {
 
             substeps.add(buildStepNode(scenarioDescription, step, subStepsMapLocal, parent, parametersForSteps,
-                    throwExceptionIfUnableToBuildMethodArgs, tags, depth));
+                    throwExceptionIfUnableToBuildMethodArgs, tags, depth + 1));
 
         }
 
