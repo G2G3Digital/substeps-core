@@ -19,46 +19,40 @@
 package com.technophobia.substeps.report;
 
 public class TestCounterSet {
+
     private String tag = null;
+
     private TestCounters featureStats = new TestCounters();
     private TestCounters scenarioStats = new TestCounters();
     private TestCounters scenarioStepStats = new TestCounters();
-
 
     public String getTag() {
         return tag;
     }
 
-
     public void setTag(final String tag) {
         this.tag = tag;
     }
-
 
     public TestCounters getFeatureStats() {
         return featureStats;
     }
 
-
     public void setFeatureStats(final TestCounters featureStats) {
         this.featureStats = featureStats;
     }
-
 
     public TestCounters getScenarioStats() {
         return scenarioStats;
     }
 
-
     public void setScenarioStats(final TestCounters scenarioStats) {
         this.scenarioStats = scenarioStats;
     }
 
-
     public TestCounters getScenarioStepStats() {
         return scenarioStepStats;
     }
-
 
     public void setScenarioStepStats(final TestCounters scenarioStepStats) {
         this.scenarioStepStats = scenarioStepStats;

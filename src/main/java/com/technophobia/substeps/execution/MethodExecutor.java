@@ -1,11 +1,5 @@
-package com.technophobia.substeps.execution;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
-
 /*
- *	Copyright Technophobia Ltd 2012
+ *  Copyright Technophobia Ltd 2012
  *
  *   This file is part of Substeps.
  *
@@ -22,6 +16,12 @@ import java.util.List;
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
+package com.technophobia.substeps.execution;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+
 public interface MethodExecutor {
 
     /**
@@ -29,7 +29,7 @@ public interface MethodExecutor {
      */
     void executeMethods(List<Method> setupAndTearDownMethods) throws Exception;
 
-    void addImplementationClasses(final Class<?>[] implementationClasses);
+    void addImplementationClasses(final Class<?>... implementationClasses);
 
     <T> T getImplementation(Class<T> implementationClass);
 

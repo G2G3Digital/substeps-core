@@ -26,6 +26,7 @@ import java.util.Map;
 import org.junit.runner.Description;
 
 public class Scenario extends RootFeature {
+
     @Override
     public String toString() {
         return "Scenario: " + this.description;
@@ -45,8 +46,6 @@ public class Scenario extends RootFeature {
 
     private int sourceStartOffset = -1;
     private int sourceStartLineNumber = -1;
-    private final int sourceEndOffset = -1;
-
 
     /**
      * @return the background
@@ -55,16 +54,13 @@ public class Scenario extends RootFeature {
         return this.background;
     }
 
-
     public void setBackground(final Background background) {
         this.background = background;
     }
 
-
     public boolean hasBackground() {
         return this.background != null;
     }
-
 
     /**
      * @return the junitDescription
@@ -72,7 +68,6 @@ public class Scenario extends RootFeature {
     public Description getJunitDescription() {
         return this.junitDescription;
     }
-
 
     /**
      * @param junitDescription
@@ -82,51 +77,41 @@ public class Scenario extends RootFeature {
         this.junitDescription = junitDescription;
     }
 
-
     public String getDescription() {
         return this.description;
     }
-
 
     public void setDescription(final String description) {
         this.description = description;
     }
 
-
     public List<Step> getSteps() {
         return this.steps;
     }
-
 
     public List<ExampleParameter> getExampleParameters() {
         return this.exampleParameters;
     }
 
-
     public void setOutline(final boolean outline) {
         this.outline = outline;
     }
-
 
     public int getScenarioLineNumber() {
         return this.scenarioLineNumber;
     }
 
-
     public int getExampleKeysLineNumber() {
         return this.exampleKeysLineNumber;
     }
-
 
     public void setScenarioLineNumber(final int scenarioLineNumber) {
         this.scenarioLineNumber = scenarioLineNumber;
     }
 
-
     public void setExampleKeysLineNumber(final int exampleKeysLineNumber) {
         this.exampleKeysLineNumber = exampleKeysLineNumber;
     }
-
 
     /**
      * @param cukeArg
@@ -140,7 +125,6 @@ public class Scenario extends RootFeature {
         }
     }
 
-
     /**
      * @param split
      */
@@ -149,7 +133,6 @@ public class Scenario extends RootFeature {
         this.exampleParameters = new ArrayList<ExampleParameter>();
 
     }
-
 
     public void addExampleValues(final int lineNumber, final String[] split) {
         // Cucumber compatibility - with cuke you can get away with not defining
@@ -161,7 +144,6 @@ public class Scenario extends RootFeature {
         this.exampleParameters.add(new ExampleParameter(lineNumber, row));
     }
 
-
     /**
      * @return
      */
@@ -169,14 +151,12 @@ public class Scenario extends RootFeature {
         return this.outline;
     }
 
-
     /**
      * @return the sourceStartOffset
      */
     public int getSourceStartOffset() {
         return this.sourceStartOffset;
     }
-
 
     /**
      * @param sourceStartOffset
@@ -186,7 +166,6 @@ public class Scenario extends RootFeature {
         this.sourceStartOffset = sourceStartOffset;
     }
 
-
     /**
      * @return the sourceStartLineNumber
      */
@@ -194,13 +173,18 @@ public class Scenario extends RootFeature {
         return this.sourceStartLineNumber;
     }
 
-
     /**
      * @param sourceStartLineNumber
      *            the sourceStartLineNumber to set
      */
     public void setSourceStartLineNumber(final int sourceStartLineNumber) {
         this.sourceStartLineNumber = sourceStartLineNumber;
+    }
+
+    public boolean hasSteps() {
+
+        return steps != null && !steps.isEmpty();
+
     }
 
 }

@@ -28,11 +28,12 @@ import javax.management.NotificationBroadcasterSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.execution.ExecutionNode;
-import com.technophobia.substeps.runner.SubstepsExecutionConfig;
+import com.technophobia.substeps.execution.node.IExecutionNode;
+import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.runner.ExecutionNodeRunner;
 import com.technophobia.substeps.runner.INotifier;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
+import com.technophobia.substeps.runner.SubstepsExecutionConfig;
 
 /**
  * @author ian
@@ -63,10 +64,10 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technopobia.substeps.jmx.SubstepsMBean#prepareExecutionConfig(com
      * .technophobia.substeps.runner.ExecutionConfig)
      */
-    public void prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
+    public RootNode prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
         // TODO - synchronise around the init call ?
         this.nodeRunner = new ExecutionNodeRunner();
-        this.nodeRunner.prepareExecutionConfig(theConfig);
+        return this.nodeRunner.prepareExecutionConfig(theConfig);
     }
 
     /*
@@ -74,14 +75,14 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * 
      * @see com.technopobia.substeps.jmx.SubstepsMBean#run()
      */
-    public List<SubstepExecutionFailure> run() {
+    public RootNode run() {
 
         // attach a result listener to broadcast
 
         this.nodeRunner.addNotifier(this);
-        final List<SubstepExecutionFailure> failures;
+        final RootNode rootNode;
         try {
-            failures = this.nodeRunner.run();
+            rootNode = this.nodeRunner.run();
         } finally {
             // now send the final notification
 
@@ -91,13 +92,13 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
 
             sendNotification(n);
         }
-        return failures;
+        return rootNode;
 
     }
 
     private long notificationSequenceNumber = 1;
 
-    private void doNotification(final ExecutionNode node) {
+    private void doNotification(final IExecutionNode node) {
 
         final Notification n = new Notification("ExNode", this, this.notificationSequenceNumber);
 
@@ -119,7 +120,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
      * .substeps.execution.ExecutionNode, java.lang.Throwable)
      */
-    public void notifyNodeFailed(final ExecutionNode node, final Throwable cause) {
+    public void notifyNodeFailed(final IExecutionNode node, final Throwable cause) {
 
         doNotification(node);
 
@@ -132,7 +133,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public void notifyNodeStarted(final ExecutionNode node) {
+    public void notifyNodeStarted(final IExecutionNode node) {
 
         doNotification(node);
 
@@ -144,7 +145,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
      * technophobia.substeps.execution.ExecutionNode)
      */
-    public void notifyNodeFinished(final ExecutionNode node) {
+    public void notifyNodeFinished(final IExecutionNode node) {
 
         doNotification(node);
 
@@ -157,14 +158,14 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public void notifyNodeIgnored(final ExecutionNode node) {
+    public void notifyNodeIgnored(final IExecutionNode node) {
 
         doNotification(node);
     }
 
-    public ExecutionNode getRootNode() {
+    public List<SubstepExecutionFailure> getFailures() {
 
-        return this.nodeRunner.getRootNode();
+        return this.nodeRunner.getFailures();
     }
 
     public void addNotifier(INotifier notifier) {

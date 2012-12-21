@@ -1,3 +1,21 @@
+/*
+ *	Copyright Technophobia Ltd 2012
+ *
+ *   This file is part of Substeps.
+ *
+ *    Substeps is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Substeps is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.technophobia.substeps.model;
 
 import java.io.File;
@@ -11,15 +29,13 @@ public class Background {
     private final String description;
     private final List<Step> steps;
     private final String rawText;
-    private final int sourceStartOffset;
 
-    public Background(final int lineNumber, final String rawText, final File sourceFile, final int sourceStartOffset) {
+    public Background(final int lineNumber, final String rawText, final File sourceFile) {
         super();
         this.lineNumber = lineNumber;
         this.rawText = rawText;
         this.description = descriptionFor(rawText);
         this.steps = stepsFrom(lineNumber, rawText, sourceFile);
-        this.sourceStartOffset = sourceStartOffset;
     }
 
     private List<Step> stepsFrom(final int backgroundLineNumber, final String backgroundText, final File sourceFile) {
@@ -27,7 +43,6 @@ public class Background {
         final String[] bLines = backgroundText.split("\n");
         for (int i = 1; i < bLines.length; i++) {
 
-            // TODO
             backgroundSteps.add(new Step(bLines[i], sourceFile, backgroundLineNumber + i, -1));
         }
         return Collections.unmodifiableList(backgroundSteps);

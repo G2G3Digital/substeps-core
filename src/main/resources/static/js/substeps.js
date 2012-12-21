@@ -87,7 +87,7 @@ $(document).ready(function() {
 		 
 			detailhtml += "<p>" + detailJSON.nodetype + ": " + detailJSON.description + "</p>";
 		
-			if (detailJSON.method.length > 0){
+			if (detailJSON.method > 0){
 				detailhtml = detailhtml + "<p>Method: " + detailJSON.method + "</p>";
 			}
 
@@ -102,7 +102,7 @@ $(document).ready(function() {
 			
 			detailhtml = detailhtml + "<p>Duration: " + detailJSON.runningDurationString + "</p>"
 			
-			if (detailJSON.children.length > 0){
+			if (detailJSON.children && detailJSON.children.length > 0){
 				
 				detailhtml = detailhtml + '<table class="table table-bordered table-condensed"><tbody>';
 				

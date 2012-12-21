@@ -41,29 +41,23 @@ public class SetupAndTearDown {
     private String loggingConfigName = null;
 
     private final MethodExecutor methodExecutor;
-    private boolean dryRun = false;
 
     private final BeforeAndAfterMethods beforeAndAfterMethods;
-
 
     public String getLoggingConfigName() {
         return this.loggingConfigName;
     }
 
-
     public void setLoggingConfigName(final String loggingConfigName) {
         this.loggingConfigName = loggingConfigName;
     }
 
-
-    public SetupAndTearDown(final Class<?>[] classes,
-            final MethodExecutor methodExecutor) {
+    public SetupAndTearDown(final Class<?>[] classes, final MethodExecutor methodExecutor) {
 
         this.beforeAndAfterMethods = new BeforeAndAfterMethods(classes);
         this.methodExecutor = methodExecutor;
         this.methodExecutor.addImplementationClasses(classes);
     }
-
 
     public void runBeforeAll() throws Throwable {
 
@@ -71,7 +65,6 @@ public class SetupAndTearDown {
 
         runAllMethods(MethodState.BEFORE_ALL);
     }
-
 
     /**
 	 */
@@ -81,7 +74,6 @@ public class SetupAndTearDown {
         removeLoggingConfig();
     }
 
-
     /**
 	 * 
 	 */
@@ -89,13 +81,11 @@ public class SetupAndTearDown {
         runAllMethods(MethodState.BEFORE_FEATURES);
     }
 
-
     /**
 	 */
     public void runAfterFeatures() throws Throwable {
         runAllMethods(MethodState.AFTER_FEATURES);
     }
-
 
     /**
 	 * 
@@ -104,7 +94,6 @@ public class SetupAndTearDown {
         runAllMethods(MethodState.BEFORE_SCENARIOS);
     }
 
-
     /**
 	 */
     public void runAfterScenarios() throws Throwable {
@@ -112,18 +101,12 @@ public class SetupAndTearDown {
 
     }
 
-
     private void runAllMethods(final MethodState methodState) throws Throwable {
 
-        if (!this.dryRun) {
+        final List<Method> setupAndTearDownMethods = this.beforeAndAfterMethods.getSetupAndTearDownMethods(methodState);
 
-            final List<Method> setupAndTearDownMethods = this.beforeAndAfterMethods
-                    .getSetupAndTearDownMethods(methodState);
-
-            this.methodExecutor.executeMethods(setupAndTearDownMethods);
-        }
+        this.methodExecutor.executeMethods(setupAndTearDownMethods);
     }
-
 
     private void prepareLoggingConfig() {
 
@@ -136,11 +119,9 @@ public class SetupAndTearDown {
         }
     }
 
-
     private void removeLoggingConfig() {
         MDC.remove("className");
     }
-
 
     /**
      * @param scope
@@ -150,26 +131,26 @@ public class SetupAndTearDown {
         this.log.trace("running setup for scope: " + currentScope);
 
         switch (currentScope) {
-        case SUITE: {
-            runBeforeAll();
-            break;
-        }
-        case FEATURE: {
-            runBeforeFeatures();
-            break;
-        }
-        case SCENARIO:
-        case SCENARIO_OUTLINE_ROW: {
-            runBeforeScenarios();
-            break;
-        }
-        default: {
-            // no op STEP, SCENARIO_BACKGROUND
-        }
+            case SUITE: {
+                runBeforeAll();
+                break;
+            }
+            case FEATURE: {
+                runBeforeFeatures();
+                break;
+            }
+            case SCENARIO: {
+                runBeforeScenarios();
+                break;
+            }
+            case SCENARIO_OUTLINE_ROW:
+            case SCENARIO_OUTLINE:
+            default: {
+                // no op STEP, SCENARIO_BACKGROUND
+            }
         }
 
     }
-
 
     /**
      * @param scope
@@ -179,34 +160,30 @@ public class SetupAndTearDown {
 
         // TODO could implement this as methods on Scope itself
         switch (currentScope) {
-        case SUITE: {
-            runAfterAll();
+            case SUITE: {
+                runAfterAll();
 
-            break;
+                break;
+            }
+            case FEATURE: {
+                runAfterFeatures();
+
+                break;
+            }
+            case SCENARIO: {
+                runAfterScenarios();
+
+                // TODO for outline scenarios this might mean setup and tear
+                // down
+                // gets run an extra time each...
+                break;
+            }
+            case SCENARIO_OUTLINE_ROW:
+            case SCENARIO_OUTLINE:
+            default: {
+                // no op STEP, SCENARIO_BACKGROUND
+            }
         }
-        case FEATURE: {
-            runAfterFeatures();
-
-            break;
-        }
-        case SCENARIO:
-        case SCENARIO_OUTLINE_ROW: {
-            runAfterScenarios();
-
-            // TODO for outline scenarios this might mean setup and tear down
-            // gets run an extra time each...
-            break;
-        }
-        default: {
-            // no op STEP, SCENARIO_BACKGROUND
-        }
-        }
-
-    }
-
-
-    public void setDryRun(final boolean dryRun) {
-        this.dryRun = dryRun;
 
     }
 }

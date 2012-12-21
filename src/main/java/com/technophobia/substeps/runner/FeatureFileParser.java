@@ -54,7 +54,6 @@ public class FeatureFileParser {
 
     private static final Pattern DIRECTIVE_PATTERN = Pattern.compile("([\\w ]*):");
 
-
     public FeatureFile loadFeatureFile(final File featureFile) {
         // IM - this is a little clumsy, feature file created, passed around and
         // if invalid, discarded..
@@ -96,7 +95,6 @@ public class FeatureFileParser {
 
     }
 
-
     /**
      * @param featureFile
      */
@@ -112,7 +110,6 @@ public class FeatureFileParser {
         }
     }
 
-
     private String getFirstLinePattern(final String element) {
 
         final StringBuilder buf = new StringBuilder();
@@ -123,7 +120,6 @@ public class FeatureFileParser {
         buf.append("(").append(Pattern.quote(lines[0])).append(")");
         return buf.toString();
     }
-
 
     /**
      * @param ff
@@ -141,7 +137,6 @@ public class FeatureFileParser {
             }
         }
     }
-
 
     /**
      * @param ff
@@ -172,7 +167,6 @@ public class FeatureFileParser {
         }
         return valid;
     }
-
 
     /**
      * @param sc
@@ -228,7 +222,6 @@ public class FeatureFileParser {
         }
     }
 
-
     /**
      * @param fileContents
      * @param ff
@@ -258,53 +251,54 @@ public class FeatureFileParser {
                         final Directive directive = directiveMap.get(m.group(1));
 
                         switch (directive) {
-                        case TAGS: {
-                            if (currentTags == null) {
-                                currentTags = new HashSet<String>();
+                            case TAGS: {
+                                if (currentTags == null) {
+                                    currentTags = new HashSet<String>();
+                                }
+                                processTags(currentTags, element);
+                                break;
                             }
-                            processTags(currentTags, element);
-                            break;
-                        }
-                        case FEATURE: {
-                            ff.setRawText(element);
-                            if (currentTags != null) {
-                                ff.setTags(currentTags);
+                            case FEATURE: {
+                                ff.setRawText(element);
+                                if (currentTags != null) {
+                                    ff.setTags(currentTags);
+                                }
+                                currentTags = null;
+                                currentBackground = null;
+                                break;
                             }
-                            currentTags = null;
-                            currentBackground = null;
-                            break;
-                        }
-                        case BACKGROUND: {
-                            // stash
-                            currentBackground = element;
-                            break;
-                        }
-                        case SCENARIO:
-                        case SCENARIO_OUTLINE: {
-
-                            final String firstLinePattern = getFirstLinePattern(element);
-
-                            final Pattern finderPattern = Pattern.compile(firstLinePattern);
-
-                            final Matcher matcher = finderPattern.matcher(this.currentFileContents.getFullContent());
-                            int start = -1;
-
-                            if (matcher.find()) {
-                                start = matcher.start(0);
-                                // start offsets of this elem into the
-                                // original file
+                            case BACKGROUND: {
+                                // stash
+                                currentBackground = element;
+                                break;
                             }
+                            case SCENARIO:
+                            case SCENARIO_OUTLINE: {
 
-                            processScenarioDirective(ff, currentTags, currentBackground, element,
-                                    directive == Directive.SCENARIO_OUTLINE, start);
+                                final String firstLinePattern = getFirstLinePattern(element);
 
-                            currentTags = null;
-                            break;
-                        }
-                        default: {
-                            this.log.error("unknown directive");
-                            break;
-                        }
+                                final Pattern finderPattern = Pattern.compile(firstLinePattern);
+
+                                final Matcher matcher = finderPattern
+                                        .matcher(this.currentFileContents.getFullContent());
+                                int start = -1;
+
+                                if (matcher.find()) {
+                                    start = matcher.start(0);
+                                    // start offsets of this elem into the
+                                    // original file
+                                }
+
+                                processScenarioDirective(ff, currentTags, currentBackground, element,
+                                        directive == Directive.SCENARIO_OUTLINE, start);
+
+                                currentTags = null;
+                                break;
+                            }
+                            default: {
+                                this.log.error("unknown directive");
+                                break;
+                            }
                         }
                     }
 
@@ -312,7 +306,6 @@ public class FeatureFileParser {
             }
         }
     }
-
 
     /**
      * @param ff
@@ -337,17 +330,14 @@ public class FeatureFileParser {
 
             final int backgroundLineNumberIdx = backgroundLineNumber();
 
-            scenario.setBackground(new Background(backgroundLineNumberIdx, currentBackground, ff.getSourceFile(),
-                    this.currentFileContents.getSourceStartOffsetForLineIndex(backgroundLineNumberIdx)));
+            scenario.setBackground(new Background(backgroundLineNumberIdx, currentBackground, ff.getSourceFile()));
 
         }
     }
 
-
     private int backgroundLineNumber() {
         return Math.max(currentFileContents.getFirstLineNumberStartingWith("Background:"), 0);
     }
-
 
     /**
      * @param currentTags
@@ -367,7 +357,6 @@ public class FeatureFileParser {
             }
         }
     }
-
 
     public static String stripComments(final String line) {
         String trimmed = null;
@@ -406,7 +395,6 @@ public class FeatureFileParser {
         return trimmed;
     }
 
-
     /**
      * @param featureFile
      * @return
@@ -428,7 +416,6 @@ public class FeatureFileParser {
 
         return buf.toString();
     }
-
 
     /**
      * @param trimmed

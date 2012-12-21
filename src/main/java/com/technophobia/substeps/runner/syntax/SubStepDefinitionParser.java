@@ -56,17 +56,14 @@ public class SubStepDefinitionParser {
 
     private FileContents currentFileContents;
 
-
     public SubStepDefinitionParser(final SyntaxErrorReporter syntaxErrorReporter) {
         this(true, syntaxErrorReporter);
     }
-
 
     public SubStepDefinitionParser(final boolean failOnDuplicateSubsteps, final SyntaxErrorReporter syntaxErrorReporter) {
         this.failOnDuplicateSubsteps = failOnDuplicateSubsteps;
         this.syntaxErrorReporter = syntaxErrorReporter;
     }
-
 
     void parseSubStepFile(final File substepFile) {
 
@@ -75,9 +72,6 @@ public class SubStepDefinitionParser {
         try {
 
             this.currentFileContents.readFile(substepFile);
-
-            final List<String> lines = this.currentFileContents.getLines();// Files.readLines(substepFile,
-                                                                           // Charset.forName("UTF-8"));
 
             for (int i = 0; i < this.currentFileContents.getNumberOfLines(); i++) {
 
@@ -115,7 +109,6 @@ public class SubStepDefinitionParser {
         }
     }
 
-
     public PatternMap<ParentStep> loadSubSteps(final File definitions) {
 
         final List<File> substepsFiles = FileUtils.getFiles(definitions, ".substeps");
@@ -126,7 +119,6 @@ public class SubStepDefinitionParser {
 
         return this.parentMap;
     }
-
 
     // private void processLine(final String line, final File source,
     // final int lineNumber) {
@@ -165,7 +157,6 @@ public class SubStepDefinitionParser {
         }
     }
 
-
     private void processTrimmedLine(final String trimmed, final int lineNumberIdx) {
 
         // TODO convert <> into regex wildcards
@@ -198,7 +189,6 @@ public class SubStepDefinitionParser {
             }
         }
     }
-
 
     // private void processTrimmedLine(final String trimmed, final File source,
     // final int lineNumber) {
@@ -237,37 +227,36 @@ public class SubStepDefinitionParser {
 
         switch (this.currentDirective) {
 
-        case DEFINITION: {
+            case DEFINITION: {
 
-            // build up a Step from the remainder
+                // build up a Step from the remainder
 
-            final int sourceOffset = this.currentFileContents.getSourceStartOffsetForLineIndex(lineNumberIdx);
+                final int sourceOffset = this.currentFileContents.getSourceStartOffsetForLineIndex(lineNumberIdx);
 
-            final Step parent = new Step(remainder, true, this.currentFileContents.getFile(), lineNumberIdx,
-                    sourceOffset);
+                final Step parent = new Step(remainder, true, this.currentFileContents.getFile(), lineNumberIdx,
+                        sourceOffset);
 
-            if (this.currentParentStep != null) {
-                final String newPattern = this.currentParentStep.getParent().getPattern();
+                if (this.currentParentStep != null) {
+                    final String newPattern = this.currentParentStep.getParent().getPattern();
 
-                try {
-                    storeForPatternOrThrowException(newPattern, this.currentParentStep);
-                } catch (final DuplicatePatternException ex) {
-                    syntaxErrorReporter.reportSubstepsError(ex);
+                    try {
+                        storeForPatternOrThrowException(newPattern, this.currentParentStep);
+                    } catch (final DuplicatePatternException ex) {
+                        syntaxErrorReporter.reportSubstepsError(ex);
 
-                    if (failOnDuplicateSubsteps) {
-                        throw ex;
+                        if (failOnDuplicateSubsteps) {
+                            throw ex;
+                        }
                     }
                 }
+
+                this.currentParentStep = new ParentStep(parent);
+
+                break;
             }
-
-            this.currentParentStep = new ParentStep(parent);
-
-            break;
-        }
-        default: // whatever
+            default: // whatever
         }
     }
-
 
     /*
      * private void processDirective(final Directive d, final String remainder,
@@ -325,7 +314,6 @@ public class SubStepDefinitionParser {
     }
 
     private Directive currentDirective = null;
-
 
     private Directive isDirective(final String word) {
 

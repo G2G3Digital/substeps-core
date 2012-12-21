@@ -12,7 +12,7 @@ Scenario: Simple top level scenario
     Test_Given something
     Test_Then something with a "quoted parameter"
     SingleWord
-    
+      
 
 
 ####### OUTLINE FUNCTIONALITY    

@@ -27,13 +27,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.technophobia.substeps.execution.ExecutionNode;
+import com.google.common.collect.Sets;
+import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
+import com.technophobia.substeps.execution.node.BasicScenarioNode;
+import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.execution.node.OutlineScenarioNode;
+import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
+import com.technophobia.substeps.execution.node.RootNode;
+import com.technophobia.substeps.execution.node.ScenarioNode;
+import com.technophobia.substeps.execution.node.StepNode;
 
 /**
  * @author ian
  * 
  */
-public class ExecutionStats {
+public class ExecutionStats extends AbstractExecutionNodeVisitor<Void> {
 
     private final TestCounterSet totals = new TestCounterSet();
 
@@ -42,33 +50,85 @@ public class ExecutionStats {
     private List<TestCounterSet> sortedList = null;
 
     public void buildStats(final ReportData data) {
-        for (final ExecutionNode node : data.getNodeList()) {
-            final List<TestCounterSet> testStats = new ArrayList<TestCounterSet>();
 
-            testStats.add(totals);
+        for (RootNode rootNode : data.getRootNodes()) {
 
-            final Set<String> tags = node.getTags();
-            if (tags != null) {
-                for (final String tag : tags) {
-                    TestCounterSet testStatSet = taggedStats.get(tag);
-                    if (testStatSet == null) {
-                        testStatSet = new TestCounterSet();
-                        testStatSet.setTag(tag);
-                        taggedStats.put(tag, testStatSet);
-                    }
-                    testStats.add(testStatSet);
-                }
-            }
-            for (final TestCounterSet testStatSet : testStats) {
-                if (node.isFeature()) {
-                    testStatSet.getFeatureStats().apply(node);
-                } else if (node.isScenario()) {
-                    testStatSet.getScenarioStats().apply(node);
-                } else if (node.isStep()) {
-                    testStatSet.getScenarioStepStats().apply(node);
-                }
+            buildStatsForRootNode(rootNode);
+        }
+    }
+
+    private void buildStatsForRootNode(RootNode rootNode) {
+
+        for (FeatureNode featureNode : rootNode.getChildren()) {
+
+            buildStatsForFeatureNode(featureNode);
+
+            for (ScenarioNode<?> scenarioNode : featureNode.getChildren()) {
+
+                buildStatsForScenarioNode(scenarioNode);
             }
         }
+    }
+
+    private void buildStatsForScenarioNode(ScenarioNode<?> scenarioNode) {
+        for (TestCounterSet stats : getAllStatsForTags(scenarioNode.getTags())) {
+            stats.getScenarioStats().apply(scenarioNode);
+        }
+        scenarioNode.dispatch(this);
+    }
+
+    private void buildStatsForFeatureNode(FeatureNode featureNode) {
+
+        for (TestCounterSet stats : getAllStatsForTags(featureNode.getTags())) {
+            stats.getFeatureStats().apply(featureNode);
+        }
+    }
+
+    @Override
+    public Void visit(BasicScenarioNode scenarioNode) {
+
+        Set<TestCounterSet> testStats = getAllStatsForTags(scenarioNode.getTags());
+
+        for (StepNode childNode : scenarioNode.getChildren()) {
+
+            for (TestCounterSet stats : testStats) {
+
+                stats.getScenarioStepStats().apply(childNode);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visit(OutlineScenarioNode outlineScenarioNode) {
+
+        for (OutlineScenarioRowNode row : outlineScenarioNode.getChildren()) {
+
+            visit(row.getBasicScenarioNode());
+        }
+
+        return null;
+    }
+
+    private Set<TestCounterSet> getAllStatsForTags(Set<String> tags) {
+
+        Set<TestCounterSet> testStats = Sets.newHashSetWithExpectedSize(tags.size() + 1);
+        testStats.add(totals);
+        for (String tag : tags) {
+            testStats.add(getOrCreateStatsForTag(tag));
+        }
+        return testStats;
+    }
+
+    private TestCounterSet getOrCreateStatsForTag(String tag) {
+        if (taggedStats.get(tag) == null) {
+            TestCounterSet newStats = new TestCounterSet();
+            newStats.setTag(tag);
+            taggedStats.put(tag, newStats);
+        }
+
+        return taggedStats.get(tag);
     }
 
     public int getTotalFeatures() {
@@ -173,7 +233,8 @@ public class ExecutionStats {
      */
     public List<TestCounterSet> getSortedList() {
 
-        if (taggedStats != null) { // FIXME RB Removed && !taggedStats.isEmpty()
+        if (taggedStats != null) {
+
             sortedList = new ArrayList<TestCounterSet>();
             sortedList.addAll(taggedStats.values());
 
