@@ -3,7 +3,7 @@ package com.technophobia.substeps.runner.node;
 import java.util.Iterator;
 
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
 import com.technophobia.substeps.execution.node.StepNode;
 import com.technophobia.substeps.execution.node.SubstepNode;
@@ -15,10 +15,10 @@ public class BasicScenarioNodeRunner extends AbstractNodeRunner<BasicScenarioNod
     private final SubstepNodeRunner substepNodeRunner = new SubstepNodeRunner(Scope.STEP);
     private final StepImplementationNodeRunner stepImplNodeRunner = new StepImplementationNodeRunner();
 
-    private NodeExecutionContext context;
+    private RootNodeExecutionContext context;
 
     @Override
-    protected boolean execute(BasicScenarioNode node, NodeExecutionContext context) {
+    protected boolean execute(BasicScenarioNode node, RootNodeExecutionContext context) {
 
         this.context = context;
         boolean success = runBackgroundIfPresent(node, context);
@@ -34,7 +34,7 @@ public class BasicScenarioNodeRunner extends AbstractNodeRunner<BasicScenarioNod
         return success;
     }
 
-    public boolean runBackgroundIfPresent(BasicScenarioNode node, NodeExecutionContext context) {
+    public boolean runBackgroundIfPresent(BasicScenarioNode node, RootNodeExecutionContext context) {
 
         return node.getBackground() == null || backgroundRunner.run(node.getBackground(), context);
 

@@ -28,7 +28,7 @@ import com.google.common.collect.Lists;
 import com.technophobia.substeps.execution.DryRunImplementationCache;
 import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.execution.MethodExecutor;
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.model.Syntax;
@@ -54,7 +54,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
     private final INotificationDistributor notificationDistributor = new NotificationDistributor();
 
-    private NodeExecutionContext nodeExecutionContext;
+    private RootNodeExecutionContext nodeExecutionContext;
 
     private final MethodExecutor methodExecutor = new ImplementationCache();
 
@@ -113,7 +113,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
             log.info("**** DRY RUN ONLY **");
         }
 
-        nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+        nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager,
                 methodExecutorToUse);
 

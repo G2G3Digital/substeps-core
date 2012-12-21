@@ -17,7 +17,9 @@ import com.technophobia.substeps.runner.TestParameters;
 
 public class FeatureNodeBuilder {
 
-    private static final Logger log = LoggerFactory.getLogger(FeatureNodeBuilder.class);
+    private static final int _2 = 2;
+
+	private static final Logger log = LoggerFactory.getLogger(FeatureNodeBuilder.class);
 
     private final TestParameters parameters;
     private final ScenarioNodeBuilder scenarioNodeBuilder;
@@ -51,7 +53,7 @@ public class FeatureNodeBuilder {
 
             if (scenario != null) {
 
-                ScenarioNode<?> scenarioNode = scenarioNodeBuilder.build(scenario, tags, 2);
+                ScenarioNode<?> scenarioNode = scenarioNodeBuilder.build(scenario, tags, _2);
                 if (scenarioNode != null) {
 
                     scenarioNodes.add(scenarioNode);

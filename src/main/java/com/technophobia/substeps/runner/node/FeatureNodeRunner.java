@@ -2,7 +2,7 @@ package com.technophobia.substeps.runner.node;
 
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.FeatureNode;
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.OutlineScenarioNode;
 import com.technophobia.substeps.execution.node.ScenarioNode;
 import com.technophobia.substeps.model.Scope;
@@ -13,10 +13,10 @@ public class FeatureNodeRunner extends AbstractNodeRunner<FeatureNode, Boolean> 
     BasicScenarioNodeRunner basicScenarioNodeRunner = new BasicScenarioNodeRunner();
     OutlineScenarioNodeRunner outlineScenarioNodeRunner = new OutlineScenarioNodeRunner();
     
-    private NodeExecutionContext context;
+    private RootNodeExecutionContext context;
     
     @Override
-    protected boolean execute(FeatureNode node, NodeExecutionContext context) {
+    protected boolean execute(FeatureNode node, RootNodeExecutionContext context) {
 
         this.context = context;
         

@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.technophobia.substeps.execution.AbstractExecutionNodeVisitor;
 import com.technophobia.substeps.execution.node.IExecutionNode;
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.runner.ExecutionContext;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
@@ -17,19 +17,25 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
     private static final Logger log = LoggerFactory.getLogger(AbstractNodeRunner.class);
 
-    public final boolean run(NODE_TYPE node, NodeExecutionContext context) {
+    public final boolean run(NODE_TYPE node, RootNodeExecutionContext context) {
 
         boolean success = false;
 
         if (beforeExecute(node, context)) {
-            success = execute(node, context);
-            afterExecute(node, success, context);
+        	try {
+        		
+        		success = execute(node, context);
+        	
+        	} finally {
+
+        		afterExecute(node, success, context);
+        	}
         }
 
         return success;
     }
 
-    private boolean beforeExecute(NODE_TYPE node, NodeExecutionContext context) {
+    private boolean beforeExecute(NODE_TYPE node, RootNodeExecutionContext context) {
 
         boolean shouldContinue = true;
 
@@ -49,17 +55,17 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         return shouldContinue;
     }
 
-    private void afterExecute(NODE_TYPE node, boolean success, NodeExecutionContext context) {
+    private void afterExecute(NODE_TYPE node, boolean success, RootNodeExecutionContext context) {
 
         recordResult(node, success, context);
         runTearDown(node, context);
     }
 
-    protected abstract boolean execute(NODE_TYPE node, NodeExecutionContext context);
+    protected abstract boolean execute(NODE_TYPE node, RootNodeExecutionContext context);
 
     protected abstract Scope getScope();
 
-    private boolean runSetup(NODE_TYPE node, NodeExecutionContext context) {
+    private boolean runSetup(NODE_TYPE node, RootNodeExecutionContext context) {
 
         try {
             context.getSetupAndTeardown().runSetup(getScope());
@@ -72,7 +78,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
     }
 
-    private void recordResult(NODE_TYPE node, boolean success, NodeExecutionContext context) {
+    private void recordResult(NODE_TYPE node, boolean success, RootNodeExecutionContext context) {
 
         if (success) {
             if (log.isTraceEnabled()) {
@@ -105,7 +111,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
     }
 
-    private void runTearDown(NODE_TYPE node, NodeExecutionContext context) {
+    private void runTearDown(NODE_TYPE node, RootNodeExecutionContext context) {
 
         try {
 
@@ -120,7 +126,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
     }
 
     protected boolean addExpectedChildrenFailureIfNoChildren(NODE_TYPE node, List<? extends IExecutionNode> children,
-            NodeExecutionContext context) {
+            RootNodeExecutionContext context) {
 
         boolean hasChildren = children != null && !children.isEmpty();
         if (!hasChildren) {

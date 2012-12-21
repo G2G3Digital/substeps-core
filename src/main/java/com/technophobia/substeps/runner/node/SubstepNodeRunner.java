@@ -2,7 +2,7 @@ package com.technophobia.substeps.runner.node;
 
 import java.util.Iterator;
 
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
 import com.technophobia.substeps.execution.node.StepNode;
 import com.technophobia.substeps.execution.node.SubstepNode;
@@ -14,7 +14,7 @@ public class SubstepNodeRunner extends AbstractNodeRunner<SubstepNode, Boolean> 
     private final Scope scope;
     
     private StepImplementationNodeRunner stepImplementationNodeRunner = new StepImplementationNodeRunner();
-    private NodeExecutionContext context;
+    private RootNodeExecutionContext context;
     
     public SubstepNodeRunner(Scope scope) {
         
@@ -22,7 +22,7 @@ public class SubstepNodeRunner extends AbstractNodeRunner<SubstepNode, Boolean> 
     }
     
     @Override
-    protected boolean execute(SubstepNode node, NodeExecutionContext context) {
+    protected boolean execute(SubstepNode node, RootNodeExecutionContext context) {
 
         boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getChildren(), context);
         this.context = context;

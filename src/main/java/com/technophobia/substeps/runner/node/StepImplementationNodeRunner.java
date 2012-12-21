@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
 import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.runner.ProvidesScreenshot;
@@ -13,10 +13,8 @@ import com.technophobia.substeps.runner.SubstepExecutionFailure;
 
 public class StepImplementationNodeRunner extends AbstractNodeRunner<StepImplementationNode, Void> {
 
-    private static final Logger log = LoggerFactory.getLogger(StepImplementationNodeRunner.class);
-
     @Override
-    protected boolean execute(StepImplementationNode node, NodeExecutionContext context) {
+    protected boolean execute(StepImplementationNode node, RootNodeExecutionContext context) {
 
         boolean success = false;
 
@@ -39,7 +37,7 @@ public class StepImplementationNodeRunner extends AbstractNodeRunner<StepImpleme
         return success;
     }
 
-    private void addFailure(StepImplementationNode node, NodeExecutionContext context, Throwable t) {
+    private void addFailure(StepImplementationNode node, RootNodeExecutionContext context, Throwable t) {
 
         byte[] screenshotBytes = attemptScreenshot(node, context);
         context.addFailure(new SubstepExecutionFailure(t, node, screenshotBytes));
@@ -52,13 +50,13 @@ public class StepImplementationNodeRunner extends AbstractNodeRunner<StepImpleme
     }
 
     @SuppressWarnings("unchecked")
-    private <T> byte[] attemptScreenshot(StepImplementationNode node, NodeExecutionContext context) {
+    private <T> byte[] attemptScreenshot(StepImplementationNode node, RootNodeExecutionContext context) {
 
         return ProvidesScreenshot.class.isAssignableFrom(node.getTargetClass()) ? getScreenshot(context,
                 (Class<? extends ProvidesScreenshot>) node.getTargetClass()) : null;
     }
 
-    private <T extends ProvidesScreenshot> byte[] getScreenshot(NodeExecutionContext context, Class<T> screenshotClass) {
+    private <T extends ProvidesScreenshot> byte[] getScreenshot(RootNodeExecutionContext context, Class<T> screenshotClass) {
 
         T screenshotTakingInstance = context.getMethodExecutor().getImplementation(screenshotClass);
         return screenshotTakingInstance.getScreenshotBytes();

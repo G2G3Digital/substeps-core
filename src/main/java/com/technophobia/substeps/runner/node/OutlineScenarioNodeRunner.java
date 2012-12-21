@@ -18,7 +18,7 @@
  */
 package com.technophobia.substeps.runner.node;
 
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.OutlineScenarioNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
 import com.technophobia.substeps.model.Scope;
@@ -28,7 +28,7 @@ public class OutlineScenarioNodeRunner extends AbstractNodeRunner<OutlineScenari
     private final OutlineScenarioRowNodeRunner outlineScenarioRowNodeRunner = new OutlineScenarioRowNodeRunner();
 
     @Override
-    protected boolean execute(OutlineScenarioNode node, NodeExecutionContext context) {
+    protected boolean execute(OutlineScenarioNode node, RootNodeExecutionContext context) {
 
         boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getChildren(), context);
 

@@ -44,7 +44,7 @@ import com.technophobia.substeps.execution.Feature;
 import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.execution.node.ExecutionNode;
 import com.technophobia.substeps.execution.node.FeatureNode;
-import com.technophobia.substeps.execution.node.NodeExecutionContext;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.OutlineScenarioNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioRowNode;
 import com.technophobia.substeps.execution.node.RootNode;
@@ -288,7 +288,7 @@ public class ExecutionNodeRunnerTest {
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
 
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+        RootNodeExecutionContext nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", node);
@@ -320,7 +320,7 @@ public class ExecutionNodeRunnerTest {
 
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+        RootNodeExecutionContext nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", rootNode);
@@ -413,7 +413,7 @@ public class ExecutionNodeRunnerTest {
 
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+        RootNodeExecutionContext nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", rootNode);
@@ -487,7 +487,7 @@ public class ExecutionNodeRunnerTest {
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
         INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
-        NodeExecutionContext nodeExecutionContext = new NodeExecutionContext(notificationDistributor,
+        RootNodeExecutionContext nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, null, new ImplementationCache());
 
         setPrivateField(runner, "rootNode", rootNode);
