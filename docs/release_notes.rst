@@ -3,6 +3,16 @@ Substeps Core - Release Notes
 
 - A list of changes per release 
 
+1.1.0
+-----
+
+- An API has been extracted from core, with a BOM project introduced to make using substeps easier
+- Ant / Junit runners have been removed from core and put in modules of a new repository which also contains the Maven plugin
+- Major refactor of execution node hierarchy
+- Change to SusbtepsRunner interface
+- Change in the way the number of scenario steps are calculated, these are now counted for each example in an outline
+- Added screenshots of failures to the feature report
+
 1.0.2
 -----
 - Line numbers, source offsets included in steps

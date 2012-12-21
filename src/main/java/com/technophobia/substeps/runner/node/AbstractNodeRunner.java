@@ -75,7 +75,11 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
     private void recordResult(NODE_TYPE node, boolean success, NodeExecutionContext context) {
 
         if (success) {
-            log.debug("node success");
+            if (log.isTraceEnabled()) {
+
+                log.trace("node success");
+            }
+
             context.getNotificationDistributor().notifyNodeFinished(node);
 
             node.getResult().setFinished();
@@ -84,7 +88,11 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
             List<SubstepExecutionFailure> failures = context.getFailures();
 
-            log.debug("node failures");
+            if (log.isDebugEnabled()) {
+
+                log.debug("node failures");
+            }
+
             SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
             // just notify on the last one in..?
             final Throwable lastException = lastFailure.getCause();

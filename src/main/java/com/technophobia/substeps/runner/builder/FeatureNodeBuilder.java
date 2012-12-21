@@ -1,6 +1,8 @@
 package com.technophobia.substeps.runner.builder;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,11 +45,13 @@ public class FeatureNodeBuilder {
 
         List<ScenarioNode<?>> scenarioNodes = Lists.newArrayListWithExpectedSize(featureFile.getScenarios().size());
 
+        Set<String> tags = featureFile.getTags() != null ? featureFile.getTags() : Collections.<String> emptySet();
+
         for (final Scenario scenario : featureFile.getScenarios()) {
 
             if (scenario != null) {
 
-                ScenarioNode<?> scenarioNode = scenarioNodeBuilder.build(scenario, featureFile.getTags(), 2);
+                ScenarioNode<?> scenarioNode = scenarioNodeBuilder.build(scenario, tags, 2);
                 if (scenarioNode != null) {
 
                     scenarioNodes.add(scenarioNode);
@@ -57,7 +61,7 @@ public class FeatureNodeBuilder {
 
         final Feature feature = new Feature(featureFile.getName(), featureFile.getSourceFile().getName());
 
-        final FeatureNode featureNode = new FeatureNode(feature, scenarioNodes, featureFile.getTags());
+        final FeatureNode featureNode = new FeatureNode(feature, scenarioNodes, tags);
 
         featureNode.setFileUri(featureFile.getSourceFile().getAbsolutePath());
         featureNode.setLineNumber(0);

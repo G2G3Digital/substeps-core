@@ -1,5 +1,6 @@
 package com.technophobia.substeps.runner.builder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -64,7 +65,11 @@ public class ScenarioNodeBuilder {
 
             // something has gone wrong parsing this scenario, no point
             // running it so mark it as failed now
-            scenarioNode = new BasicScenarioNode(scenario.getDescription(), null, null, null, depth);
+            if (log.isDebugEnabled()) {
+                log.debug("Failed to parse" + scenario.getDescription() + ", creating dummy node", t);
+            }
+            scenarioNode = new BasicScenarioNode(scenario.getDescription(), null, Collections.<StepNode> emptyList(),
+                    Collections.<String> emptySet(), depth);
             scenarioNode.getResult().setFailedToParse(t);
 
             if (parameters.isFailParseErrorsImmediately()) {

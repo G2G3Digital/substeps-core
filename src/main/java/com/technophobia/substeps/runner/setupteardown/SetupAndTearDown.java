@@ -139,11 +139,11 @@ public class SetupAndTearDown {
                 runBeforeFeatures();
                 break;
             }
-            case SCENARIO:
-            case SCENARIO_OUTLINE_ROW: {
+            case SCENARIO: {
                 runBeforeScenarios();
                 break;
             }
+            case SCENARIO_OUTLINE_ROW:
             case SCENARIO_OUTLINE:
             default: {
                 // no op STEP, SCENARIO_BACKGROUND
@@ -170,8 +170,7 @@ public class SetupAndTearDown {
 
                 break;
             }
-            case SCENARIO:
-            case SCENARIO_OUTLINE_ROW: {
+            case SCENARIO: {
                 runAfterScenarios();
 
                 // TODO for outline scenarios this might mean setup and tear
@@ -179,6 +178,7 @@ public class SetupAndTearDown {
                 // gets run an extra time each...
                 break;
             }
+            case SCENARIO_OUTLINE_ROW:
             case SCENARIO_OUTLINE:
             default: {
                 // no op STEP, SCENARIO_BACKGROUND
