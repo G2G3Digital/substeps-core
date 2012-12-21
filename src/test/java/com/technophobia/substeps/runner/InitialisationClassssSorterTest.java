@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 
-public class InitialisationClassOrdererTest {
+public class InitialisationClassssSorterTest {
 
     private static class A {
     }
@@ -45,7 +45,7 @@ public class InitialisationClassOrdererTest {
     @Test(expected = SubstepsConfigurationException.class)
     public void testMultipleParents() {
 
-        InitialisationClassOrderer orderer = new InitialisationClassOrderer();
+        InitialisationClassSorter orderer = new InitialisationClassSorter();
 
         orderer.addOrderedInitialisationClasses(A.class, B.class, C.class);
 
@@ -57,7 +57,7 @@ public class InitialisationClassOrdererTest {
     @Test
     public void testReordering() {
 
-        InitialisationClassOrderer orderer = new InitialisationClassOrderer();
+        InitialisationClassSorter orderer = new InitialisationClassSorter();
 
         orderer.addOrderedInitialisationClasses(A.class, B.class, C.class);
 
@@ -72,7 +72,7 @@ public class InitialisationClassOrdererTest {
     @Test(expected = SubstepsConfigurationException.class)
     public void testBadOrder() {
 
-        InitialisationClassOrderer orderer = new InitialisationClassOrderer();
+        InitialisationClassSorter orderer = new InitialisationClassSorter();
 
         orderer.addOrderedInitialisationClasses(A.class, B.class, C.class);
 

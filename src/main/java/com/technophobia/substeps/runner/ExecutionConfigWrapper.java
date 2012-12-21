@@ -100,7 +100,7 @@ public class ExecutionConfigWrapper extends ExecutionConfigDecorator {
 
             initialisationClassList = new ArrayList<Class<?>>();
 
-            InitialisationClassOrderer orderer = new InitialisationClassOrderer();
+            InitialisationClassSorter orderer = new InitialisationClassSorter();
 
             for (final Class<?> c : getStepImplementationClasses()) {
 

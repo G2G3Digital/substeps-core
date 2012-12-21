@@ -44,11 +44,11 @@ import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
  * 
  * @author rbarefield
  */
-public class InitialisationClassOrderer {
+public class InitialisationClassSorter {
 
     private final InitialisationClassNode root = new InitialisationClassNode(null);
 
-    protected static final Logger log = LoggerFactory.getLogger(InitialisationClassOrderer.class);
+    protected static final Logger log = LoggerFactory.getLogger(InitialisationClassSorter.class);
 
     public void addOrderedInitialisationClasses(Class<?>... classes) {
 
@@ -85,7 +85,7 @@ public class InitialisationClassOrderer {
     public List<Class<?>> getOrderedList() {
 
         List<Class<?>> linerizeClasses = Lists.newArrayList();
-        List<InitialisationClassNode> allNodes = root.linerize();
+        List<InitialisationClassNode> allNodes = root.linearize();
         for (InitialisationClassNode node : allNodes.subList(1, allNodes.size())) {
 
             linerizeClasses.add(node.getInitialisationClass());
@@ -210,7 +210,7 @@ class InitialisationClassNode {
         return complete;
     }
 
-    public List<InitialisationClassNode> linerize() {
+    public List<InitialisationClassNode> linearize() {
 
         List<InitialisationClassNode> allNodes = Lists.newArrayList();
 
@@ -222,7 +222,7 @@ class InitialisationClassNode {
             safetyCount++;
             if (safetyCount > 100) {
                 String message = "Unable to resolve class initialisation order, please log this as a bug with substeps";
-                InitialisationClassOrderer.log.error(message);
+                InitialisationClassSorter.log.error(message);
                 throw new RuntimeException(message);
             }
         }
