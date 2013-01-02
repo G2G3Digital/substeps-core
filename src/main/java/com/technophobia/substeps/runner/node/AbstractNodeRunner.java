@@ -53,6 +53,13 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
                 log.debug("Exception caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
                 throw new RuntimeException(e);
 
+            } catch (Throwable e) {
+
+                // FIXME This catch block is to analyse a defect only and should
+                // be removed
+                log.debug("Throwable caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
+                throw new RuntimeException(e);
+
             } finally {
 
                 afterExecute(node, success, context);
