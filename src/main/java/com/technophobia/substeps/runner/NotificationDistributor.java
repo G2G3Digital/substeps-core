@@ -21,6 +21,9 @@ package com.technophobia.substeps.runner;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.technophobia.substeps.execution.node.IExecutionNode;
 
 /*
@@ -42,6 +45,8 @@ import com.technophobia.substeps.execution.node.IExecutionNode;
  *    along with Substeps.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class NotificationDistributor implements INotificationDistributor {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationDistributor.class);
 
     private List<INotifier> listeners;
 
@@ -142,6 +147,10 @@ public class NotificationDistributor implements INotificationDistributor {
     private void notifyListenersTestStarted(final IExecutionNode node) {
         if (this.listeners != null) {
             for (final INotifier listener : this.listeners) {
+
+                // FIXME Remove temp logging
+                log.debug("Notifying " + listener.getClass() + " that the node has started");
+
                 listener.notifyNodeStarted(node);
             }
         }
