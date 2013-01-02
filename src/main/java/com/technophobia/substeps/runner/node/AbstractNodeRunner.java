@@ -75,6 +75,10 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
             shouldContinue = runSetup(node, context);
         }
 
+        if (!shouldContinue) {
+            log.debug("shouldContinue = false for " + node);
+        }
+
         return shouldContinue;
     }
 
