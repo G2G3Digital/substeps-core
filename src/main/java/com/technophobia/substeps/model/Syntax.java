@@ -195,7 +195,7 @@ public class Syntax {
                 if (altKeyword.compareToIgnoreCase(keyword) != 0) {
                     final List<StepImplementation> altStepImplementations = getStrictStepimplementation(altKeyword,
                             parameterLine.replaceFirst(keyword, altKeyword), okNotTofindAnything);
-                    if (!altStepImplementations.isEmpty()) {
+                    if (altStepImplementations != null && !altStepImplementations.isEmpty()) {
                         // found an alternative, bail immediately
                         list = new ArrayList<StepImplementation>(Collections2.transform(altStepImplementations,
                                 new CloneStepImplementationsWithNewKeywordFunction(keyword)));
