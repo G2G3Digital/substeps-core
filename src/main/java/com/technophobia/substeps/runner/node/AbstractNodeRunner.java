@@ -44,6 +44,11 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
                 success = execute(node, context);
 
+            } catch (RuntimeException re) {
+
+                log.debug("Exception caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", re);
+                throw re;
+
             } finally {
 
                 afterExecute(node, success, context);
