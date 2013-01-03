@@ -40,11 +40,18 @@ import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
 import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 
-public class TreeJsonBuilder extends AbstractExecutionNodeVisitor<JsonObject> {
+public final class TreeJsonBuilder extends AbstractExecutionNodeVisitor<JsonObject> {
 
     private final ReportData reportData;
 
     private static Map<ExecutionResult, String> resultToImageMap = new HashMap<ExecutionResult, String>();
+
+    private static final Predicate<ExecutionNode> NODE_HAS_ERROR = new Predicate<ExecutionNode>() {
+
+        public boolean apply(ExecutionNode node) {
+            return node.hasError();
+        }
+    };
 
     static {
 
@@ -53,13 +60,6 @@ public class TreeJsonBuilder extends AbstractExecutionNodeVisitor<JsonObject> {
         resultToImageMap.put(ExecutionResult.PARSE_FAILURE, "img/PARSE_FAILURE.png");
         resultToImageMap.put(ExecutionResult.FAILED, "img/FAILED.png");
     }
-
-    private final Predicate<ExecutionNode> NODE_HAS_ERROR = new Predicate<ExecutionNode>() {
-
-        public boolean apply(ExecutionNode node) {
-            return node.hasError();
-        }
-    };
 
     public static void writeTreeJson(ReportData reportData, File jsonFile) {
 
