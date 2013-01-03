@@ -32,6 +32,7 @@ import com.technophobia.substeps.model.PatternMap;
 import com.technophobia.substeps.model.Step;
 import com.technophobia.substeps.model.exception.DuplicatePatternException;
 import com.technophobia.substeps.parser.FileContents;
+import com.technophobia.substeps.runner.FeatureFileParser;
 
 /**
  * @author ian
@@ -87,8 +88,8 @@ public class SubStepDefinitionParser {
                         storeForPatternOrThrowException(this.currentParentStep.getParent().getPattern(),
                                 this.currentParentStep);
                     } catch (final DuplicatePatternException ex) {
-                        syntaxErrorReporter.reportSubstepsError(ex);
-                        if (failOnDuplicateSubsteps) {
+                        this.syntaxErrorReporter.reportSubstepsError(ex);
+                        if (this.failOnDuplicateSubsteps) {
                             throw ex;
                         }
                     }
@@ -120,22 +121,6 @@ public class SubStepDefinitionParser {
         return this.parentMap;
     }
 
-    // private void processLine(final String line, final File source,
-    // final int lineNumber) {
-    //
-    // if (line != null && line.length() > 0) {
-    // // does this line begin with any of annotation values that we're
-    // // interested in ?
-    //
-    // // pick out the first word
-    // final String trimmed = line.trim();
-    // if (trimmed.length() > 0 && !trimmed.startsWith("#")) {
-    // processTrimmedLine(trimmed, source, lineNumber);
-    // }
-    //
-    // }
-    // }
-
     private void processLine(final int lineNumberIdx) {
         final String line = this.currentFileContents.getLineAt(lineNumberIdx);
 
@@ -149,8 +134,8 @@ public class SubStepDefinitionParser {
             // interested in ?
 
             // pick out the first word
-            final String trimmed = line.trim();
-            if (trimmed.length() > 0 && !trimmed.startsWith("#")) {
+            final String trimmed = FeatureFileParser.stripComments(line.trim());
+            if (trimmed != null && trimmed.length() > 0 && !trimmed.startsWith("#")) {
                 processTrimmedLine(trimmed, lineNumberIdx);
             }
 
@@ -242,9 +227,9 @@ public class SubStepDefinitionParser {
                     try {
                         storeForPatternOrThrowException(newPattern, this.currentParentStep);
                     } catch (final DuplicatePatternException ex) {
-                        syntaxErrorReporter.reportSubstepsError(ex);
+                        this.syntaxErrorReporter.reportSubstepsError(ex);
 
-                        if (failOnDuplicateSubsteps) {
+                        if (this.failOnDuplicateSubsteps) {
                             throw ex;
                         }
                     }
@@ -295,7 +280,7 @@ public class SubStepDefinitionParser {
         if (!this.parentMap.containsPattern(newPattern)) {
             this.parentMap.put(newPattern, parentStep);
         } else {
-            throw new DuplicatePatternException(newPattern, parentMap.getValueForPattern(newPattern), parentStep);
+            throw new DuplicatePatternException(newPattern, this.parentMap.getValueForPattern(newPattern), parentStep);
         }
 
     }

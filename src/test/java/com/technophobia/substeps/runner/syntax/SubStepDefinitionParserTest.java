@@ -20,15 +20,17 @@ package com.technophobia.substeps.runner.syntax;
 
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
+import java.util.List;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,7 +39,6 @@ import com.technophobia.substeps.model.ParentStep;
 import com.technophobia.substeps.model.PatternMap;
 import com.technophobia.substeps.model.exception.SubstepsParsingException;
 
-@Ignore
 public class SubStepDefinitionParserTest {
 
     private static final boolean FAIL_ON_DUPLICATE_SUBSTEPS = true;
@@ -48,42 +49,85 @@ public class SubStepDefinitionParserTest {
 
     @Before
     public void initialiseDependencies() {
-        errorReporter = mock(SyntaxErrorReporter.class);
+        this.errorReporter = mock(SyntaxErrorReporter.class);
     }
 
     @Test
     public void shouldReportDuplicateDefinition() {
 
-        parser = new SubStepDefinitionParser(DO_NOT_FAIL_ON_DUPLICATE_SUBSTEPS, errorReporter);
+        this.parser = new SubStepDefinitionParser(DO_NOT_FAIL_ON_DUPLICATE_SUBSTEPS, this.errorReporter);
 
-        parser.parseSubStepFile(new File(
+        this.parser.parseSubStepFile(new File(
                 "./target/test-classes/com/technophobia/substeps/runner/syntax/duplicate-definition.substeps"));
 
-        verify(errorReporter).reportSubstepsError(argThat(is(any(SubstepsParsingException.class))));
+        verify(this.errorReporter).reportSubstepsError(argThat(is(any(SubstepsParsingException.class))));
     }
 
     @Test
     public void shouldReportEmptyDefinition() {
-        parser = new SubStepDefinitionParser(DO_NOT_FAIL_ON_DUPLICATE_SUBSTEPS, errorReporter);
+        this.parser = new SubStepDefinitionParser(DO_NOT_FAIL_ON_DUPLICATE_SUBSTEPS, this.errorReporter);
 
-        parser.parseSubStepFile(new File(
+        this.parser.parseSubStepFile(new File(
                 "./target/test-classes/com/technophobia/substeps/runner/syntax/empty-definition.substeps"));
 
-        verify(errorReporter).reportSubstepsError(argThat(is(any(SubstepsParsingException.class))));
+        verify(this.errorReporter).reportSubstepsError(argThat(is(any(SubstepsParsingException.class))));
     }
 
+    @Test
+    public void testCommentOnEol() {
+
+        this.parser = new SubStepDefinitionParser(FAIL_ON_DUPLICATE_SUBSTEPS, this.errorReporter);
+
+        final PatternMap<ParentStep> substepDefs = this.parser.loadSubSteps(new File(
+                "./target/test-classes/com/technophobia/substeps/runner/syntax/eol-comment.substeps"));
+
+        Assert.assertNotNull(substepDefs);
+
+        final String def1 = "something else";
+
+        List<ParentStep> list = substepDefs.get(def1);
+
+        Assert.assertThat(list, hasSize(1));
+
+        ParentStep parentStep = list.get(0);
+
+        String line = parentStep.getParent().getLine();
+
+        Assert.assertThat(line, is(def1));
+
+        final String def2 = "and something different";
+
+        list = substepDefs.get(def2);
+
+        Assert.assertThat(list, hasSize(1));
+
+        parentStep = list.get(0);
+
+        line = parentStep.getParent().getLine();
+
+        Assert.assertThat(line, is(def2));
+
+        final String commentedDefine = "a normal comment";
+
+        list = substepDefs.get(commentedDefine);
+        Assert.assertThat(list, empty());
+    }
+
+    @Ignore
     @Test
     public void shouldReportDuplicateFinalDefinition() {
         // TODO: work out what the other condition is
         fail("Not yet implemented");
     }
 
+    @Ignore
     @Test
     public void shouldReportEmptyFinalDefinition() {
         // TODO: work out what the other condition is
         fail("Not yet implemented");
     }
 
+    @Ignore
     @Test
     public void shouldNotLoadEmptySubStepDefinitions() {
 

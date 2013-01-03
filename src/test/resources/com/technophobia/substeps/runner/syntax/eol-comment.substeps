@@ -1,0 +1,8 @@
+
+Define: something else # with a comment on the end
+    DoSomething
+
+#Define: a normal comment
+
+Define: and something different
+    DoSomethingElse    
