@@ -12,6 +12,7 @@ Substeps Core - Release Notes
 - Change to SusbtepsRunner interface
 - Change in the way the number of scenario steps are calculated, these are now counted for each example in an outline
 - Added screenshots of failures to the feature report
+- BUGFIX: tailing comments not stripped from substep definition files
 
 1.0.2
 -----
