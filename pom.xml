@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.technophobia.substeps</groupId>
     <artifactId>substeps-core</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <!-- for OSS hosting -->
@@ -432,8 +431,7 @@
 										</executionConfig>
 									</executionConfigs>
 
-									<executionReportBuilder
-										implementation="com.technophobia.substeps.report.DefaultExecutionReportBuilder">
+									<executionReportBuilder implementation="com.technophobia.substeps.report.DefaultExecutionReportBuilder">
 
 										<outputDirectory>${project.build.testOutputDirectory}/web</outputDirectory>
 										<reportTitle>Substeps Report - ${project.version} </reportTitle>
@@ -504,7 +502,7 @@
         <connection>${substeps-core.scm}</connection>
         <developerConnection>${substeps-core.scm}</developerConnection>
         <url>${substeps-core.scm.url}</url>
-      <tag>HEAD</tag>
+      <tag>substeps-core-1.1.0</tag>
   </scm>
 
 </project>
