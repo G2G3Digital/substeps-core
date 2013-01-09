@@ -95,7 +95,7 @@ $(document).ready(function() {
 				detailhtml = detailhtml + "<p><a href='" + detailJSON.screenshot + "'><img style='border: 2px solid red;' width='400px;' src='" + detailJSON.screenshot + "' alt='screenshot of failure' /></a>";
 			}
 			
-			if (detailJSON.emessage.length > 0){
+			if (detailJSON.emessage != null && detailJSON.emessage.length > 0){
 				detailhtml = detailhtml + "<p>" + detailJSON.emessage + "</p><div class=\"stacktrace\"><pre class=\"stacktracepre\">" +
 				detailJSON.stacktrace + "</div></pre>";
 			}
