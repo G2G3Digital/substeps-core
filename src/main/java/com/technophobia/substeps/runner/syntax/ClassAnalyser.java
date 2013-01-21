@@ -43,12 +43,10 @@ public class ClassAnalyser {
         }
     }
 
-
     /**
      * @param loadedClass
      * @param stepImplementationMap
      * @param m
-     * @param syntaxErrorReporter
      */
     private void analyseMethod(final Class<?> loadedClass, final Syntax syntax, final Method m) {
 
@@ -64,7 +62,6 @@ public class ClassAnalyser {
         }
     }
 
-
     /**
      * Determines if class defers step implementations to another class
      * 
@@ -74,7 +71,6 @@ public class ClassAnalyser {
     protected boolean hasAdditionalStepsAnnotation(final Class<?> loadedClass) {
         return loadedClass.isAnnotationPresent(AdditionalStepImplementations.class);
     }
-
 
     /**
      * Returns the Additional Step implementations this class defers to
@@ -87,7 +83,6 @@ public class ClassAnalyser {
         return loadedClass.getAnnotation(AdditionalStepImplementations.class).value();
     }
 
-
     /**
      * Determines if this method is a step definition method
      * 
@@ -99,7 +94,6 @@ public class ClassAnalyser {
         return m.isAnnotationPresent(Step.class);
     }
 
-
     /**
      * Returns the step value for this method
      * 
@@ -110,7 +104,6 @@ public class ClassAnalyser {
     protected String stepValueFrom(final Method m) {
         return m.getAnnotation(Step.class).value();
     }
-
 
     /**
      * Analyses all deferred step implementation classes of the loading class

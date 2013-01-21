@@ -24,6 +24,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.PatternSyntaxException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -40,6 +44,8 @@ import com.technophobia.substeps.runner.syntax.SyntaxErrorReporter;
  * 
  */
 public class Syntax {
+
+    private static final Logger log = LoggerFactory.getLogger(Syntax.class);
 
     // These two will always be populated
     private final Map<String, PatternMap<StepImplementation>> stepImplementationMap = new HashMap<String, PatternMap<StepImplementation>>();
@@ -62,7 +68,7 @@ public class Syntax {
     }
 
     public Map<String, PatternMap<StepImplementation>> getStepImplementationMap() {
-        return stepImplementationMap;
+        return this.stepImplementationMap;
     }
 
     public List<StepImplementation> getStepImplementations() {
@@ -70,14 +76,14 @@ public class Syntax {
         final List<StepImplementation> allImpls = new ArrayList<StepImplementation>();
 
         final List<String> sortedAnnotations = new ArrayList<String>();
-        sortedAnnotations.addAll(stepImplementationMap.keySet());
+        sortedAnnotations.addAll(this.stepImplementationMap.keySet());
 
         Collections.sort(sortedAnnotations);
 
         // get all the PatternMaps for each annotation:
 
         for (final String annotation : sortedAnnotations) {
-            final PatternMap<StepImplementation> patternMap = stepImplementationMap.get(annotation);
+            final PatternMap<StepImplementation> patternMap = this.stepImplementationMap.get(annotation);
 
             if (patternMap != null) {
                 for (final StepImplementation impl : patternMap.values()) {
@@ -93,25 +99,25 @@ public class Syntax {
      * @return
      */
     private PatternMap<StepImplementation> getPatternMapForAnnotation(final String keyWord) {
-        return stepImplementationMap.get(keyWord);
+        return this.stepImplementationMap.get(keyWord);
     }
 
     /**
      * @param loadSubSteps
      */
     public void setSubStepsMap(final PatternMap<ParentStep> loadSubSteps) {
-        subStepsMap = loadSubSteps;
+        this.subStepsMap = loadSubSteps;
     }
 
     public PatternMap<ParentStep> getSubStepsMap() {
-        return subStepsMap;
+        return this.subStepsMap;
     }
 
     /**
      * @return
      */
     public List<ParentStep> getSortedRootSubSteps() {
-        final Collection<ParentStep> rootSubSteps = subStepsMap.values();
+        final Collection<ParentStep> rootSubSteps = this.subStepsMap.values();
 
         final List<ParentStep> sortedList = new ArrayList<ParentStep>();
         sortedList.addAll(rootSubSteps);
@@ -126,21 +132,29 @@ public class Syntax {
      */
     public void addStepImplementation(final StepImplementation impl) {
 
-        PatternMap<StepImplementation> patternMap = stepImplementationMap.get(impl.getKeyword());
+        PatternMap<StepImplementation> patternMap = this.stepImplementationMap.get(impl.getKeyword());
 
         if (patternMap == null) {
             patternMap = new PatternMap<StepImplementation>();
-            stepImplementationMap.put(impl.getKeyword(), patternMap);
+            this.stepImplementationMap.put(impl.getKeyword(), patternMap);
         }
 
         final String pattern = impl.getValue();
         if (!patternMap.containsPattern(pattern)) {
-            patternMap.put(pattern, impl);
+
+            try {
+                patternMap.put(pattern, impl);
+            } catch (final PatternSyntaxException e) {
+
+                Syntax.log.warn("Invalid step implementation pattern: " + e.getMessage() + "\n" + impl.getClass() + "."
+                        + impl.getMethod() + " will not be added to the syntax");
+            }
+
         } else {
             final StepImplementationException ex = new DuplicateStepImplementationException(pattern,
                     patternMap.getValueForPattern(pattern), impl);
-            syntaxErrorReporter.reportStepImplError(ex);
-            if (failOnDuplicateStepImplementations) {
+            this.syntaxErrorReporter.reportStepImplError(ex);
+            if (this.failOnDuplicateStepImplementations) {
                 throw ex;
             }
         }
@@ -185,12 +199,12 @@ public class Syntax {
             final boolean okNotTofindAnything) {
         List<StepImplementation> list = getStrictStepimplementation(keyword, parameterLine, okNotTofindAnything);
 
-        if (!strict
+        if (!this.strict
                 && ((list == null && okNotTofindAnything) || (!okNotTofindAnything && list != null && list.isEmpty()))) {
             // look for an alternative, iterate through the
             // nonStrictKeywordPrecedence until we get what we want
 
-            for (final String altKeyword : nonStrictKeywordPrecedence) {
+            for (final String altKeyword : this.nonStrictKeywordPrecedence) {
                 // don't use the same keyword again
                 if (altKeyword.compareToIgnoreCase(keyword) != 0) {
                     final List<StepImplementation> altStepImplementations = getStrictStepimplementation(altKeyword,
@@ -241,7 +255,7 @@ public class Syntax {
         }
 
         public StepImplementation apply(final StepImplementation stepImplementation) {
-            return stepImplementation.cloneWithKeyword(keyword);
+            return stepImplementation.cloneWithKeyword(this.keyword);
         }
     }
 
@@ -249,13 +263,13 @@ public class Syntax {
      * @return the strict
      */
     public boolean isStrict() {
-        return strict;
+        return this.strict;
     }
 
     /**
      * @return the nonStrictKeywordPrecedence
      */
     public String[] getNonStrictKeywordPrecedence() {
-        return nonStrictKeywordPrecedence;
+        return this.nonStrictKeywordPrecedence;
     }
 }

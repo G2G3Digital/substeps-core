@@ -79,7 +79,10 @@ public class SubstepsJMXServer {
 
             while (this.shutdownSignal.getCount() > 0) {
                 try {
-                    this.log.debug("awaiting the shutdown notification...");
+                    // ** NB. this can't be a log statement as it can be turned
+                    // off
+                    System.out.println("awaiting the shutdown notification...");
+                    // ** see above
 
                     this.shutdownSignal.await();
                     this.log.debug("shutdown notification received");

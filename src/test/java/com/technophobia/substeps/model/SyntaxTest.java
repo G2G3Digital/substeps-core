@@ -49,101 +49,95 @@ public class SyntaxTest {
 
     private Syntax syntax;
 
-
     @Before
     public void initialise() throws Exception {
-        syntax = new Syntax();
+        this.syntax = new Syntax();
 
-        syntax.addStepImplementation(stepImplementation(DEFINITION_1_1_KEYWORD,
+        this.syntax.addStepImplementation(stepImplementation(DEFINITION_1_1_KEYWORD,
                 DEFINITION_1_1_PARAMATER_LINE_FULL, StepDefinitionClass1.class, "method1"));
-        syntax.addStepImplementation(stepImplementation(DEFINITION_1_2_KEYWORD,
+        this.syntax.addStepImplementation(stepImplementation(DEFINITION_1_2_KEYWORD,
                 DEFINITION_1_2_PARAMATER_LINE_FULL, StepDefinitionClass1.class, "method2"));
-        syntax.addStepImplementation(stepImplementation(DEFINITION_2_1_KEYWORD,
+        this.syntax.addStepImplementation(stepImplementation(DEFINITION_2_1_KEYWORD,
                 DEFINITION_2_1_PARAMATER_LINE_FULL, StepDefinitionClass2.class, "method1"));
-        syntax.addStepImplementation(stepImplementation(DEFINITION_2_2_KEYWORD,
+        this.syntax.addStepImplementation(stepImplementation(DEFINITION_2_2_KEYWORD,
                 DEFINITION_2_2_PARAMATER_LINE_FULL, StepDefinitionClass2.class, "method2"));
     }
 
-
     @Test
-    public void canGetStepImplementationsInStrictModeWhenKeywordMatchesAnnotation()
-            throws Exception {
-        syntax.setStrict(true, new String[0]);
+    public void canGetStepImplementationsInStrictModeWhenKeywordMatchesAnnotation() throws Exception {
+        this.syntax.setStrict(true, new String[0]);
 
         final String keyword = DEFINITION_1_2_KEYWORD;
         final String parameterLine = DEFINITION_1_2_PARAMATER_LINE_FULL;
 
-        final List<StepImplementation> stepImplementations = syntax.getStepImplementations(keyword,
-                parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
         assertThat(stepImplementations.size(), is(1));
 
         final StepImplementation stepImplementation = stepImplementations.get(0);
 
         assertThat(stepImplementation.getImplementedIn(), is((Object) StepDefinitionClass1.class));
-        assertThat(stepImplementation.getMethod(),
-                is(StepDefinitionClass1.class.getMethod("method2")));
+        assertThat(stepImplementation.getMethod(), is(StepDefinitionClass1.class.getMethod("method2")));
     }
 
-
     @Test
-    public void noStepImplementationsFoundInStrictModeWhenKeywordDoesNotMatchAnnotation()
-            throws Exception {
+    public void noStepImplementationsFoundInStrictModeWhenKeywordDoesNotMatchAnnotation() throws Exception {
 
-        syntax.setStrict(true, new String[0]);
+        this.syntax.setStrict(true, new String[0]);
 
         final String keyword = DEFINITION_1_1_KEYWORD;
         final String parameterLine = DEFINITION_1_2_PARAMATER_LINE_FULL;
 
-        final List<StepImplementation> stepImplementations = syntax.getStepImplementations(keyword,
-                parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
         assertThat(stepImplementations.size(), is(0));
     }
 
-
     @Test
-    public void canGetStepImplementationsInNonStrictModeWhenKeywordMatchesAnnotation()
-            throws Exception {
+    public void canGetStepImplementationsInNonStrictModeWhenKeywordMatchesAnnotation() throws Exception {
 
-        syntax.setStrict(false, new String[] { DEFINITION_1_1_KEYWORD, DEFINITION_1_2_KEYWORD,
+        this.syntax.setStrict(false, new String[] { DEFINITION_1_1_KEYWORD, DEFINITION_1_2_KEYWORD,
                 DEFINITION_2_1_KEYWORD, DEFINITION_2_2_KEYWORD });
 
         final String keyword = DEFINITION_2_2_KEYWORD;
         final String parameterLine = DEFINITION_2_2_PARAMATER_LINE_FULL;
 
-        final List<StepImplementation> stepImplementations = syntax.getStepImplementations(keyword,
-                parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
         assertThat(stepImplementations.size(), is(1));
 
         final StepImplementation stepImplementation = stepImplementations.get(0);
 
         assertThat(stepImplementation.getImplementedIn(), is((Object) StepDefinitionClass2.class));
-        assertThat(stepImplementation.getMethod(),
-                is(StepDefinitionClass2.class.getMethod("method2")));
+        assertThat(stepImplementation.getMethod(), is(StepDefinitionClass2.class.getMethod("method2")));
     }
 
-
     @Test
-    public void canGetStepImplementationsInNonStrictModeWhenKeywordDoesNotMatchAnnotation()
-            throws Exception {
+    public void canGetStepImplementationsInNonStrictModeWhenKeywordDoesNotMatchAnnotation() throws Exception {
 
-        syntax.setStrict(false, new String[] { DEFINITION_1_1_KEYWORD, DEFINITION_1_2_KEYWORD,
+        this.syntax.setStrict(false, new String[] { DEFINITION_1_1_KEYWORD, DEFINITION_1_2_KEYWORD,
                 DEFINITION_2_1_KEYWORD, DEFINITION_2_2_KEYWORD });
 
         final String keyword = DEFINITION_2_2_KEYWORD;
         final String parameterLine = DEFINITION_2_2_KEYWORD + DEFINITION_2_1_PARAMATER_LINE_SUFFIX;
 
-        final List<StepImplementation> stepImplementations = syntax.getStepImplementations(keyword,
-                parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
         assertThat(stepImplementations.size(), is(1));
 
         final StepImplementation stepImplementation = stepImplementations.get(0);
 
         assertThat(stepImplementation.getKeyword(), is(DEFINITION_2_2_KEYWORD));
         assertThat(stepImplementation.getImplementedIn(), is((Object) StepDefinitionClass2.class));
-        assertThat(stepImplementation.getMethod(),
-                is(StepDefinitionClass2.class.getMethod("method1")));
+        assertThat(stepImplementation.getMethod(), is(StepDefinitionClass2.class.getMethod("method1")));
     }
 
+    @Test
+    public void testInvalidPatternInStepImplDoesntStopSyntaxProcessing() throws Exception {
+        // eg @Step("ExecuteQueryAndStashResults {([^}]*)}") <- this is an
+        // invalid pattern
+
+        // this should not throw an exception
+        this.syntax.addStepImplementation(stepImplementation("ExecuteQueryAndStashResults",
+                "ExecuteQueryAndStashResults {([^}]*)}", StepDefinitionClass2.class, "method2"));
+
+    }
 
     private StepImplementation stepImplementation(final String keyword, final String parameterLine,
             final Class<?> clazz, final String methodName) throws Exception {
@@ -151,18 +145,18 @@ public class SyntaxTest {
     }
 
     public class StepDefinitionClass1 {
+
         public void method1() {
         }
-
 
         public void method2() {
         }
     }
 
     public class StepDefinitionClass2 {
+
         public void method1() {
         }
-
 
         public void method2() {
         }
