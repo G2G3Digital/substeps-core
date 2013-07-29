@@ -35,7 +35,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
     private static final Logger log = LoggerFactory.getLogger(AbstractNodeRunner.class);
 
-    public final boolean run(NODE_TYPE node, RootNodeExecutionContext context) {
+    public final boolean run(final NODE_TYPE node, final RootNodeExecutionContext context) {
 
         boolean success = false;
 
@@ -44,20 +44,16 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
                 success = execute(node, context);
 
-                log.debug("execute returned " + success);
+                log.trace("execute returned " + success);
 
-            } catch (Exception e) {
+            } catch (final Exception e) {
 
-                // FIXME This catch block is to analyse a defect only and should
-                // be removed
-                log.debug("Exception caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
+                log.trace("Exception caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
                 throw new RuntimeException(e);
 
-            } catch (Throwable e) {
+            } catch (final Throwable e) {
 
-                // FIXME This catch block is to analyse a defect only and should
-                // be removed
-                log.debug("Throwable caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
+                log.trace("Throwable caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
                 throw new RuntimeException(e);
 
             } finally {
@@ -69,7 +65,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         return success;
     }
 
-    private boolean beforeExecute(NODE_TYPE node, RootNodeExecutionContext context) {
+    private boolean beforeExecute(final NODE_TYPE node, final RootNodeExecutionContext context) {
 
         boolean shouldContinue = true;
 
@@ -93,7 +89,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         return shouldContinue;
     }
 
-    private void afterExecute(NODE_TYPE node, boolean success, RootNodeExecutionContext context) {
+    private void afterExecute(final NODE_TYPE node, final boolean success, final RootNodeExecutionContext context) {
 
         recordResult(node, success, context);
         runTearDown(node, context);
@@ -103,7 +99,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
     protected abstract Scope getScope();
 
-    private boolean runSetup(NODE_TYPE node, RootNodeExecutionContext context) {
+    private boolean runSetup(final NODE_TYPE node, final RootNodeExecutionContext context) {
 
         try {
             context.getSetupAndTeardown().runSetup(getScope());
@@ -116,7 +112,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
     }
 
-    private void recordResult(NODE_TYPE node, boolean success, RootNodeExecutionContext context) {
+    private void recordResult(final NODE_TYPE node, final boolean success, final RootNodeExecutionContext context) {
 
         if (success) {
             if (log.isTraceEnabled()) {
@@ -130,14 +126,14 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
         } else {
 
-            List<SubstepExecutionFailure> failures = context.getFailures();
+            final List<SubstepExecutionFailure> failures = context.getFailures();
 
             if (log.isDebugEnabled()) {
 
                 log.debug("node failures");
             }
 
-            SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
+            final SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
             // just notify on the last one in..?
             final Throwable lastException = lastFailure.getCause();
             context.getNotificationDistributor().notifyNodeFailed(node, lastException);
@@ -149,7 +145,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
     }
 
-    private void runTearDown(NODE_TYPE node, RootNodeExecutionContext context) {
+    private void runTearDown(final NODE_TYPE node, final RootNodeExecutionContext context) {
 
         try {
 
@@ -163,10 +159,10 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
     }
 
-    protected boolean addExpectedChildrenFailureIfNoChildren(NODE_TYPE node, List<? extends IExecutionNode> children,
-            RootNodeExecutionContext context) {
+    protected boolean addExpectedChildrenFailureIfNoChildren(final NODE_TYPE node,
+            final List<? extends IExecutionNode> children, final RootNodeExecutionContext context) {
 
-        boolean hasChildren = children != null && !children.isEmpty();
+        final boolean hasChildren = children != null && !children.isEmpty();
         if (!hasChildren) {
             context.addFailure(new SubstepExecutionFailure(new IllegalStateException(
                     "node should have children but doesn't"), node));

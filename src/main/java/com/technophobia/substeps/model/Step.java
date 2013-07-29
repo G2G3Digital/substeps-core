@@ -129,6 +129,7 @@ public class Step {
         } else if (this.line.length() > 0) {
             // we've got just an annotation with no parameter
             this.keyword = this.line;
+            this.pattern = this.keyword;
         }
     }
 

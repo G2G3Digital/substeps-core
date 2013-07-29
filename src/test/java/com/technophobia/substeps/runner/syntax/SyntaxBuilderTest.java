@@ -18,12 +18,13 @@
  */
 package com.technophobia.substeps.runner.syntax;
 
+import static org.hamcrest.CoreMatchers.is;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.technophobia.substeps.model.ParentStep;
@@ -113,5 +114,29 @@ public class SyntaxBuilderTest {
             }
             System.out.println(buf.toString());
         }
+    }
+
+    @Test
+    public void testSingleWordSubStepDefinition() {
+
+        final Step parent = new Step("ASingleWord", true, new File("./target/test-classes/substeps/bugs.substeps"), 23,
+                11);
+
+        Assert.assertNotNull(parent.getPattern());
+
+        final List<Class<?>> stepImplsList = new ArrayList<Class<?>>();
+        stepImplsList.add(MockStepImplementations.class);
+
+        // final List<Class<?>> stepImpls = new ArrayList<Class<?>>();
+        // stepImpls.add(DuplicateStepImplementations.class);
+
+        final Syntax syntax = SyntaxBuilder.buildSyntax(stepImplsList, new File(
+                "./target/test-classes/substeps/bugs.substeps"));
+
+        final List<ParentStep> substeps = syntax.getSubStepsMap().get("AnotherSingleWord");
+
+        Assert.assertNotNull(substeps);
+
+        Assert.assertThat(substeps.size(), is(1));
     }
 }

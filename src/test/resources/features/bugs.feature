@@ -24,4 +24,8 @@ Scenario Outline: a scenario with a substitution issue
   Examples:
 | message                                                                                                 |
 | You must enter the following information to proceed:$Sort code.$Bank Account Name.$Bank Account Number.|
-	    
+
+
+Scenario: SingleWord issue
+    AnotherSingleWord
+    	    

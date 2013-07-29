@@ -148,8 +148,7 @@ public class NotificationDistributor implements INotificationDistributor {
         if (this.listeners != null) {
             for (final INotifier listener : this.listeners) {
 
-                // FIXME Remove temp logging
-                log.debug("Notifying " + listener.getClass() + " that the node has started");
+                log.trace("Notifying " + listener.getClass() + " that the node has started");
 
                 listener.notifyNodeStarted(node);
             }

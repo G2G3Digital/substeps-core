@@ -3,9 +3,12 @@ Substeps Core - Release Notes
 
 - A list of changes per release 
 
+1.1.1
+-----
+- reduced some logging from debug to trace
+
 1.1.0
 -----
-
 - An API has been extracted from core, with a BOM project introduced to make using substeps easier
 - Ant / Junit runners have been removed from core and put in modules of a new repository which also contains the Maven plugin
 - Major refactor of execution node hierarchy

@@ -8,3 +8,6 @@ Define: Given step 1
 
 Define: Given step 2
     Test_Then something has happened
+    
+Define: AnotherSingleWord
+    Test_Then something has happened    
