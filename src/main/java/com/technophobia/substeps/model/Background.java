@@ -66,7 +66,14 @@ public class Background {
 
     private String descriptionFor(final String text) {
         final int startIndex = text.indexOf(":") + 1;
-        final int endIndex = text.indexOf(System.getProperty("line.separator"));
+
+        final int endIndex = text.indexOf("\n");
+        // using System.getProperty("line.separator") here causes issues on
+        // Windows with files that don't end in /r/n..
+
+        if (endIndex == -1 || startIndex == -1) {
+            return "";
+        }
         return text.substring(startIndex, endIndex).trim();
     }
 }
