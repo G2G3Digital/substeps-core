@@ -14,6 +14,7 @@ Release Notes
 -----
 * reduced some logging from debug to trace
 * bug around single word substep definitions - the parser would fail to resolve them
+* default execution report title if none provided in the pom
 
 1.1.0
 -----

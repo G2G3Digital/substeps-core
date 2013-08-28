@@ -6,7 +6,7 @@ Feature: Some Feature2
 #    Given I'm an un-registered user
 #    And I am on the registration page
 
-Background: background to the proceeding scenario
+Background:
     Given whatever
 
 Tags: @tag1 @tag2	

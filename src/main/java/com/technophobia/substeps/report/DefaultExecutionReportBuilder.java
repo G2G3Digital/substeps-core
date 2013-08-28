@@ -71,11 +71,13 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
     public static final String JSON_DATA_FILENAME = "report_data.json";
     public static final String JSON_DETAIL_DATA_FILENAME = "detail_data.js";
 
+    private static final String DEFAULT_REPORT_TITLE = "Substep Test Execution Report";
+
     private static final String JSON_STATS_DATA_FILENAME = "susbteps-stats.js";
 
     private static Map<ExecutionResult, String> resultToImageMap = new HashMap<ExecutionResult, String>();
 
-    private ReportData data = new ReportData();
+    private final ReportData data = new ReportData();
 
     static {
 
@@ -96,28 +98,28 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
     private String reportTitle;
 
     public DefaultExecutionReportBuilder() {
-        velocityProperties.setProperty("resource.loader", "class");
-        velocityProperties.setProperty("class.resource.loader.class",
+        this.velocityProperties.setProperty("resource.loader", "class");
+        this.velocityProperties.setProperty("class.resource.loader.class",
                 "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
     }
 
     @Override
-    public void setOutputDirectory(File outputDirectory) {
+    public void setOutputDirectory(final File outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
 
     @Override
     public void buildReport() {
 
-        log.debug("Build report in: " + outputDirectory.getAbsolutePath());
+        this.log.debug("Build report in: " + this.outputDirectory.getAbsolutePath());
 
-        final File reportDir = new File(outputDirectory + File.separator + FEATURE_REPORT_FOLDER);
+        final File reportDir = new File(this.outputDirectory + File.separator + FEATURE_REPORT_FOLDER);
 
-        File screenshotDirectory = new File(reportDir, SCREENSHOT_FOLDER);
+        final File screenshotDirectory = new File(reportDir, SCREENSHOT_FOLDER);
 
         try {
 
-            log.debug("trying to create: " + reportDir.getAbsolutePath());
+            this.log.debug("trying to create: " + reportDir.getAbsolutePath());
 
             if (reportDir.exists()) {
                 FileUtils.deleteDirectory(reportDir);
@@ -127,24 +129,24 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
             copyStaticResources(reportDir);
 
-            buildMainReport(data, reportDir);
+            buildMainReport(this.data, reportDir);
 
-            TreeJsonBuilder.writeTreeJson(data, new File(reportDir, JSON_DATA_FILENAME));
+            TreeJsonBuilder.writeTreeJson(this.data, new File(reportDir, JSON_DATA_FILENAME));
 
-            DetailedJsonBuilder
-                    .writeDetailJson(data, SCREENSHOT_FOLDER, new File(reportDir, JSON_DETAIL_DATA_FILENAME));
+            DetailedJsonBuilder.writeDetailJson(this.data, SCREENSHOT_FOLDER, new File(reportDir,
+                    JSON_DETAIL_DATA_FILENAME));
 
-            buildStatsJSON(data, reportDir);
+            buildStatsJSON(this.data, reportDir);
 
-            for (ExecutionNode rootNode : data.getRootNodes()) {
+            for (final ExecutionNode rootNode : this.data.getRootNodes()) {
 
                 ScreenshotWriter.writeScreenshots(screenshotDirectory, rootNode);
             }
 
         } catch (final IOException ex) {
-            log.error("IOException: ", ex);
+            this.log.error("IOException: ", ex);
         } catch (final URISyntaxException ex) {
-            log.error("URISyntaxException: ", ex);
+            this.log.error("URISyntaxException: ", ex);
         }
     }
 
@@ -223,7 +225,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
      */
     private void copyStaticResources(final File reportDir) throws URISyntaxException, IOException {
 
-        log.debug("Copying static resources to: " + reportDir.getAbsolutePath());
+        this.log.debug("Copying static resources to: " + reportDir.getAbsolutePath());
 
         final URL staticURL = getClass().getResource("/static");
         if (staticURL == null) {
@@ -235,7 +237,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
     private void buildMainReport(final ReportData data, final File reportDir) throws IOException {
 
-        log.debug("Building main report file.");
+        this.log.debug("Building main report file.");
 
         final VelocityContext vCtx = new VelocityContext();
 
@@ -249,7 +251,12 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
         vCtx.put("stats", stats);
         vCtx.put("dateTimeStr", dateTimeStr);
-        vCtx.put("reportTitle", reportTitle);
+
+        if (StringUtils.isEmpty(this.reportTitle)) {
+            this.reportTitle = DEFAULT_REPORT_TITLE;
+        }
+
+        vCtx.put("reportTitle", this.reportTitle);
 
         renderAndWriteToFile(reportDir, vCtx, vml, "report_frame.html");
 
@@ -264,7 +271,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
 
         try {
 
-            velocityEngine.init(velocityProperties);
+            velocityEngine.init(this.velocityProperties);
             velocityEngine.getTemplate("templates/" + vm).merge(vCtx, writer);
 
         } catch (final ResourceNotFoundException e) {
@@ -284,7 +291,7 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
                 }
             } catch (final IOException e) {
 
-                log.error("IOException: ", e);
+                this.log.error("IOException: ", e);
             }
         }
     }
@@ -323,9 +330,9 @@ public class DefaultExecutionReportBuilder extends ExecutionReportBuilder {
     }
 
     @Override
-    public void addRootExecutionNode(RootNode node) {
+    public void addRootExecutionNode(final RootNode node) {
 
-        data.addRootExecutionNode(node);
+        this.data.addRootExecutionNode(node);
     }
 
 }
