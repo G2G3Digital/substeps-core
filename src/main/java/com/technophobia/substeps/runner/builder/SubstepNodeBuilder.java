@@ -49,25 +49,25 @@ import com.technophobia.substeps.runner.TestParameters;
 
 public class SubstepNodeBuilder {
 
-    private static final Logger log = LoggerFactory.getLogger(ScenarioNodeBuilder.class);
+    private static final Logger log = LoggerFactory.getLogger(SubstepNodeBuilder.class);
     private final TestParameters parameters;
 
-    SubstepNodeBuilder(TestParameters parameters) {
+    SubstepNodeBuilder(final TestParameters parameters) {
 
         this.parameters = parameters;
     }
 
-    public SubstepNode build(String scenarioDescription, final List<Step> steps,
+    public SubstepNode build(final String scenarioDescription, final List<Step> steps,
             final PatternMap<ParentStep> subStepsMapLocal, final ParentStep parent,
-            final ExampleParameter parametersForSteps, boolean throwExceptionIfUnableToBuildMethodArgs,
-            Set<String> tags, int depth) {
+            final ExampleParameter parametersForSteps, final boolean throwExceptionIfUnableToBuildMethodArgs,
+            final Set<String> tags, final int depth) {
 
         if (steps == null || steps.isEmpty()) {
 
             throw new SubstepsConfigurationException("There are no steps for " + scenarioDescription + " or a substep");
         }
 
-        List<StepNode> substeps = Lists.newArrayList();
+        final List<StepNode> substeps = Lists.newArrayList();
 
         for (final Step step : steps) {
 
@@ -79,9 +79,10 @@ public class SubstepNodeBuilder {
         return new SubstepNode(substeps, tags, depth);
     }
 
-    public StepNode buildStepNode(String scenarioDescription, Step step, final PatternMap<ParentStep> subStepsMapLocal,
-            final ParentStep parent, ExampleParameter parametersForSteps,
-            boolean throwExceptionIfUnableToBuildMethodArgs, Set<String> tags, int depth) {
+    public StepNode buildStepNode(final String scenarioDescription, final Step step,
+            final PatternMap<ParentStep> subStepsMapLocal, final ParentStep parent,
+            final ExampleParameter parametersForSteps, final boolean throwExceptionIfUnableToBuildMethodArgs,
+            final Set<String> tags, final int depth) {
 
         substituteStepParametersIntoStep(parametersForSteps, step);
 
@@ -107,15 +108,15 @@ public class SubstepNodeBuilder {
         return stepNode;
     }
 
-    private SubstepNode buildSubstepNode(String scenarioDescription, Step step,
-            final PatternMap<ParentStep> subStepsMapLocal, boolean throwExceptionIfUnableToBuildMethodArgs,
-            Set<String> tags, int depth, ParentStep substepsParent) {
+    private SubstepNode buildSubstepNode(final String scenarioDescription, final Step step,
+            final PatternMap<ParentStep> subStepsMapLocal, final boolean throwExceptionIfUnableToBuildMethodArgs,
+            final Set<String> tags, final int depth, final ParentStep substepsParent) {
         substepsParent.initialiseParamValues(-1, step.getParameterLine());
 
         final ExampleParameter parametersForSubSteps = substepsParent.getParamValueMap();
 
-        final List<StepImplementation> list = parameters.getSyntax().checkForStepImplementations(step.getKeyword(),
-                step.getParameterLine());
+        final List<StepImplementation> list = this.parameters.getSyntax().checkForStepImplementations(
+                step.getKeyword(), step.getParameterLine());
 
         if (list != null && !list.isEmpty()) {
             final StepImplementation problem = list.get(0);
@@ -133,7 +134,7 @@ public class SubstepNodeBuilder {
 
         }
 
-        SubstepNode substepNode = build(scenarioDescription, substepsParent.getSteps(), subStepsMapLocal,
+        final SubstepNode substepNode = build(scenarioDescription, substepsParent.getSteps(), subStepsMapLocal,
                 substepsParent, parametersForSubSteps, throwExceptionIfUnableToBuildMethodArgs, tags, depth);
 
         substepNode.setLine(substepsParent.getParent().getParameterLine());
@@ -146,10 +147,10 @@ public class SubstepNodeBuilder {
         ParentStep substepsParent = subStepsMapLocal.get(step.getLine(), 0);
 
         // if we're not strict then we can look for other step defs that fit
-        if (!parameters.getSyntax().isStrict() && substepsParent == null) {
+        if (!this.parameters.getSyntax().isStrict() && substepsParent == null) {
             final String originalKeyword = step.getKeyword();
 
-            for (final String altKeyword : parameters.getSyntax().getNonStrictKeywordPrecedence()) {
+            for (final String altKeyword : this.parameters.getSyntax().getNonStrictKeywordPrecedence()) {
                 // don't use the same keyword again
                 if (altKeyword.compareToIgnoreCase(originalKeyword) != 0) {
 
@@ -200,7 +201,7 @@ public class SubstepNodeBuilder {
     }
 
     public StepImplementationNode buildStepImplementationNode(final ParentStep parent, final Step step,
-            boolean throwExceptionIfUnableToBuildMethodArgs, final Set<String> tags, int depth) {
+            final boolean throwExceptionIfUnableToBuildMethodArgs, final Set<String> tags, final int depth) {
 
         log.debug("looking for impl for step: " + step.toString());
 
@@ -212,8 +213,8 @@ public class SubstepNodeBuilder {
 
         if (execImpl != null) {
 
-            StepImplementationNode stepImplementationNode = new StepImplementationNode(execImpl.getImplementedIn(),
-                    execImpl.getMethod(), tags, depth);
+            final StepImplementationNode stepImplementationNode = new StepImplementationNode(
+                    execImpl.getImplementedIn(), execImpl.getMethod(), tags, depth);
 
             stepImplementationNode.setLine(step.getParameterLine());
             stepImplementationNode.setFileUri(step.getSource().getAbsolutePath());
@@ -253,7 +254,7 @@ public class SubstepNodeBuilder {
 
         // using the specified 'phrase' look for a corresponding impl
 
-        final List<StepImplementation> list = parameters.getSyntax().getStepImplementations(step.getKeyword(),
+        final List<StepImplementation> list = this.parameters.getSyntax().getStepImplementations(step.getKeyword(),
                 step.getParameterLine());
 
         if (list != null && list.size() > 1) {

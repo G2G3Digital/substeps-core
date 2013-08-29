@@ -151,11 +151,19 @@ public class Syntax {
             }
 
         } else {
-            final StepImplementationException ex = new DuplicateStepImplementationException(pattern,
-                    patternMap.getValueForPattern(pattern), impl);
-            this.syntaxErrorReporter.reportStepImplError(ex);
-            if (this.failOnDuplicateStepImplementations) {
-                throw ex;
+
+            final StepImplementation implAlreadyGot = patternMap.getValueForPattern(pattern);
+
+            if (!implAlreadyGot.getMethod().equals(impl.getMethod())) {
+
+                final StepImplementationException ex = new DuplicateStepImplementationException(pattern,
+                        patternMap.getValueForPattern(pattern), impl);
+                this.syntaxErrorReporter.reportStepImplError(ex);
+                if (this.failOnDuplicateStepImplementations) {
+                    throw ex;
+                }
+            } else {
+                // this is the same - no need to make a fuss, just ignore it
             }
         }
 
