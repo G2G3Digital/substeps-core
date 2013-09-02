@@ -18,13 +18,16 @@
  */
 package com.technophobia.substeps.model.exception;
 
+import java.io.File;
+
 //TODO: we should be able to identify these at parse time
 public class UnimplementedStepException extends SubstepsRuntimeException {
 
     private static final long serialVersionUID = 6807673963152251297L;
 
-    public UnimplementedStepException(final String pattern) {
-        super(pattern + " is not a recognised step or substep implementation");
+    public UnimplementedStepException(final String pattern, final File source, final int lineNumber) {
+        super("[" + pattern + "] in source file: " + source.getAbsolutePath() + " line " + lineNumber
+                + " is not a recognised step or substep implementation");
     }
 
 }

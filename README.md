@@ -16,6 +16,7 @@ Release Notes
 * bug around single word substep definitions - the parser would fail to resolve them
 * default execution report title if none provided in the pom
 * parsing Backgrounds on Windows resulted in an IndexOutOfBounds - now fixed
+* Addition of source file and line number to UnimplementedStepException
 
 1.1.0
 -----

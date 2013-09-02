@@ -18,6 +18,7 @@
  */
 package com.technophobia.substeps.model;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -190,12 +191,14 @@ public class Syntax {
      * @param parameterLine
      * @return
      */
-    public List<StepImplementation> getStepImplementations(final String keyword, final String parameterLine) {
-        return getStepImplementationsInternal(keyword, parameterLine, false);
+    public List<StepImplementation> getStepImplementations(final String keyword, final String parameterLine,
+            final File source, final int lineNumber) {
+        return getStepImplementationsInternal(keyword, parameterLine, false, source, lineNumber);
     }
 
-    public List<StepImplementation> checkForStepImplementations(final String keyword, final String parameterLine) {
-        return getStepImplementationsInternal(keyword, parameterLine, true);
+    public List<StepImplementation> checkForStepImplementations(final String keyword, final String parameterLine,
+            final File source, final int lineNumber) {
+        return getStepImplementationsInternal(keyword, parameterLine, true, source, lineNumber);
     }
 
     /**
@@ -204,8 +207,9 @@ public class Syntax {
      * @return
      */
     private List<StepImplementation> getStepImplementationsInternal(final String keyword, final String parameterLine,
-            final boolean okNotTofindAnything) {
-        List<StepImplementation> list = getStrictStepimplementation(keyword, parameterLine, okNotTofindAnything);
+            final boolean okNotTofindAnything, final File source, final int lineNumber) {
+        List<StepImplementation> list = getStrictStepimplementation(keyword, parameterLine, okNotTofindAnything,
+                source, lineNumber);
 
         if (!this.strict
                 && ((list == null && okNotTofindAnything) || (!okNotTofindAnything && list != null && list.isEmpty()))) {
@@ -216,7 +220,7 @@ public class Syntax {
                 // don't use the same keyword again
                 if (altKeyword.compareToIgnoreCase(keyword) != 0) {
                     final List<StepImplementation> altStepImplementations = getStrictStepimplementation(altKeyword,
-                            parameterLine.replaceFirst(keyword, altKeyword), okNotTofindAnything);
+                            parameterLine.replaceFirst(keyword, altKeyword), okNotTofindAnything, source, lineNumber);
                     if (altStepImplementations != null && !altStepImplementations.isEmpty()) {
                         // found an alternative, bail immediately
                         list = new ArrayList<StepImplementation>(Collections2.transform(altStepImplementations,
@@ -236,7 +240,7 @@ public class Syntax {
      * @return
      */
     private List<StepImplementation> getStrictStepimplementation(final String keyword, final String parameterLine,
-            final boolean okNotTofindAnything) {
+            final boolean okNotTofindAnything, final File source, final int lineNumber) {
 
         List<StepImplementation> list = null;
 
@@ -247,7 +251,7 @@ public class Syntax {
         }
 
         else if (!okNotTofindAnything) {
-            throw new UnimplementedStepException(parameterLine);
+            throw new UnimplementedStepException(parameterLine, source, lineNumber);
         }
 
         return list;

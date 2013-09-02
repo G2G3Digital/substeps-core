@@ -70,7 +70,8 @@ public class SyntaxTest {
         final String keyword = DEFINITION_1_2_KEYWORD;
         final String parameterLine = DEFINITION_1_2_PARAMATER_LINE_FULL;
 
-        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine,
+                null, 21);
         assertThat(stepImplementations.size(), is(1));
 
         final StepImplementation stepImplementation = stepImplementations.get(0);
@@ -87,7 +88,8 @@ public class SyntaxTest {
         final String keyword = DEFINITION_1_1_KEYWORD;
         final String parameterLine = DEFINITION_1_2_PARAMATER_LINE_FULL;
 
-        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine,
+                null, 21);
         assertThat(stepImplementations.size(), is(0));
     }
 
@@ -100,7 +102,8 @@ public class SyntaxTest {
         final String keyword = DEFINITION_2_2_KEYWORD;
         final String parameterLine = DEFINITION_2_2_PARAMATER_LINE_FULL;
 
-        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine,
+                null, 21);
         assertThat(stepImplementations.size(), is(1));
 
         final StepImplementation stepImplementation = stepImplementations.get(0);
@@ -118,7 +121,8 @@ public class SyntaxTest {
         final String keyword = DEFINITION_2_2_KEYWORD;
         final String parameterLine = DEFINITION_2_2_KEYWORD + DEFINITION_2_1_PARAMATER_LINE_SUFFIX;
 
-        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine);
+        final List<StepImplementation> stepImplementations = this.syntax.getStepImplementations(keyword, parameterLine,
+                null, 21);
         assertThat(stepImplementations.size(), is(1));
 
         final StepImplementation stepImplementation = stepImplementations.get(0);

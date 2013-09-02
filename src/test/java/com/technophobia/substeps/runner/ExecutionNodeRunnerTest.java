@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -112,8 +113,11 @@ public class ExecutionNodeRunnerTest {
         Assert.assertThat(failures.size(), is(2));
 
         Assert.assertThat(failures.get(0).getCause(), instanceOf(UnimplementedStepException.class));
-        Assert.assertThat(failures.get(0).getCause().getMessage(),
-                is("SingleWord is not a recognised step or substep implementation"));
+        final File substepsFile = new File("./target/test-classes/substeps/error.substeps");
+        final String msg = "[SingleWord] in source file: " + substepsFile.getAbsolutePath()
+                + " line 5 is not a recognised step or substep implementation";
+
+        Assert.assertThat(failures.get(0).getCause().getMessage(), is(msg));
 
         Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
         Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));

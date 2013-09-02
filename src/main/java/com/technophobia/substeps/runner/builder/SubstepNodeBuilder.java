@@ -116,7 +116,7 @@ public class SubstepNodeBuilder {
         final ExampleParameter parametersForSubSteps = substepsParent.getParamValueMap();
 
         final List<StepImplementation> list = this.parameters.getSyntax().checkForStepImplementations(
-                step.getKeyword(), step.getParameterLine());
+                step.getKeyword(), step.getParameterLine(), step.getSource(), step.getSourceLineNumber());
 
         if (list != null && !list.isEmpty()) {
             final StepImplementation problem = list.get(0);
@@ -255,7 +255,7 @@ public class SubstepNodeBuilder {
         // using the specified 'phrase' look for a corresponding impl
 
         final List<StepImplementation> list = this.parameters.getSyntax().getStepImplementations(step.getKeyword(),
-                step.getParameterLine());
+                step.getParameterLine(), step.getSource(), step.getSourceLineNumber());
 
         if (list != null && list.size() > 1) {
             log.error("found too many impls for line: " + step.getLine());
