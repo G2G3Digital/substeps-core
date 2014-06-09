@@ -28,8 +28,8 @@ import com.google.common.collect.Lists;
 import com.technophobia.substeps.execution.DryRunImplementationCache;
 import com.technophobia.substeps.execution.ImplementationCache;
 import com.technophobia.substeps.execution.MethodExecutor;
-import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.RootNode;
+import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.model.Syntax;
 import com.technophobia.substeps.runner.builder.ExecutionNodeTreeBuilder;
@@ -62,17 +62,18 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
     private List<SubstepExecutionFailure> failures;
 
-    public void addNotifier(final INotifier notifier) {
+    public void addNotifier(final IExecutionListener notifier) {
 
-        notificationDistributor.addListener(notifier);
+        this.notificationDistributor.addListener(notifier);
     }
 
     public RootNode prepareExecutionConfig(final SubstepsExecutionConfig theConfig) {
 
-        ExecutionConfigWrapper config = new ExecutionConfigWrapper(theConfig);
+        final ExecutionConfigWrapper config = new ExecutionConfigWrapper(theConfig);
         config.initProperties();
 
-        SetupAndTearDown setupAndTearDown = new SetupAndTearDown(config.getInitialisationClasses(), methodExecutor);
+        final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(config.getInitialisationClasses(),
+                this.methodExecutor);
 
         final String loggingConfigName = config.getDescription() != null ? config.getDescription() : "SubStepsMojo";
 
@@ -80,7 +81,7 @@ public class ExecutionNodeRunner implements SubstepsRunner {
 
         final TagManager tagmanager = new TagManager(config.getTags());
 
-        final TagManager nonFatalTagmanager = (config.getNonFatalTags() != null) ? new TagManager(
+        final TagManager nonFatalTagmanager = config.getNonFatalTags() != null ? new TagManager(
                 config.getNonFatalTags()) : null;
 
         File subStepsFile = null;
@@ -100,43 +101,64 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         final ExecutionNodeTreeBuilder nodeTreeBuilder = new ExecutionNodeTreeBuilder(parameters);
 
         // building the tree can throw critical failures if exceptions are found
-        rootNode = nodeTreeBuilder.buildExecutionNodeTree(theConfig.getDescription());
+        this.rootNode = nodeTreeBuilder.buildExecutionNodeTree(theConfig.getDescription());
 
-        ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY, notificationDistributor);
+        // add any listeners (including the step execution logger)
+
+        final List<Class<? extends IExecutionListener>> executionListenerClasses = config.getExecutionListenerClasses();
+
+        for (final Class<? extends IExecutionListener> listener : executionListenerClasses) {
+
+            log.info("adding executionListener: " + listener.getClass());
+
+            try {
+                this.notificationDistributor.addListener(listener.newInstance());
+            } catch (final Exception e) {
+                // not the end of the world...
+                log.warn("failed to instantiate ExecutionListener: " + listener.getClass(), e);
+            }
+        }
+
+        // this.notificationDistributor.addListener(new
+        // ColourExecutionLogger());
+
+        ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY,
+                this.notificationDistributor);
 
         final String dryRunProperty = System.getProperty(DRY_RUN_KEY);
-        boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
+        final boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
 
-        MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : methodExecutor;
+        final MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : this.methodExecutor;
 
         if (dryRun) {
             log.info("**** DRY RUN ONLY **");
         }
 
-        nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
+        this.nodeExecutionContext = new RootNodeExecutionContext(this.notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager,
                 methodExecutorToUse);
 
-        return rootNode;
+        return this.rootNode;
     }
 
     public RootNode run() {
 
         // TODO - why is this here twice?
-        ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY, notificationDistributor);
+        ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY,
+                this.notificationDistributor);
 
-        rootNodeRunner.run(rootNode, nodeExecutionContext);
+        this.rootNodeRunner.run(this.rootNode, this.nodeExecutionContext);
 
-        if (!nodeExecutionContext.haveTestsBeenRun()) {
+        if (!this.nodeExecutionContext.haveTestsBeenRun()) {
 
             final Throwable t = new IllegalStateException("No tests executed");
-            rootNode.getResult().setFailed(t);
-            notificationDistributor.notifyNodeFailed(rootNode, t);
+            this.rootNode.getResult().setFailed(t);
+            this.notificationDistributor.onNodeFailed(this.rootNode, t);
 
-            nodeExecutionContext.addFailure(new SubstepExecutionFailure(t, rootNode));
+            this.nodeExecutionContext.addFailure(new SubstepExecutionFailure(t, this.rootNode));
         }
 
-        failures = nodeExecutionContext.getFailures();
+        this.failures = this.nodeExecutionContext.getFailures();
 
         return this.rootNode;
     }

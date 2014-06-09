@@ -36,7 +36,7 @@ public class ExecutionConfigWrapper extends ExecutionConfigDecorator {
 
     private static final long serialVersionUID = -6096151962497826502L;
 
-    public ExecutionConfigWrapper(SubstepsExecutionConfig executionConfig) {
+    public ExecutionConfigWrapper(final SubstepsExecutionConfig executionConfig) {
 
         super(executionConfig);
     }
@@ -90,7 +90,35 @@ public class ExecutionConfigWrapper extends ExecutionConfigDecorator {
                 + ", stepImplementationClassNames=" + Arrays.toString(getStepImplementationClassNames())
                 + ", initialisationClass=" + Arrays.toString(getInitialisationClass()) + ", stepImplementationClasses="
                 + getStepImplementationClasses() + ", initialisationClasses="
-                + Arrays.toString(getInitialisationClasses()) + "]";
+                + Arrays.toString(getInitialisationClasses()) + ", executionListeners="
+                + Arrays.toString(getExecutionListeners()) + "]";
+    }
+
+    public List<Class<? extends IExecutionListener>> getExecutionListenerClasses() {
+
+        final List<Class<? extends IExecutionListener>> notifierClassList = new ArrayList<Class<? extends IExecutionListener>>();
+
+        final String[] classList = getExecutionListeners();
+        if (classList != null) {
+            for (final String className : classList) {
+
+                try {
+                    final Class<?> implClass = Class.forName(className);
+
+                    if (IExecutionListener.class.isAssignableFrom(implClass)) {
+                        notifierClassList.add((Class<? extends IExecutionListener>) implClass);
+                    } else {
+
+                        Assert.fail("Execution Listener does not extend com.technophobia.substeps.runner.INotifier");
+                    }
+
+                } catch (final ClassNotFoundException e) {
+                    Assert.fail("ClassNotFoundException: " + e.getMessage());
+                }
+            }
+        }
+        return notifierClassList;
+
     }
 
     public Class<?>[] determineInitialisationClasses() {
@@ -100,7 +128,7 @@ public class ExecutionConfigWrapper extends ExecutionConfigDecorator {
 
             initialisationClassList = new ArrayList<Class<?>>();
 
-            InitialisationClassSorter orderer = new InitialisationClassSorter();
+            final InitialisationClassSorter orderer = new InitialisationClassSorter();
 
             for (final Class<?> c : getStepImplementationClasses()) {
 
