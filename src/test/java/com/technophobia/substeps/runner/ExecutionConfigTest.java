@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
 import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
+import com.technophobia.substeps.runner.logger.AnsiColourExecutionLogger;
 
 /**
  * @author ian
@@ -146,10 +147,10 @@ public class ExecutionConfigTest {
 
     }
 
-    public void assertThat(List<Class<?>> within, Class<?> initialisationClass, Class<?> isPreceededBy) {
+    public void assertThat(final List<Class<?>> within, final Class<?> initialisationClass, final Class<?> isPreceededBy) {
 
-        int index = within.indexOf(initialisationClass);
-        List<Class<?>> range = within.subList(0, index);
+        final int index = within.indexOf(initialisationClass);
+        final List<Class<?>> range = within.subList(0, index);
         Assert.assertTrue(range.contains(isPreceededBy));
     }
 
@@ -171,7 +172,7 @@ public class ExecutionConfigTest {
         try {
             config.determineInitialisationClasses();
 
-        } catch (SubstepsConfigurationException exception) {
+        } catch (final SubstepsConfigurationException exception) {
 
             Assert.assertEquals(THE_ORDER_IS_INVALID_AS + InitClass5.class.getName() + MUST_COME_BEFORE_AND_AFTER
                     + InitClass2.class.getName(), exception.getMessage());
@@ -205,7 +206,7 @@ public class ExecutionConfigTest {
     @Test
     public void testDeterminInitialisationClassesTheOldWay() {
 
-        SubstepsExecutionConfig configImpl = new SubstepsExecutionConfig();
+        final SubstepsExecutionConfig configImpl = new SubstepsExecutionConfig();
         final ExecutionConfigWrapper config = new ExecutionConfigWrapper(configImpl);
 
         final String[] initClasses = { "java.lang.String", "java.math.BigDecimal" };
@@ -260,12 +261,21 @@ public class ExecutionConfigTest {
 
         try {
             config.determineInitialisationClasses();
-        } catch (SubstepsConfigurationException sce) {
+        } catch (final SubstepsConfigurationException sce) {
 
             Assert.assertEquals(THE_ORDER_IS_INVALID_AS + InitClass1.class.getName() + MUST_COME_BEFORE_AND_AFTER
                     + InitClass6.class.getName(), sce.getMessage());
             throw sce;
         }
+
+    }
+
+    @Test
+    public void testINotiferAssignment() {
+
+        final Class<?> clazz = AnsiColourExecutionLogger.class;
+
+        Assert.assertTrue(IExecutionListener.class.isAssignableFrom(clazz));
 
     }
 

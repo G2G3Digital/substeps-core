@@ -10,6 +10,14 @@ There is also a [Substeps Google group](http://groups.google.com/group/substeps?
 Release Notes
 =============
 
+1.1.3
+-----
+* Exposed a mechanism to allow users of substeps to specifiy custom execution listeners along with a barebones step logging implementation, updates as a result of renaming the listener interface
+
+1.1.2
+-----
+* version number bump in line with other substeps libraries
+
 1.1.1
 -----
 * reduced some logging from debug to trace

@@ -27,62 +27,62 @@ import java.util.Properties;
  * @author rbarefield
  * 
  */
-abstract class ExecutionConfigDecorator extends SubstepsExecutionConfig {
+abstract class ExecutionConfigDecorator {// extends SubstepsExecutionConfig {
 
     private static final long serialVersionUID = 1L;
 
     private final SubstepsExecutionConfig decoratedConfig;
 
-    protected ExecutionConfigDecorator(SubstepsExecutionConfig executionConfig) {
+    protected ExecutionConfigDecorator(final SubstepsExecutionConfig executionConfig) {
         this.decoratedConfig = executionConfig;
     }
 
-    @Override
+    // @Override
     public String getDescription() {
         return decoratedConfig.getDescription();
     }
 
-    @Override
+    // @Override
     public String getTags() {
         return decoratedConfig.getTags();
     }
 
-    @Override
+    // @Override
     public String getNonFatalTags() {
         return decoratedConfig.getNonFatalTags();
     }
 
-    @Override
+    // @Override
     public String getFeatureFile() {
         return decoratedConfig.getFeatureFile();
     }
 
-    @Override
+    // @Override
     public String getSubStepsFileName() {
         return decoratedConfig.getSubStepsFileName();
     }
 
-    @Override
+    // @Override
     public boolean isStrict() {
         return decoratedConfig.isStrict();
     }
 
-    @Override
+    // @Override
     public boolean isFastFailParseErrors() {
         return decoratedConfig.isFastFailParseErrors();
     }
 
-    @Override
+    // @Override
     public String[] getNonStrictKeywordPrecedence() {
         return decoratedConfig.getNonStrictKeywordPrecedence();
     }
 
-    @Override
+    // @Override
     public String[] getStepImplementationClassNames() {
         return decoratedConfig.getStepImplementationClassNames();
     }
 
-    @Override
+    // @Override
     public String[] getInitialisationClass() {
         return decoratedConfig.getInitialisationClass();
     }
@@ -91,29 +91,36 @@ abstract class ExecutionConfigDecorator extends SubstepsExecutionConfig {
         return decoratedConfig.getInitialisationClass();
     }
 
-    @Override
+    // @Override
     public Properties getSystemProperties() {
         return decoratedConfig.getSystemProperties();
     }
 
-    @Override
+    // @Override
     public List<Class<?>> getStepImplementationClasses() {
         return decoratedConfig.getStepImplementationClasses();
     }
 
-    @Override
-    public void setStepImplementationClasses(List<Class<?>> stepImplementationClasses) {
+    // @Override
+    public void setStepImplementationClasses(final List<Class<?>> stepImplementationClasses) {
         decoratedConfig.setStepImplementationClasses(stepImplementationClasses);
     }
 
-    @Override
+    // @Override
     public Class<?>[] getInitialisationClasses() {
         return decoratedConfig.getInitialisationClasses();
     }
 
-    @Override
-    public void setInitialisationClasses(Class<?>[] initialisationClasses) {
+    // @Override
+    public void setInitialisationClasses(final Class<?>[] initialisationClasses) {
         decoratedConfig.setInitialisationClasses(initialisationClasses);
+    }
+
+    /**
+     * @return
+     */
+    public String[] getExecutionListeners() {
+        return decoratedConfig.getExecutionListeners();
     }
 
 }

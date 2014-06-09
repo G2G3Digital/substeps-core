@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.technophobia.substeps.execution.node.IExecutionNode;
 import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.runner.ExecutionNodeRunner;
-import com.technophobia.substeps.runner.INotifier;
+import com.technophobia.substeps.runner.IExecutionListener;
 import com.technophobia.substeps.runner.SubstepExecutionFailure;
 import com.technophobia.substeps.runner.SubstepsExecutionConfig;
 
@@ -39,7 +39,7 @@ import com.technophobia.substeps.runner.SubstepsExecutionConfig;
  * @author ian
  * 
  */
-public class SubstepsServer extends NotificationBroadcasterSupport implements SubstepsServerMBean, INotifier {
+public class SubstepsServer extends NotificationBroadcasterSupport implements SubstepsServerMBean, IExecutionListener {
 
     private final Logger log = LoggerFactory.getLogger(SubstepsServer.class);
 
@@ -120,7 +120,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
      * .substeps.execution.ExecutionNode, java.lang.Throwable)
      */
-    public void notifyNodeFailed(final IExecutionNode node, final Throwable cause) {
+    public void onNodeFailed(final IExecutionNode node, final Throwable cause) {
 
         doNotification(node);
 
@@ -133,7 +133,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public void notifyNodeStarted(final IExecutionNode node) {
+    public void onNodeStarted(final IExecutionNode node) {
 
         doNotification(node);
 
@@ -145,7 +145,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
      * technophobia.substeps.execution.ExecutionNode)
      */
-    public void notifyNodeFinished(final IExecutionNode node) {
+    public void onNodeFinished(final IExecutionNode node) {
 
         doNotification(node);
 
@@ -158,7 +158,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
      * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public void notifyNodeIgnored(final IExecutionNode node) {
+    public void onNodeIgnored(final IExecutionNode node) {
 
         doNotification(node);
     }
@@ -168,7 +168,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
         return this.nodeRunner.getFailures();
     }
 
-    public void addNotifier(INotifier notifier) {
+    public void addNotifier(final IExecutionListener notifier) {
 
         this.nodeRunner.addNotifier(notifier);
     }
