@@ -69,11 +69,11 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
         boolean shouldContinue = true;
 
-        context.getNotificationDistributor().notifyNodeStarted(node);
+        context.getNotificationDistributor().onNodeStarted(node);
 
         if (node.hasError()) {
 
-            context.getNotificationDistributor().notifyNodeFailed(node, node.getResult().getThrown());
+            context.getNotificationDistributor().onNodeFailed(node, node.getResult().getThrown());
             context.addFailure(new SubstepExecutionFailure(node.getResult().getThrown(), node));
             shouldContinue = false;
 
@@ -120,7 +120,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
                 log.trace("node success");
             }
 
-            context.getNotificationDistributor().notifyNodeFinished(node);
+            context.getNotificationDistributor().onNodeFinished(node);
 
             node.getResult().setFinished();
 
@@ -136,7 +136,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
             final SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
             // just notify on the last one in..?
             final Throwable lastException = lastFailure.getCause();
-            context.getNotificationDistributor().notifyNodeFailed(node, lastException);
+            context.getNotificationDistributor().onNodeFailed(node, lastException);
 
             // TODO should this have been set earlier...?
             node.getResult().setFailed(lastException);

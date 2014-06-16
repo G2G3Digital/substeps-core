@@ -76,7 +76,7 @@ public class ExecutionNodeRunnerTest {
         final String feature = "./target/test-classes/features/error4.feature";
         final String tags = "scenario_with_params";
         final String substeps = "./target/test-classes/substeps/simple.substeps";
-        final INotifier notifier = mock(INotifier.class);
+        final IExecutionListener notifier = mock(IExecutionListener.class);
 
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
 
@@ -94,7 +94,7 @@ public class ExecutionNodeRunnerTest {
         final String feature = "./target/test-classes/features/error.feature";
         final String tags = "@bug_missing_sub_step_impl";
         final String substeps = "./target/test-classes/substeps/error.substeps";
-        final INotifier notifier = mock(INotifier.class);
+        final IExecutionListener notifier = mock(IExecutionListener.class);
 
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
 
@@ -108,7 +108,7 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
-        verify(notifier, times(1)).notifyNodeFailed(eq(scenarioNode), argThat(any(UnimplementedStepException.class)));
+        verify(notifier, times(1)).onNodeFailed(eq(scenarioNode), argThat(any(UnimplementedStepException.class)));
 
         Assert.assertThat(failures.size(), is(2));
 
@@ -130,7 +130,7 @@ public class ExecutionNodeRunnerTest {
         final String feature = "./target/test-classes/features/error3.feature";
         final String tags = "@duplicate_step_step_def";
         final String substeps = "./target/test-classes/substeps/duplicates2.substeps";
-        final INotifier notifier = mock(INotifier.class);
+        final IExecutionListener notifier = mock(IExecutionListener.class);
 
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
 
@@ -144,8 +144,7 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(scenarioNode.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
-        verify(notifier, times(1)).notifyNodeFailed(eq(scenarioNode),
-                argThat(any(SubstepsConfigurationException.class)));
+        verify(notifier, times(1)).onNodeFailed(eq(scenarioNode), argThat(any(SubstepsConfigurationException.class)));
 
         Assert.assertThat(failures.size(), is(2));
 
@@ -169,7 +168,7 @@ public class ExecutionNodeRunnerTest {
         final String feature = "./target/test-classes/features/error2.feature";
         final String tags = "@invalid_scenario_outline";
         final String substeps = "./target/test-classes/substeps/simple.substeps";
-        final INotifier notifier = mock(INotifier.class);
+        final IExecutionListener notifier = mock(IExecutionListener.class);
 
         // TODO - checkfailures - test currently ignored anyway..
         final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
@@ -186,7 +185,7 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(scenarioOutlineNode2.getResult().getResult(), is(ExecutionResult.PARSE_FAILURE));
 
-        verify(notifier, times(1)).notifyNodeFailed(eq(scenarioOutlineNode2),
+        verify(notifier, times(1)).onNodeFailed(eq(scenarioOutlineNode2),
                 argThat(any(SubstepsConfigurationException.class)));
 
     }
@@ -220,7 +219,7 @@ public class ExecutionNodeRunnerTest {
      * @return
      */
     private RootNode runExecutionTest(final String feature, final String tags, final String substeps,
-            final INotifier notifier, final Class<?>[] initialisationClasses,
+            final IExecutionListener notifier, final Class<?>[] initialisationClasses,
             final List<SubstepExecutionFailure> failures) {
         final SubstepsExecutionConfig executionConfig = new SubstepsExecutionConfig();
 
@@ -257,7 +256,7 @@ public class ExecutionNodeRunnerTest {
     }
 
     private RootNode runExecutionTest(final String feature, final String tags, final String substeps,
-            final INotifier notifier, final List<SubstepExecutionFailure> failures) {
+            final IExecutionListener notifier, final List<SubstepExecutionFailure> failures) {
 
         return runExecutionTest(feature, tags, substeps, notifier, null, failures);
     }
@@ -317,13 +316,13 @@ public class ExecutionNodeRunnerTest {
         setPrivateField(runner, "rootNode", node);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
 
-        final INotifier mockNotifer = mock(INotifier.class);
+        final IExecutionListener mockNotifer = mock(IExecutionListener.class);
         runner.addNotifier(mockNotifer);
 
         runner.run();
         final List<SubstepExecutionFailure> failures = runner.getFailures();
 
-        verify(mockNotifer, times(2)).notifyNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
+        verify(mockNotifer, times(2)).onNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
 
         Assert.assertFalse("expecting some failures", failures.isEmpty());
 
@@ -349,7 +348,7 @@ public class ExecutionNodeRunnerTest {
         setPrivateField(runner, "rootNode", rootNode);
         setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
 
-        final INotifier mockNotifer = mock(INotifier.class);
+        final IExecutionListener mockNotifer = mock(IExecutionListener.class);
         runner.addNotifier(mockNotifer);
 
         runner.run();
@@ -363,11 +362,11 @@ public class ExecutionNodeRunnerTest {
         // list contains just those nodes that have actually failed, not the
         // entire tree.
 
-        verify(mockNotifer, times(2)).notifyNodeFailed(argThat(is(rootNode)), argThat(any(Throwable.class)));
+        verify(mockNotifer, times(2)).onNodeFailed(argThat(is(rootNode)), argThat(any(Throwable.class)));
 
-        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(featureNode)), argThat(any(Throwable.class)));
+        verify(mockNotifer, times(1)).onNodeFailed(argThat(is(featureNode)), argThat(any(Throwable.class)));
 
-        verify(mockNotifer, times(1)).notifyNodeFailed(argThat(is(outlineNode)), argThat(any(Throwable.class)));
+        verify(mockNotifer, times(1)).onNodeFailed(argThat(is(outlineNode)), argThat(any(Throwable.class)));
 
         Assert.assertFalse("expecting some failures", failures.isEmpty());
 

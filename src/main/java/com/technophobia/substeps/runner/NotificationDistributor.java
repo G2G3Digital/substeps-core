@@ -48,11 +48,11 @@ public class NotificationDistributor implements INotificationDistributor {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationDistributor.class);
 
-    private List<INotifier> listeners;
+    private List<IExecutionListener> listeners;
 
-    public void addListener(final INotifier listener) {
+    public void addListener(final IExecutionListener listener) {
         if (this.listeners == null) {
-            this.listeners = new ArrayList<INotifier>();
+            this.listeners = new ArrayList<IExecutionListener>();
         }
         this.listeners.add(listener);
     }
@@ -64,7 +64,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * com.technophobia.substeps.runner.INotifier#notifyNodeFailed(com.technophobia
      * .substeps.execution.ExecutionNode, java.lang.Throwable)
      */
-    public final void notifyNodeFailed(final IExecutionNode node, final Throwable cause) {
+    public final void onNodeFailed(final IExecutionNode node, final Throwable cause) {
 
         notifyListenersTestFailed(node, cause);
 
@@ -77,7 +77,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * com.technophobia.substeps.runner.INotifier#notifyNodeStarted(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public final void notifyNodeStarted(final IExecutionNode node) {
+    public final void onNodeStarted(final IExecutionNode node) {
 
         notifyListenersTestStarted(node);
     }
@@ -88,7 +88,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * @see com.technophobia.substeps.runner.INotifier#notifyNodeFinished(com.
      * technophobia.substeps.execution.ExecutionNode)
      */
-    public final void notifyNodeFinished(final IExecutionNode node) {
+    public final void onNodeFinished(final IExecutionNode node) {
 
         notifyListenersTestFinished(node);
 
@@ -101,7 +101,7 @@ public class NotificationDistributor implements INotificationDistributor {
      * com.technophobia.substeps.runner.INotifier#notifyNodeIgnored(com.technophobia
      * .substeps.execution.ExecutionNode)
      */
-    public final void notifyNodeIgnored(final IExecutionNode node) {
+    public final void onNodeIgnored(final IExecutionNode node) {
 
         notifyListenersTestIgnored(node);
 
@@ -114,8 +114,8 @@ public class NotificationDistributor implements INotificationDistributor {
      */
     private void notifyListenersTestFailed(final IExecutionNode node, final Throwable cause) {
         if (this.listeners != null) {
-            for (final INotifier listener : this.listeners) {
-                listener.notifyNodeFailed(node, cause);
+            for (final IExecutionListener listener : this.listeners) {
+                listener.onNodeFailed(node, cause);
             }
         }
     }
@@ -126,8 +126,8 @@ public class NotificationDistributor implements INotificationDistributor {
      */
     private void notifyListenersTestIgnored(final IExecutionNode node) {
         if (this.listeners != null) {
-            for (final INotifier listener : this.listeners) {
-                listener.notifyNodeIgnored(node);
+            for (final IExecutionListener listener : this.listeners) {
+                listener.onNodeIgnored(node);
             }
         }
     }
@@ -138,19 +138,19 @@ public class NotificationDistributor implements INotificationDistributor {
      */
     private void notifyListenersTestFinished(final IExecutionNode node) {
         if (this.listeners != null) {
-            for (final INotifier listener : this.listeners) {
-                listener.notifyNodeFinished(node);
+            for (final IExecutionListener listener : this.listeners) {
+                listener.onNodeFinished(node);
             }
         }
     }
 
     private void notifyListenersTestStarted(final IExecutionNode node) {
         if (this.listeners != null) {
-            for (final INotifier listener : this.listeners) {
+            for (final IExecutionListener listener : this.listeners) {
 
                 log.trace("Notifying " + listener.getClass() + " that the node has started");
 
-                listener.notifyNodeStarted(node);
+                listener.onNodeStarted(node);
             }
         }
     }
