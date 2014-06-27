@@ -152,7 +152,10 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(
                 failures.get(0).getCause().getMessage(),
-                is("line: [Given something] in [./target/test-classes/features/error3.feature] matches step implementation method: [public void com.technophobia.substeps.steps.TestStepImplementations.given()] AND matches a sub step definition: [Given something] in [duplicates2.substeps]"));
+                is("line: [Given something] in [" + feature.replace('/', File.separatorChar)
+                        + "] matches step implementation method: [public void "
+                        + TestStepImplementations.class.getName()
+                        + ".given()] AND matches a sub step definition: [Given something] in [duplicates2.substeps]"));
 
         Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
         Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
