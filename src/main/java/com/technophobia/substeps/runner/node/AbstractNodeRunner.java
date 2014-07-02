@@ -44,16 +44,16 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
                 success = execute(node, context);
 
-                log.trace("execute returned " + success);
+                log.trace("execute returned {}", success);
 
             } catch (final Exception e) {
 
-                log.trace("Exception caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
+                log.trace("Exception caught in {}, rethrowing...", AbstractNodeRunner.class.getSimpleName(), e);
                 throw new RuntimeException(e);
 
             } catch (final Throwable e) {
 
-                log.trace("Throwable caught in " + AbstractNodeRunner.class.getSimpleName() + ", rethrowing...", e);
+                log.trace("Throwable caught in {}, rethrowing...", AbstractNodeRunner.class.getSimpleName(), e);
                 throw new RuntimeException(e);
 
             } finally {
@@ -83,7 +83,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
 
         if (!shouldContinue) {
-            log.debug("shouldContinue = false for " + node);
+            log.debug("shouldContinue = false for {}", node);
         }
 
         return shouldContinue;
@@ -106,7 +106,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
             return true;
         } catch (final Throwable t) {
 
-            log.debug("setup failed", t);
+            log.warn("setup failed", t);
             context.addFailure(new SubstepExecutionFailure(t, node, true));
             return false;
         }
@@ -153,7 +153,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
             ExecutionContext.clear(getScope());
 
         } catch (final Throwable t) {
-            log.debug("tear down failed", t);
+            log.warn("tear down failed", t);
 
             context.addFailure(new SubstepExecutionFailure(t, node, true));
         }
