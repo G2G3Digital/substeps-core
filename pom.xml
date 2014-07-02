@@ -75,6 +75,15 @@
 				<role>developer</role>
 			</roles>
 		</developer>
+
+      <developer>
+          <id>petergphillips</id>
+          <name>Peter Phillips</name>
+          <organization>Greenthistle.com</organization>
+          <roles>
+            <role>developer</role>
+          </roles>
+       </developer>
 		  
     </developers>
 

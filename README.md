@@ -13,6 +13,7 @@ Release Notes
 1.1.3
 -----
 * Exposed a mechanism to allow users of substeps to specifiy custom execution listeners along with a barebones step logging implementation, updates as a result of renaming the listener interface
+* Logging changed from debug to warn when setup or tear down fails [petergphillips]
 
 1.1.2
 -----
