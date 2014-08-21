@@ -231,6 +231,7 @@ public class ExecutionNodeRunnerTest {
         executionConfig.setTags(tags);
         executionConfig.setFeatureFile(feature);
         executionConfig.setSubStepsFileName(substeps);
+        executionConfig.setDescription("ExecutionNodeRunner Test feature set");
 
         final List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
         stepImplementationClasses.add(TestStepImplementations.class);

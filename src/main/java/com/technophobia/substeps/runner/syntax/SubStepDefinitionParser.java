@@ -175,37 +175,6 @@ public class SubStepDefinitionParser {
         }
     }
 
-    // private void processTrimmedLine(final String trimmed, final File source,
-    // final int lineNumber) {
-    //
-    // // TODO convert <> into regex wildcards
-    //
-    // final int scolon = trimmed.indexOf(':');
-    //
-    // boolean lineProcessed = false;
-    //
-    // if (scolon > 0) {
-    // // is this a directive line
-    // final String word = trimmed.substring(0, scolon);
-    // final String remainder = trimmed.substring(scolon + 1);
-    // final Directive d = isDirective(word);
-    // if (d != null) {
-    // final String trimmedRemainder = remainder.trim();
-    // if (!Strings.isNullOrEmpty(trimmedRemainder)) {
-    // processDirective(d, remainder, source, lineNumber);
-    // lineProcessed = true;
-    // }
-    // }
-    // }
-    //
-    // if (!lineProcessed) {
-    // if (this.currentParentStep != null) {
-    // // no context at the mo
-    // this.currentParentStep.addStep(new Step(trimmed, true, source,
-    // lineNumber));
-    // }
-    // }
-    // }
 
     private void processDirective(final Directive d, final String remainder, final int lineNumberIdx) {
         this.currentDirective = d;
