@@ -99,6 +99,8 @@ public class SubstepNodeBuilder {
 
             stepNode = buildSubstepNode(scenarioDescription, step, subStepsMapLocal,
                     throwExceptionIfUnableToBuildMethodArgs, tags, depth, substepsParent);
+            
+            // this step was implemented by a substep as opposed to a step impl
 
         } else {
 

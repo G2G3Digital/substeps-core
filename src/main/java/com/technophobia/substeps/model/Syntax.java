@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 
 import org.slf4j.Logger;
@@ -51,7 +53,9 @@ public class Syntax {
     // These two will always be populated
     private final Map<String, PatternMap<StepImplementation>> stepImplementationMap = new HashMap<String, PatternMap<StepImplementation>>();
 
-    // this might not be populated
+    private final Map<StepImplementation, List<StepImplementationUsage>> stepImplementationsUsageMap = new HashMap<StepImplementation, List<StepImplementationUsage>>();
+    
+    // this is the map of substeps - Define: blah blah and might not be populated
     private PatternMap<ParentStep> subStepsMap = null;
 
     private boolean strict;
@@ -133,6 +137,8 @@ public class Syntax {
      */
     public void addStepImplementation(final StepImplementation impl) {
 
+        stepImplementationsUsageMap.put(impl, new ArrayList<StepImplementationUsage>());
+        
         PatternMap<StepImplementation> patternMap = this.stepImplementationMap.get(impl.getKeyword());
 
         if (patternMap == null) {
@@ -230,7 +236,13 @@ public class Syntax {
                 }
             }
         }
-
+        
+        if (list != null) {
+            for (final StepImplementation s : list){
+                stepImplementationsUsageMap.get(s).add(new StepImplementationUsage(parameterLine, source, lineNumber));
+            }
+        }
+        
         return list;
     }
 
@@ -283,5 +295,22 @@ public class Syntax {
      */
     public String[] getNonStrictKeywordPrecedence() {
         return this.nonStrictKeywordPrecedence;
+    }
+
+    /**
+     * 
+     */
+    public List<StepImplementation> getUncalledStepImplementations() {
+
+        final List<StepImplementation> uncalled = new ArrayList<StepImplementation>();
+        final Set<Entry<StepImplementation, List<StepImplementationUsage>>> entrySet = stepImplementationsUsageMap.entrySet();
+        
+        for (final Entry<StepImplementation, List<StepImplementationUsage>> e : entrySet){
+            
+            if (e.getValue().isEmpty()){
+                uncalled.add(e.getKey());
+            }
+        }
+        return uncalled;
     }
 }

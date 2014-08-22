@@ -1,3 +1,4 @@
+
 # Copyright Technophobia Ltd 2012
 # a definition of a substep
 Define: Given series of substeps is executed
@@ -23,4 +24,7 @@ Define:  Given yet another substep
   
 Define: Then a method with a quoted '<param>' 
 	Then method with param <param>    			
-           	
+
+Define: A step def that isn't actually called
+  Given something
+               	
