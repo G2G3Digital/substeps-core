@@ -14,6 +14,8 @@ Release Notes
 -----
 * Exposed a mechanism to allow users of substeps to specifiy custom execution listeners along with a barebones step logging implementation, updates as a result of renaming the listener interface
 * Logging changed from debug to warn when setup or tear down fails [petergphillips]
+* Added some javadocs descriptions
+* Built a caller hierarchy and determined substep definitions that are not called in the current scope.  
 
 1.1.2
 -----

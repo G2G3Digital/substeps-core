@@ -21,6 +21,7 @@ package com.technophobia.substeps.steps;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Ignore;
 
 import com.technophobia.substeps.model.SubSteps.Step;
@@ -102,5 +103,10 @@ public class TestStepImplementations {
     public void methodWithTableArgument(final List<Map<String, String>> table) {
         somethingCalled = true;
         this.table = table;
+    }
+    
+    @Step("An Uncalled step implementation")
+    public void uncalled(){
+        Assert.fail("don't call me");
     }
 }

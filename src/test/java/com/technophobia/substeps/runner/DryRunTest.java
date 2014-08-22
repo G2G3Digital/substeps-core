@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.technophobia.substeps.execution.node.RootNode;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
 import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
 import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryFeature;
@@ -44,7 +45,7 @@ public class DryRunTest {
         TestInitialisationClass.reset();
         TestStepImplementations.somethingCalled = false;
 
-        SubstepsExecutionConfig theConfig = new SubstepsExecutionConfig();
+        final SubstepsExecutionConfig theConfig = new SubstepsExecutionConfig();
 
         theConfig.setDescription("Feature set");
 
@@ -60,8 +61,10 @@ public class DryRunTest {
 
         theConfig.setStepImplementationClasses(stepImplementationClasses);
 
-        runner.prepareExecutionConfig(theConfig);
+        final RootNode rootNode = runner.prepareExecutionConfig(theConfig);
 
+        System.out.println("rootNode:\n" + 
+        rootNode.toDebugString());
     }
 
     @Test
@@ -106,6 +109,12 @@ public class DryRunTest {
             System.clearProperty("dryRun");
         }
 
+    }
+    
+    @Test
+    public void testStepImplementationsAreGenerated() {
+        
+        System.out.println("check");
     }
 
     @StepImplementations(requiredInitialisationClasses = TestInitialisationClass.class)

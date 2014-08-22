@@ -190,6 +190,10 @@ public class Step {
         return this.keyword;
     }
 
+    /**
+     * returns the regex pattern string including the capture groups
+     * @return
+     */
     public String getPattern() {
         return this.pattern;
     }
@@ -221,6 +225,10 @@ public class Step {
 
     }
 
+    /**
+     * returns the text as it appears in the substep files, including any <angle> brackets denoting parameters
+     * @return
+     */
     public String getParameterLine() {
         return this.parameterLine != null ? this.parameterLine : this.line;
 
