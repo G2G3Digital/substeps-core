@@ -20,6 +20,9 @@ package com.technophobia.substeps.runner.node;
 
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
 import com.technophobia.substeps.execution.node.StepNode;
@@ -27,6 +30,8 @@ import com.technophobia.substeps.execution.node.SubstepNode;
 import com.technophobia.substeps.model.Scope;
 
 public class SubstepNodeRunner extends AbstractNodeRunner<SubstepNode, Boolean> {
+
+    private static final Logger log = LoggerFactory.getLogger(SubstepNodeRunner.class);
 
     private final Scope scope;
 
@@ -40,6 +45,7 @@ public class SubstepNodeRunner extends AbstractNodeRunner<SubstepNode, Boolean> 
 
     @Override
     protected boolean execute(SubstepNode node, RootNodeExecutionContext context) {
+        log.debug("Executing substep {}", node.getDescription());
 
         boolean success = addExpectedChildrenFailureIfNoChildren(node, node.getChildren(), context);
         this.context = context;
