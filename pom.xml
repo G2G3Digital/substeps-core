@@ -116,6 +116,8 @@
 	
         <xstream.version>1.4.2</xstream.version>
 
+        <compileSource>1.5</compileSource>
+        <compileTarget>1.5</compileTarget>
 		<!-- THESE PROPERTIES NEED TO BE DEFINED IN AN ACTIVE PROFILE IN SETTINGS.XML 
 			EG. <nexus.snapshot.artifacts>snapshots</nexus.snapshot.artifacts> <nexus.release.artifacts>releases</nexus.release.artifacts> 
         <nexus.snapshot.url>http://someserver.com/${nexus.snapshot.artifacts}/</nexus.snapshot.url>
@@ -270,7 +272,7 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
-                    <inherit>true</inherit>
+<!--                    <inherit>true</inherit>-->
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
@@ -335,6 +337,7 @@
         
 		<!-- A profile used by default for internal dev, using the repos set up 
 			in proeprties defined above, rather than the OSS nexus repos -->
+        <!--
         <profile>
             <id>internalDev</id>
              
@@ -353,7 +356,7 @@
             </distributionManagement>
             
         </profile>
-        
+        -->
         <profile>
             <id>ccProfile</id>
 
@@ -412,7 +415,7 @@
 
 						<groupId>com.technophobia.substeps</groupId>
 						<artifactId>substeps-maven-plugin</artifactId>
-						<version>1.1.0-SNAPSHOT</version>
+						<version>1.1.2</version>
 
 						<executions>
 
@@ -498,7 +501,7 @@
 				<dependency>
 					<groupId>com.technophobia.substeps</groupId>
 					<artifactId>webdriver-substeps</artifactId>
-					<version>1.0.2-SNAPSHOT</version>
+					<version>1.1.2</version>
 				</dependency>
 
 			</dependencies>
@@ -512,6 +515,6 @@
         <developerConnection>${substeps-core.scm}</developerConnection>
         <url>${substeps-core.scm.url}</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
 
 </project>
