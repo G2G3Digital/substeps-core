@@ -20,6 +20,7 @@ package com.technophobia.substeps.runner.node;
 
 import java.util.List;
 
+import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,15 +134,25 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
                 log.debug("node failures");
             }
 
-            final SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
-            // just notify on the last one in..?
-            final Throwable lastException = lastFailure.getCause();
+            // it is possible to get here, without having got any failures - initialization exception for example
+
+            final Throwable lastException;
+            if (!failures.isEmpty()) {
+
+                final SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
+                // just notify on the last one in..?
+                lastException = lastFailure.getCause();
+                node.getResult().setScreenshot(lastFailure.getScreenshot());
+            }
+            else {
+                lastException = new SubstepsRuntimeException("Error throw during startup, initialisation issue ?");
+                lastException.fillInStackTrace();
+            }
+
             context.getNotificationDistributor().onNodeFailed(node, lastException);
 
             // TODO should this have been set earlier...?
             node.getResult().setFailed(lastException);
-
-            node.getResult().setScreenshot(lastFailure.getScreenshot());
         }
     }
 

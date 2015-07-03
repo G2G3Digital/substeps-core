@@ -122,13 +122,15 @@ public class Syntax {
      * @return
      */
     public List<ParentStep> getSortedRootSubSteps() {
-        final Collection<ParentStep> rootSubSteps = this.subStepsMap.values();
 
         final List<ParentStep> sortedList = new ArrayList<ParentStep>();
-        sortedList.addAll(rootSubSteps);
 
-        Collections.sort(sortedList, ParentStep.PARENT_STEP_COMPARATOR);
-
+        // this can be null if no substeps files are provided - this is legit behaviour..
+        if (this.subStepsMap != null) {
+            final Collection<ParentStep> rootSubSteps = this.subStepsMap.values();
+            sortedList.addAll(rootSubSteps);
+            Collections.sort(sortedList, ParentStep.PARENT_STEP_COMPARATOR);
+        }
         return sortedList;
     }
 
