@@ -19,10 +19,7 @@
 package com.technophobia.substeps.model;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +60,8 @@ public class Step {
     // the offest in the source file of the first character of this line
     private int sourceStartOffset = -1;
 
+
+    private boolean isSubstep;
     /**
      * @return the sourceStartOffset
      */
@@ -101,7 +100,7 @@ public class Step {
     }
 
     // preferred ctor
-    public Step(final String theLine, final boolean isSubStep, final File source, final int lineNumber,
+    public Step(final String theLine, final boolean isSubstep, final File source, final int lineNumber,
             final int sourceStartOffset) {
         if (theLine == null || theLine.length() == 0) {
             throw new IllegalArgumentException("null or empty args");
@@ -110,6 +109,7 @@ public class Step {
         this.source = source;
         this.sourceLineNumber = lineNumber;
         this.sourceStartOffset = sourceStartOffset;
+        this.isSubstep = isSubstep;
 
         // pick out the first word
         this.line = theLine.trim();
@@ -122,7 +122,10 @@ public class Step {
             this.keyword = this.line.substring(0, last);
 
             // TODO no need to to do if no parameter to the annotation..?
-            if (isSubStep) {
+
+            log.debug("Step ctor() for line: " + this.line + " isSubstep: " + isSubstep);
+            if (this.isSubstep) {
+                log.debug("calling setParamAndParamNames");
                 setParamAndParamNames();
             }
 
@@ -152,19 +155,30 @@ public class Step {
         final Pattern p = Pattern.compile("(<([^>]*)>)");
         final Matcher matcher = p.matcher(this.line);
 
+        log.debug("setParamAndParamNames for line: " + this.line);
+
         int findIdx = 0;
         while (matcher.find(findIdx)) {
+
+            log.debug("matcher.find(" + findIdx + ")");
+
             if (this.paramNames == null) {
                 this.paramNames = new ArrayList<String>();
             }
-
-            this.paramNames.add(matcher.group(2));
+            String s = matcher.group(2);
+            log.debug("adding " + s + " as a paramname");
+            this.paramNames.add(s);
             findIdx = matcher.end(2);
         }
 
         // replace the params with a reg ex, a quoted and non quoted variant
+        log.debug("line pre replace: " + line + "\npattern: " + pattern);
 
         this.pattern = this.line.replaceAll("(<[^>]*>)", "\"?([^\"]*)\"?");
+
+        log.debug("line post replace: " + line + "\npattern: " + pattern);
+
+
     }
 
     /**
@@ -199,7 +213,7 @@ public class Step {
     }
 
     public List<String> getParamNames() {
-        return this.paramNames;
+        return Collections.unmodifiableList(this.paramNames);
     }
 
     /**
@@ -253,7 +267,7 @@ public class Step {
     }
 
     /**
-     * @param replacedInlineTable
+     * @param substitutedInlineTable
      */
     public void setSubstitutedInlineTable(final List<Map<String, String>> substitutedInlineTable) {
         this.substitutedInlineTable = substitutedInlineTable;
@@ -267,8 +281,11 @@ public class Step {
     }
 
     public Step cloneWithAlternativeLine(final String alt) {
-        final Step step = new Step(alt, this.pattern != null, this.source, this.sourceLineNumber,
+//        final Step step = new Step(alt, this.pattern != null, this.source, this.sourceLineNumber,
+//                this.sourceStartOffset);
+        final Step step = new Step(alt, this.isSubstep, this.source, this.sourceLineNumber,
                 this.sourceStartOffset);
+
 
         step.inlineTable = this.inlineTable;
 

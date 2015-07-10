@@ -23,9 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -33,9 +31,15 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
+import com.technophobia.substeps.model.Syntax;
+import com.technophobia.substeps.model.Util;
+import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
+import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -66,6 +70,13 @@ import com.technophobia.substeps.steps.TestStepImplementations;
  * 
  */
 public class ExecutionNodeRunnerTest {
+
+    private ExecutionNodeRunner runner = null;
+
+    @Before
+    public void setup(){
+        runner = new ExecutionNodeRunner();
+    }
 
     @Test
     public void testScenarioStepWithParameters() {
@@ -223,7 +234,7 @@ public class ExecutionNodeRunnerTest {
      */
     private RootNode runExecutionTest(final String feature, final String tags, final String substeps,
             final IExecutionListener notifier, final Class<?>[] initialisationClasses,
-            final List<SubstepExecutionFailure> failures) {
+            final List<SubstepExecutionFailure> failures, final List<Class<?>> stepImplementationClasses) {
         final SubstepsExecutionConfig executionConfig = new SubstepsExecutionConfig();
 
         Assert.assertTrue(failures.isEmpty());
@@ -233,10 +244,10 @@ public class ExecutionNodeRunnerTest {
         executionConfig.setSubStepsFileName(substeps);
         executionConfig.setDescription("ExecutionNodeRunner Test feature set");
 
-        final List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
-        stepImplementationClasses.add(TestStepImplementations.class);
-
         executionConfig.setStepImplementationClasses(stepImplementationClasses);
+
+        executionConfig.setStrict(false);
+        executionConfig.setNonStrictKeywordPrecedence(new String[]{"Given", "And"});
 
         // this results in test failure rather than exception
         executionConfig.setFastFailParseErrors(false);
@@ -245,7 +256,39 @@ public class ExecutionNodeRunnerTest {
             executionConfig.setInitialisationClasses(initialisationClasses);
         }
 
-        final ExecutionNodeRunner runner = new ExecutionNodeRunner();
+        return runExecutionTest(notifier, executionConfig, failures);
+    }
+
+    private SubstepsExecutionConfig buildConfig(final String feature, final String tags,
+                                                final String substeps,
+                                                final Class<?>[] initialisationClasses,
+                                                final List<Class<?>> stepImplementationClasses,
+                                                boolean isStrict, String[] keywordPrecedence){
+
+        final SubstepsExecutionConfig executionConfig = new SubstepsExecutionConfig();
+
+        executionConfig.setTags(tags);
+        executionConfig.setFeatureFile(feature);
+        executionConfig.setSubStepsFileName(substeps);
+        executionConfig.setDescription("ExecutionNodeRunner Test feature set");
+
+        executionConfig.setStepImplementationClasses(stepImplementationClasses);
+
+        executionConfig.setStrict(isStrict);
+        executionConfig.setNonStrictKeywordPrecedence(keywordPrecedence);
+
+        // this results in test failure rather than exception
+        executionConfig.setFastFailParseErrors(false);
+
+        if (initialisationClasses != null) {
+            executionConfig.setInitialisationClasses(initialisationClasses);
+        }
+        return executionConfig;
+    }
+
+    private RootNode runExecutionTest(final IExecutionListener notifier,
+                                      final SubstepsExecutionConfig executionConfig,
+                                      final List<SubstepExecutionFailure> failures){
         runner.addNotifier(notifier);
 
         runner.prepareExecutionConfig(executionConfig);
@@ -257,12 +300,16 @@ public class ExecutionNodeRunnerTest {
         failures.addAll(localFailures);
 
         return rootNode;
+
     }
 
-    private RootNode runExecutionTest(final String feature, final String tags, final String substeps,
+                                      private RootNode runExecutionTest(final String feature, final String tags, final String substeps,
             final IExecutionListener notifier, final List<SubstepExecutionFailure> failures) {
 
-        return runExecutionTest(feature, tags, substeps, notifier, null, failures);
+        final List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
+        stepImplementationClasses.add(TestStepImplementations.class);
+
+        return runExecutionTest(feature, tags, substeps, notifier, null, failures, stepImplementationClasses);
     }
 
     private void setPrivateField(final Object target, final String fieldName, final Object value) {
@@ -546,4 +593,133 @@ public class ExecutionNodeRunnerTest {
         System.out.println("uh oh");
         throw new IllegalStateException("that's it, had enough");
     }
+
+    @Test
+    public void testParametersSubstitutionWhenNotStrictPlainScenario() {
+        String tags = "scenario-with-params-fail";
+        final MockStepImplementations stepImpls = new MockStepImplementations();
+        final MockStepImplementations spy = spy(stepImpls);
+
+        testParametersSubstitutionWhenNotStrict(tags, spy);
+
+        verify(spy, times(1)).meth13("no sub");
+        verify(spy, times(1)).meth13("sub");
+
+    }
+
+
+    @Test
+    public void testParametersSubstitutionWhenNotStrictOK(){
+        String tags = "outline-scenario-with-params-pass";
+
+        final MockStepImplementations stepImpls = new MockStepImplementations();
+        final MockStepImplementations spy = spy(stepImpls);
+
+        testParametersSubstitutionWhenNotStrict(tags, spy);
+
+        verify(spy, times(1)).meth13("table no sub"); // this one works
+
+    }
+
+    @Test
+    public void testParametersSubstitutionWhenNotStrictFail(){
+        String tags = "outline-scenario-with-params-fail";
+        final MockStepImplementations stepImpls = new MockStepImplementations();
+        final MockStepImplementations spy = spy(stepImpls);
+
+        testParametersSubstitutionWhenNotStrict(tags, spy);
+
+        verify(spy, times(1)).meth13("table sub");  // being passed through as " "
+
+    }
+
+    //    @Ignore ("not fixed yet")
+    public void testParametersSubstitutionWhenNotStrict(String tags, MockStepImplementations spy) {
+
+        final String feature = "./target/test-classes/features/OutlineScenario.feature";
+//        final String tags = "outline-scenario-with-params";
+        final String substeps = "./target/test-classes/substeps/outline_scenario/outline_scenario.substeps";
+        final IExecutionListener notifier = mock(IExecutionListener.class);
+
+        final List<SubstepExecutionFailure> failures = new ArrayList<SubstepExecutionFailure>();
+
+
+        final Map<Class<?>, Object> implsCache = getImplsCache(runner);
+
+        implsCache.put(MockStepImplementations.class, spy);
+
+        final List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
+        stepImplementationClasses.add(MockStepImplementations.class);
+
+        SubstepsExecutionConfig cfg = buildConfig(feature, tags, substeps, null, stepImplementationClasses, false, new String[]{"Given", "And"});
+
+
+
+        final RootNode rootNode = runExecutionTest(notifier, cfg, failures);
+
+        Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.PASSED));
+
+
+        // TODO - not working either ! no sub twice
+        //verify(spy, times(1)).meth13("no sub");
+        //verify(spy, times(1)).meth13("sub");
+
+        // TODO - this isn't working
+       //verify(spy, times(1)).meth13("table no sub"); // this one works
+//       verify(spy, times(1)).meth13("table sub");  // being passed through as " "
+
+      //  verify(spy, times(1)).meth13("no params");
+
+    }
+
+
+    protected Map<Class<?>, Object> getImplsCache(final ExecutionNodeRunner runner) {
+        Map<Class<?>, Object> implsCache = null;
+
+        try {
+
+            final Field implCacheField = runner.getClass().getDeclaredField("methodExecutor");
+            implCacheField.setAccessible(true);
+
+            final ImplementationCache cache = (ImplementationCache) implCacheField
+                    .get(runner);
+
+            final Field instanceMapField = ImplementationCache.class
+                    .getDeclaredField("instanceMap");
+            instanceMapField.setAccessible(true);
+
+            implsCache = (Map<Class<?>, Object>) instanceMapField.get(cache);
+
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+
+        Assert.assertNotNull("implsCache should not be null", implsCache);
+
+        return implsCache;
+    }
+
+
+
+    @Test
+    public void testArgSubstituion(){
+
+
+        final String srcString1 = "Given a substep that takes one parameter \"src1\"";
+        final String srcString2 ="And a substep that takes one parameter \"src2\"";
+        final String patternString = "Given a substep that takes one parameter \"([^\"]*)\"";
+        final String[] keywordPrecedence = new String[]{"Given", "And"};
+        String[] args1 = Util.getArgs(patternString, srcString1, keywordPrecedence);
+
+
+        String[] args2 = Util.getArgs(patternString, srcString2, keywordPrecedence);
+
+        Assert.assertNotNull(args2);
+        Assert.assertThat(args2[0], is("src2"));
+
+        Assert.assertNotNull(args1);
+        Assert.assertThat(args1[0], is("src1"));
+
+    }
+
 }

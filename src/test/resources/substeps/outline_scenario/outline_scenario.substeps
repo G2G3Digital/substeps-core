@@ -1,0 +1,11 @@
+Define: Given a substep that takes one parameter "<value>"
+    Step with a variable "<value>"
+
+# Define: And another substep that takes the other parameter "<value2>"
+#    Step with a variable "<value2>"
+
+# Define: And another step where the parameter is passed at the top level "<param>"
+#     Step with a variable "<param>"
+
+# Define: Given a substep that takes no parameters
+#    And another step where the parameter is passed at the top level "no params"
