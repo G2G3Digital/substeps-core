@@ -123,15 +123,15 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(failures.size(), is(2));
 
-        Assert.assertThat(failures.get(0).getCause(), instanceOf(UnimplementedStepException.class));
+        Assert.assertThat(failures.get(0).getThrowableInfo().getThrowableClass(), is(UnimplementedStepException.class.getName()));
         final File substepsFile = new File("./target/test-classes/substeps/error.substeps");
         final String msg = "[SingleWord] in source file: " + substepsFile.getAbsolutePath()
                 + " line 5 is not a recognised step or substep implementation";
 
-        Assert.assertThat(failures.get(0).getCause().getMessage(), is(msg));
+        Assert.assertThat(failures.get(0).getThrowableInfo().getMessage(), is(msg));
 
-        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
-        Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
+        Assert.assertThat(failures.get(1).getThrowableInfo().getThrowableClass(), is(IllegalStateException.class.getName()));
+        Assert.assertThat(failures.get(1).getThrowableInfo().getMessage(), is("No tests executed"));
 
     }
 
@@ -159,17 +159,17 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(failures.size(), is(2));
 
-        Assert.assertThat(failures.get(0).getCause(), instanceOf(SubstepsConfigurationException.class));
+        Assert.assertThat(failures.get(0).getThrowableInfo().getThrowableClass(), is(SubstepsConfigurationException.class.getName()));
 
         Assert.assertThat(
-                failures.get(0).getCause().getMessage(),
+                failures.get(0).getThrowableInfo().getMessage(),
                 is("line: [Given something] in [" + feature.replace('/', File.separatorChar)
                         + "] matches step implementation method: [public void "
                         + TestStepImplementations.class.getName()
                         + ".given()] AND matches a sub step definition: [Given something] in [duplicates2.substeps]"));
 
-        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
-        Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
+        Assert.assertThat(failures.get(1).getThrowableInfo().getThrowableClass(), is(IllegalStateException.class.getName()));
+        Assert.assertThat(failures.get(1).getThrowableInfo().getMessage(), is("No tests executed"));
 
     }
 
@@ -303,8 +303,8 @@ public class ExecutionNodeRunnerTest {
 
     }
 
-                                      private RootNode runExecutionTest(final String feature, final String tags, final String substeps,
-            final IExecutionListener notifier, final List<SubstepExecutionFailure> failures) {
+  private RootNode runExecutionTest(final String feature, final String tags, final String substeps,
+        final IExecutionListener notifier, final List<SubstepExecutionFailure> failures) {
 
         final List<Class<?>> stepImplementationClasses = new ArrayList<Class<?>>();
         stepImplementationClasses.add(TestStepImplementations.class);
@@ -427,12 +427,12 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertThat(failures.size(), is(2));
 
-        Assert.assertThat(failures.get(0).getCause(), instanceOf(IllegalStateException.class));
+        Assert.assertThat(failures.get(0).getThrowableInfo().getThrowableClass(), is(IllegalStateException.class.getName()));
 
-        Assert.assertThat(failures.get(0).getCause().getMessage(), is("node should have children but doesn't"));
+        Assert.assertThat(failures.get(0).getThrowableInfo().getMessage(), is("node should have children but doesn't"));
 
-        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
-        Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
+        Assert.assertThat(failures.get(1).getThrowableInfo().getThrowableClass(), is(IllegalStateException.class.getName()));
+        Assert.assertThat(failures.get(1).getThrowableInfo().getMessage(), is("No tests executed"));
     }
 
     private Method getNonFailMethod() {
@@ -580,9 +580,10 @@ public class ExecutionNodeRunnerTest {
 
         Assert.assertTrue("failure should be marked as setup or tear down", failures.get(0).isSetupOrTearDown());
 
-        Assert.assertThat(failures.get(1).getCause(), instanceOf(IllegalStateException.class));
 
-        Assert.assertThat(failures.get(1).getCause().getMessage(), is("No tests executed"));
+        Assert.assertThat(failures.get(1).getThrowableInfo().getThrowableClass(), is(IllegalStateException.class.getName()));
+
+        Assert.assertThat(failures.get(1).getThrowableInfo().getMessage(), is("No tests executed"));
     }
 
     public void nonFailingMethod() {

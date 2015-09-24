@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.technophobia.substeps.execution.ExecutionResult;
+import com.technophobia.substeps.runner.SubstepExecutionFailure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +90,9 @@ public class ScenarioNodeBuilder {
             }
             scenarioNode = new BasicScenarioNode(scenario.getDescription(), null, Collections.<StepNode> emptyList(),
                     Collections.<String> emptySet(), depth);
-            scenarioNode.getResult().setFailedToParse(t);
+
+            new SubstepExecutionFailure(t, scenarioNode, ExecutionResult.PARSE_FAILURE);
+//            scenarioNode.getResult().setFailedToParse(t);
 
             if (parameters.isFailParseErrorsImmediately()) {
 

@@ -19,7 +19,10 @@
 
 package com.technophobia.substeps.jmx;
 
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.concurrent.CountDownLatch;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -66,9 +69,30 @@ public class SubstepsJMXServer {
 
         this.log.trace("starting jmx server");
 
+//        URLClassLoader classloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+//
+//        URL[]  urls = classloader.getURLs();
+//
+//        StringBuilder buf = new StringBuilder();
+//        for (URL u : urls){
+//            buf.append(u.getFile()).append("\n");
+//        }
+//
+//        System.out.println("Started SubstepsJMXServer with command: " + System.getProperty("sun.java.command") + " and classpath:\n" + buf.toString());
+//
+//        System.out.println("SubstepsJMXServer system props");
+//
+//
+//        System.getProperties().list(System.out);
+
+        System.out.println("starting substeps server");
+
         final SubstepsServer mBeanImpl = new SubstepsServer(this.shutdownSignal);
 
         final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+        System.out.println("got mbean server");
+
         try {
 
             final ObjectName name = new ObjectName(SubstepsServerMBean.SUBSTEPS_JMX_MBEAN_NAME);
@@ -76,8 +100,14 @@ public class SubstepsJMXServer {
             mbs.registerMBean(mBeanImpl, name);
 
             this.log.trace("bean registered");
+            System.out.println("mbean registered");
 
-            while (this.shutdownSignal.getCount() > 0) {
+            // TODO use notifications instead of parsing the log file
+
+            // TODO think something going wrong around here - appears like occaisional deadlock around the countdownlatch..???
+            boolean rpt = true;
+            while (rpt) {
+//            while (this.shutdownSignal.getCount() > 0) {
                 try {
                     // ** NB. this can't be a log statement as it can be turned
                     // off
@@ -85,6 +115,7 @@ public class SubstepsJMXServer {
                     // ** see above
 
                     this.shutdownSignal.await();
+                    rpt = false;
                     this.log.debug("shutdown notification received");
 
                 } catch (final InterruptedException e) {

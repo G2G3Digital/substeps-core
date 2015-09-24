@@ -20,6 +20,7 @@ package com.technophobia.substeps.runner.node;
 
 import java.util.List;
 
+import com.technophobia.substeps.execution.ExecutionResult;
 import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,8 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
         boolean shouldContinue = true;
 
-        context.getNotificationDistributor().onNodeStarted(node);
+//        node.getResult().setStarted();
+
 
         if (node.hasError()) {
 
@@ -80,6 +82,8 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
         } else {
             node.getResult().setStarted();
+            context.getNotificationDistributor().onNodeStarted(node);
+
             shouldContinue = runSetup(node, context);
         }
 
@@ -121,9 +125,8 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
                 log.trace("node success");
             }
 
-            context.getNotificationDistributor().onNodeFinished(node);
-
             node.getResult().setFinished();
+            context.getNotificationDistributor().onNodeFinished(node);
 
         } else {
 
@@ -149,10 +152,12 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
                 lastException.fillInStackTrace();
             }
 
-            context.getNotificationDistributor().onNodeFailed(node, lastException);
 
             // TODO should this have been set earlier...?
-            node.getResult().setFailed(lastException);
+
+            SubstepExecutionFailure sef = new SubstepExecutionFailure(lastException, node, ExecutionResult.FAILED);
+            context.getNotificationDistributor().onNodeFailed(node, lastException);
+
         }
     }
 
