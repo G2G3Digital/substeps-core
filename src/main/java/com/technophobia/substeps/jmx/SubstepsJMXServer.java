@@ -104,7 +104,6 @@ public class SubstepsJMXServer {
 
             // TODO use notifications instead of parsing the log file
 
-            // TODO think something going wrong around here - appears like occaisional deadlock around the countdownlatch..???
             boolean rpt = true;
             while (rpt) {
 //            while (this.shutdownSignal.getCount() > 0) {
