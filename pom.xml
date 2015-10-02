@@ -153,6 +153,16 @@
 		</dependency>
 
         <dependency>
+            <groupId>com.technophobia.substeps</groupId>
+            <artifactId>substeps-core-api</artifactId>
+            <version>${api.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+
+
+
+        <dependency>
             <groupId>velocity</groupId>
             <artifactId>velocity</artifactId>
             <version>1.5</version>

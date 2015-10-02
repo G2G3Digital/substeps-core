@@ -140,12 +140,14 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
             // it is possible to get here, without having got any failures - initialization exception for example
 
             final Throwable lastException;
+            boolean nonCritical = false;
             if (!failures.isEmpty()) {
 
                 final SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
                 // just notify on the last one in..?
                 lastException = lastFailure.getCause();
                 node.getResult().setScreenshot(lastFailure.getScreenshot());
+                nonCritical = lastFailure.isNonCritical();
             }
             else {
                 lastException = new SubstepsRuntimeException("Error throw during startup, initialisation issue ?");
@@ -156,6 +158,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
             // TODO should this have been set earlier...?
 
             SubstepExecutionFailure sef = new SubstepExecutionFailure(lastException, node, ExecutionResult.FAILED);
+            sef.setNonCritical(nonCritical);
             context.getNotificationDistributor().onNodeFailed(node, lastException);
 
         }
