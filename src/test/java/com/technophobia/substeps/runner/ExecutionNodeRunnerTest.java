@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import com.technophobia.substeps.execution.node.*;
 import com.technophobia.substeps.model.Syntax;
 import com.technophobia.substeps.model.Util;
+import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 import com.technophobia.substeps.runner.syntax.SyntaxBuilder;
 import com.technophobia.substeps.stepimplementations.MockStepImplementations;
 import org.junit.Assert;
@@ -360,7 +361,8 @@ public class ExecutionNodeRunnerTest {
         runner.run();
         final List<SubstepExecutionFailure> failures = runner.getFailures();
 
-        verify(mockNotifer, times(2)).onNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
+        verify(mockNotifer, times(1)).onNodeFailed(argThat(is(node)), argThat(any(IllegalStateException.class)));
+       // verify(mockNotifer, times(1)).onNodeFailed(argThat(is(node)), argThat(any(SubstepsRuntimeException.class)));
 
         Assert.assertFalse("expecting some failures", failures.isEmpty());
 
@@ -621,7 +623,6 @@ public class ExecutionNodeRunnerTest {
 
     }
 
-    //    @Ignore ("not fixed yet")
     public void testParametersSubstitutionWhenNotStrict(String tags, MockStepImplementations spy) {
 
         final String feature = "./target/test-classes/features/OutlineScenario.feature";
@@ -710,13 +711,12 @@ public class ExecutionNodeRunnerTest {
 
     }
 
-
+    @Ignore("wip")
     @Test
     public void testNonCriticalFailures() {
         // possible bug around the cascading of errors - a non critical gets bubbled up to become a critical...
 
         // one feature, two scenarios, first one fails (non crit), second one passes
-
 
         final Method nonFailMethod = getNonFailMethod();
         final Method failMethod = getFailMethod();
@@ -742,14 +742,12 @@ public class ExecutionNodeRunnerTest {
         BasicScenarioNode scenario1 = scenario1Builder.getBuilt();
         BasicScenarioNode scenario2 = scenario2Builder.getBuilt();
 
-
         final ExecutionNodeRunner runner = new ExecutionNodeRunner();
 
         final INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
         final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
 
         TagManager nonFatalTagManager = new TagManager("canFail");
-
 
         final RootNodeExecutionContext nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
                 Lists.<SubstepExecutionFailure>newArrayList(), setupAndTearDown, nonFatalTagManager, new ImplementationCache());
@@ -793,11 +791,175 @@ public class ExecutionNodeRunnerTest {
 //            Assert.assertThat(row2ScenarioBuilder.getBuilt().getChildren().get(2).getResult().getResult(),
 //                    is(ExecutionResult.PASSED));
 
+        // TODO check that the number of errors is correct
+
         Assert.assertFalse("expecting some failures", failures.isEmpty());
 
         // just one failure for the actual step that failed
         Assert.assertThat(failures.size(), is(1));
 
     }
+
+
+    // TODO check that a test with a valid error, then a non fatal is recorded as a fatal and vice versa
+
+//    @Ignore("wip")
+    @Test
+    public void testValidErrorPlusNonCriticalFailures() throws NoSuchFieldException, IllegalAccessException {
+
+        // three features, a scenario each, 1 fails (crit), 1 fails(non crit), 1 pass. mixup the ordering
+
+        String[] critNonCritPass = {"scenario crit fail", "scenario non crit fail", "scenario pass"};
+        String[] nonCritCritPass = {"scenario non crit fail", "scenario crit fail",  "scenario pass"};
+        String[] passCritNonCrit = {"scenario pass", "scenario crit fail", "scenario non crit fail"};
+
+
+        String[][] scenarios = {nonCritCritPass, critNonCritPass, passCritNonCrit};
+
+        for (String[] ordering : scenarios) {
+
+            System.out.println("\n\n** Running scenario: " + Arrays.toString(ordering));
+
+            final Method nonFailMethod = getNonFailMethod();
+            final Method failMethod = getFailMethod();
+            Assert.assertNotNull(nonFailMethod);
+            Assert.assertNotNull(failMethod);
+
+            final TestRootNodeBuilder rootNodeBuilder = new TestRootNodeBuilder();
+
+         //   featureBuilder.addTags("toRun", "canFail");
+
+            TestBasicScenarioNodeBuilder scenario1Builder = null;
+            TestBasicScenarioNodeBuilder scenario2Builder = null;
+            TestBasicScenarioNodeBuilder scenario3Builder = null;
+
+            TestFeatureNodeBuilder f1Builder = null;
+            TestFeatureNodeBuilder f2Builder = null;
+            TestFeatureNodeBuilder f3Builder = null;
+
+            for (String scenarioName: ordering) {
+
+                if(scenarioName.equals("scenario crit fail")) {
+
+                    f1Builder = rootNodeBuilder.addFeature(new Feature("crit fail feature", "file"));
+
+                    scenario1Builder = f1Builder.addBasicScenario("scenario crit fail");
+                    scenario1Builder.addTags(ImmutableSet.of("toRun"));
+                    scenario1Builder.addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod).addStepImpl(getClass(), nonFailMethod);
+                }
+
+                if(scenarioName.equals("scenario non crit fail")) {
+
+                    f2Builder = rootNodeBuilder.addFeature(new Feature("non crit fail feature", "file"));
+                    f2Builder.addTags("canFail");
+
+                    scenario2Builder = f2Builder.addBasicScenario("scenario non crit fail");
+                    scenario2Builder.addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), failMethod).addStepImpl(getClass(), nonFailMethod);
+                    scenario2Builder.addTags(ImmutableSet.of("toRun", "canFail"));
+                }
+
+                if(scenarioName.equals("scenario pass")) {
+                    f3Builder = rootNodeBuilder.addFeature(new Feature("pass feature", "file"));
+
+                    scenario3Builder = f3Builder.addBasicScenario("scenario pass");
+                    scenario3Builder.addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), nonFailMethod).addStepImpl(getClass(), nonFailMethod);
+                    scenario3Builder.addTags(ImmutableSet.of("toRun"));
+                }
+            }
+
+            final RootNode rootNode = rootNodeBuilder.build();
+
+//            System.out.println("rootNode debug string: " +
+//                    rootNode.toDebugString());
+
+            BasicScenarioNode scenario1 = scenario1Builder.getBuilt();
+            BasicScenarioNode scenario2 = scenario2Builder.getBuilt();
+            BasicScenarioNode scenario3 = scenario3Builder.getBuilt();
+
+            final ExecutionNodeRunner runner = new ExecutionNodeRunner();
+
+            final INotificationDistributor notificationDistributor = getPrivateField(runner, "notificationDistributor");
+            final SetupAndTearDown setupAndTearDown = mock(SetupAndTearDown.class);
+
+            TagManager nonFatalTagManager = new TagManager("canFail");
+
+            final RootNodeExecutionContext nodeExecutionContext = new RootNodeExecutionContext(notificationDistributor,
+                    Lists.<SubstepExecutionFailure>newArrayList(), setupAndTearDown, nonFatalTagManager, new ImplementationCache());
+
+            setPrivateField(runner, "rootNode", rootNode);
+            setPrivateField(runner, "nodeExecutionContext", nodeExecutionContext);
+
+            runner.run();
+
+            BuildFailureManager bfm = new BuildFailureManager();
+
+            Field criticalFailuresField = BuildFailureManager.class.getDeclaredField("criticalFailures");
+            criticalFailuresField.setAccessible(true);
+            List<List<IExecutionNode>> criticalFailures = (List<List<IExecutionNode>>)criticalFailuresField.get(bfm);
+
+            Field nonCriticalFailuresField = BuildFailureManager.class.getDeclaredField("nonCriticalFailures");
+            nonCriticalFailuresField.setAccessible(true);
+            List<List<IExecutionNode>> nonCriticalFailures = (List<List<IExecutionNode>>)nonCriticalFailuresField.get(bfm);
+
+
+            bfm.addExecutionResult(rootNode);
+
+//            Assert.assertFalse("non critical failure incorrectly reported as critical", bfm.testSuiteFailed());
+//            Assert.assertFalse("non critical failure reporting issue", bfm.testSuiteCompletelyPassed());
+
+            // TODO should be 4 criticals (3 for the feature, scenario, step) + 1 for the root
+            // cenario crit fail, scenario non crit fail, scenario pass - the last non critical plays a factor?
+            // TODO test out what the rootnode execution context thinks...
+
+            System.out.println("build failure info: " +
+                    bfm.getBuildFailureInfo());
+
+
+            Assert.assertThat("expecting a critical failure", criticalFailures.size(), is(1));
+            Assert.assertThat("expecting a non critical failure", nonCriticalFailures.size(), is(1));
+
+
+            final List<SubstepExecutionFailure> failures = runner.getFailures();
+
+            Assert.assertThat(rootNode.getResult().getResult(), is(ExecutionResult.FAILED));
+
+            Assert.assertThat(f1Builder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+            Assert.assertThat(f2Builder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+
+            Assert.assertThat(f3Builder.getBuilt().getResult().getResult(), is(ExecutionResult.PASSED));
+
+
+            Assert.assertThat(scenario1.getResult().getResult(), is(ExecutionResult.FAILED));
+            Assert.assertThat(scenario2.getResult().getResult(), is(ExecutionResult.FAILED));
+            Assert.assertThat(scenario3.getResult().getResult(), is(ExecutionResult.PASSED));
+
+
+//            Assert.assertThat(rowBuilder1.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+//            Assert.assertThat(rowBuilder2.getBuilt().getResult().getResult(), is(ExecutionResult.PASSED));
+//
+//            Assert.assertThat(outlineScenarioBuilder.getBuilt().getResult().getResult(), is(ExecutionResult.FAILED));
+//            Assert.assertThat(row1ScenarioBuilder.getBuilt().getChildren().get(0).getResult().getResult(),
+//                    is(ExecutionResult.PASSED));
+//            Assert.assertThat(row1ScenarioBuilder.getBuilt().getChildren().get(1).getResult().getResult(),
+//                    is(ExecutionResult.FAILED));
+//            Assert.assertThat(row1ScenarioBuilder.getBuilt().getChildren().get(2).getResult().getResult(),
+//                    is(ExecutionResult.NOT_RUN));
+//
+//            Assert.assertThat(row2ScenarioBuilder.getBuilt().getChildren().get(0).getResult().getResult(),
+//                    is(ExecutionResult.PASSED));
+//            Assert.assertThat(row2ScenarioBuilder.getBuilt().getChildren().get(1).getResult().getResult(),
+//                    is(ExecutionResult.PASSED));
+//            Assert.assertThat(row2ScenarioBuilder.getBuilt().getChildren().get(2).getResult().getResult(),
+//                    is(ExecutionResult.PASSED));
+
+            // TODO check that the number of errors is correct
+
+            Assert.assertFalse("expecting some failures", failures.isEmpty());
+
+            // just two failures for the actual steps that failed
+            Assert.assertThat(failures.size(), is(2));
+        }
+    }
+
 
 }

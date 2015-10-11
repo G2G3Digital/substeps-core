@@ -86,7 +86,7 @@ public class ScenarioNodeBuilder {
             // something has gone wrong parsing this scenario, no point
             // running it so mark it as failed now
             if (log.isDebugEnabled()) {
-                log.debug("Failed to parse" + scenario.getDescription() + ", creating dummy node", t);
+                log.debug("Failed to parse " + scenario.getDescription() + ", creating dummy node", t);
             }
             scenarioNode = new BasicScenarioNode(scenario.getDescription(), null, Collections.<StepNode> emptyList(),
                     Collections.<String> emptySet(), depth);

@@ -117,7 +117,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
     }
 
-    private void recordResult(final NODE_TYPE node, final boolean success, final RootNodeExecutionContext context) {
+    protected void recordResult(final NODE_TYPE node, final boolean success, final RootNodeExecutionContext context) {
 
         if (success) {
             if (log.isTraceEnabled()) {
@@ -132,10 +132,10 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
             final List<SubstepExecutionFailure> failures = context.getFailures();
 
-            if (log.isDebugEnabled()) {
-
-                log.debug("node failures");
-            }
+//            if (log.isDebugEnabled()) {
+//
+//                log.debug("node failures");
+//            }
 
             // it is possible to get here, without having got any failures - initialization exception for example
 
@@ -147,18 +147,22 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
                 // just notify on the last one in..?
                 lastException = lastFailure.getCause();
                 node.getResult().setScreenshot(lastFailure.getScreenshot());
+                if (node.getResult().getResult() == ExecutionResult.RUNNING) {
+                    node.getResult().setFailure(lastFailure);
+                }
                 nonCritical = lastFailure.isNonCritical();
             }
             else {
                 lastException = new SubstepsRuntimeException("Error throw during startup, initialisation issue ?");
                 lastException.fillInStackTrace();
+                SubstepExecutionFailure sef = new SubstepExecutionFailure(lastException, node, ExecutionResult.FAILED);
             }
 
 
             // TODO should this have been set earlier...?
 
-            SubstepExecutionFailure sef = new SubstepExecutionFailure(lastException, node, ExecutionResult.FAILED);
-            sef.setNonCritical(nonCritical);
+//            SubstepExecutionFailure sef = new SubstepExecutionFailure(lastException, node, ExecutionResult.FAILED);
+//            sef.setNonCritical(nonCritical);
             context.getNotificationDistributor().onNodeFailed(node, lastException);
 
         }
