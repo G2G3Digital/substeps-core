@@ -18,6 +18,9 @@
  */
 package com.technophobia.substeps.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +34,9 @@ import java.util.Map;
  * 
  */
 public class ParentStep {
+
+	private static final Logger log = LoggerFactory.getLogger(ParentStep.class);
+
 
 	private final Step parent;
 	private List<Step> substeps;
@@ -75,7 +81,7 @@ public class ParentStep {
 		final HashMap<String, String> map = new HashMap<String, String>();
 
 		final String[] paramValues = Util.getArgs(this.parent.getPattern(),
-				step.getLine());
+				step.getLine(), null);
 
 		if (paramValues != null) {
 			for (int i = 0; i < paramValues.length; i++) {
@@ -86,19 +92,32 @@ public class ParentStep {
 				map);
 	}
 
-	/**
-	 * @param step
-	 */
 	public void initialiseParamValues(final int lineNumber, final String line) {
 
+		initialiseParamValues(lineNumber, line, null);
+	}
+
+	public void initialiseParamValues(final int lineNumber, final String line, String[] keywordPrecedence) {
+
+		log.debug("initialiseParamValues with line: " + line);
+
 		final String[] paramValues = Util.getArgs(this.parent.getPattern(),
-				line);
+				line, keywordPrecedence);
 
 		if (paramValues != null) {
 
 			final Map<String, String> map = new HashMap<String, String>();
 
 			for (int i = 0; i < paramValues.length; i++) {
+
+				String key = this.parent.getParamNames().get(i);
+
+				if (key.equals("value1")){
+					log.debug("break");
+				}
+				log.debug("putting value: " + paramValues[i] +
+						" under key: " + key + " i " + i);
+
 				map.put(this.parent.getParamNames().get(i), paramValues[i]);
 			}
 			this.paramValueMap = new ExampleParameter(lineNumber, map);

@@ -19,12 +19,21 @@
 
 package com.technophobia.substeps.jmx;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationListener;
 
+import com.technophobia.substeps.execution.ExecutionNodeResult;
+import com.technophobia.substeps.execution.ExecutionResult;
+import com.technophobia.substeps.execution.node.FeatureNode;
+import com.technophobia.substeps.model.exception.SubstepsConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +55,84 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
     private ExecutionNodeRunner nodeRunner = null;
     private final CountDownLatch shutdownSignal;
 
+    public byte[] prepareExecutionConfigAsBytes(final SubstepsExecutionConfig theConfig){
+
+        RootNode rtn = null;
+        try {
+            rtn = prepareExecutionConfig(theConfig);
+            log.debug("execution config prepared");
+        }
+//        catch (SubstepsConfigurationException e){
+//
+//        }
+        catch(Exception e){
+            log.error("Error preparing ExecutionConfig", e);
+
+            List<FeatureNode> empty = Collections.emptyList();
+            rtn = new RootNode("Substeps Test", empty);
+            ExecutionNodeResult result = rtn.getResult();
+            result.setThrown(e);
+            result.setResult(ExecutionResult.PARSE_FAILURE);
+        }
+        return getBytes(rtn);
+
+    }
+
+    private byte[] getBytes(Object rtn) {
+        byte[] rtnBytes = null;
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            oos.writeObject(rtn);
+
+            rtnBytes = bos.toByteArray();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally{
+            try {
+                bos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return rtnBytes;
+    }
+
+    public byte[] runAsBytes(){
+        RootNode rtn = run();
+        return getBytes(rtn);
+    }
+
+
     /**
      * @param shutdownSignal
      */
     public SubstepsServer(final CountDownLatch shutdownSignal) {
         this.shutdownSignal = shutdownSignal;
+
+//        addNotificationListener(new NotificationListener(){
+//            //@Override
+//            public void handleNotification(Notification notification, Object handback) {
+//
+//                System.out.println("*** Handling new notification ***");
+//
+//                System.out.println("Message: " + notification.getMessage());
+//
+//                System.out.println("Seq: " + notification.getSequenceNumber());
+//
+//                System.out.println("*********************************");
+//
+//            }
+//
+//        }, null, null);
+
     }
 
     public void shutdown() {
@@ -86,7 +168,7 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
         } finally {
             // now send the final notification
 
-            final Notification n = new Notification("ExecConfigComplete", this, this.notificationSequenceNumber);
+            final Notification n = new Notification("ExecConfigComplete", SubstepsServerMBean.SUBSTEPS_JMX_MBEAN_NAME, this.notificationSequenceNumber);
 
             this.log.trace("sending complete notification sequence: " + this.notificationSequenceNumber);
 
@@ -100,11 +182,12 @@ public class SubstepsServer extends NotificationBroadcasterSupport implements Su
 
     private void doNotification(final IExecutionNode node) {
 
-        final Notification n = new Notification("ExNode", this, this.notificationSequenceNumber);
+        final Notification n = new Notification("ExNode", SubstepsServerMBean.SUBSTEPS_JMX_MBEAN_NAME, this.notificationSequenceNumber);
 
         this.notificationSequenceNumber++;
 
-        n.setUserData(node.getResult());
+
+        n.setUserData(getBytes(node.getResult()));
 
         this.log.trace("sending notification for node id: " + node.getId() + " sequence: "
                 + this.notificationSequenceNumber);

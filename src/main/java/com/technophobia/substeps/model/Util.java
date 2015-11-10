@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public final class Util {
 
     // TODO - these two methods are both used - used to be one, but now it's two
     // - could they be combined ??
-    public static String[] getArgs(final String patternString, final String sourceString) {
+    public static String[] getArgs(final String patternString, final String sourceString, final String[] keywordPrecedence) {
 
         log.debug("Util getArgs String[] with pattern: " + patternString + " and sourceStr: "
                 + sourceString);
@@ -53,11 +54,25 @@ public final class Util {
 
         ArrayList<String> argsList = null;
 
-        final Pattern pattern = Pattern.compile(patternString);
+        String patternCopy = new String(patternString);
+        if (keywordPrecedence != null && StringUtils.startsWithAny(patternString, keywordPrecedence)){
+            //
+            for (String s : keywordPrecedence){
+
+
+                patternCopy = StringUtils.removeStart(patternCopy, s);
+            }
+
+            patternCopy = "(?:" + StringUtils.join(keywordPrecedence, "|") + ")" + patternCopy;
+        }
+
+
+        final Pattern pattern = Pattern.compile(patternCopy);
         final Matcher matcher = pattern.matcher(sourceString);
 
         final int groupCount = matcher.groupCount();
 
+        // TODO - this doesn't work if we're not doing strict matching
         if (matcher.find()) {
 
             for (int i = 1; i <= groupCount; i++) {
