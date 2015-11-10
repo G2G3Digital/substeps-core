@@ -84,6 +84,16 @@
             <role>developer</role>
           </roles>
        </developer>
+       
+       <developer>
+          <id>beercan1989</id>
+          <name>James Bacon</name>
+          <organization>G2G3 Digital</organization>
+          <url>https://github.com/beercan1989</url>
+          <roles>
+            <role>developer</role>
+          </roles>
+        </developer>
 		  
     </developers>
 
