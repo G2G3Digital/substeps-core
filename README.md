@@ -1,4 +1,4 @@
-substeps-core
+substeps-core [![Build Status](https://travis-ci.org/G2G3Digital/substeps-core.svg)](https://travis-ci.org/G2G3Digital/substeps-core)
 =============
 
 Welcome to the substeps-core project!
