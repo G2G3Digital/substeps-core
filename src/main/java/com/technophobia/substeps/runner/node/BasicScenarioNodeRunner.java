@@ -20,6 +20,9 @@ package com.technophobia.substeps.runner.node;
 
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.RootNodeExecutionContext;
 import com.technophobia.substeps.execution.node.StepImplementationNode;
@@ -29,6 +32,8 @@ import com.technophobia.substeps.model.Scope;
 
 public class BasicScenarioNodeRunner extends AbstractNodeRunner<BasicScenarioNode, Boolean> {
 
+    private static final Logger log = LoggerFactory.getLogger(BasicScenarioNodeRunner.class);
+
     private final SubstepNodeRunner backgroundRunner = new SubstepNodeRunner(Scope.SCENARIO_BACKGROUND);
     private final SubstepNodeRunner substepNodeRunner = new SubstepNodeRunner(Scope.STEP);
     private final StepImplementationNodeRunner stepImplNodeRunner = new StepImplementationNodeRunner();
@@ -37,6 +42,7 @@ public class BasicScenarioNodeRunner extends AbstractNodeRunner<BasicScenarioNod
 
     @Override
     protected boolean execute(BasicScenarioNode node, RootNodeExecutionContext context) {
+        log.info("Executing scenario {}", node.getDescription());
 
         this.context = context;
         boolean success = runBackgroundIfPresent(node, context);
