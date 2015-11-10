@@ -84,10 +84,10 @@ public class RootNodeExecutionContext {
      */
     private void logFailure(final SubstepExecutionFailure failure) {
 
-        final Throwable failureCause = failure.getCause();
+//        final Throwable failureCause = failure.getCause();
         final Throwable here = new Throwable();
 
-        final StackTraceElement[] failureTrace = failureCause.getStackTrace();
+        final StackTraceElement[] failureTrace = failure.getThrowableInfo().getStackTrace();
         final StackTraceElement[] hereTrace = here.getStackTrace();
 
         final int requiredTraceSize = failureTrace.length - hereTrace.length;
@@ -96,7 +96,7 @@ public class RootNodeExecutionContext {
 
             final StringBuilder stackTraceBuilder = new StringBuilder();
 
-            stackTraceBuilder.append(failureCause.toString()).append("\n");
+            stackTraceBuilder.append(failure.getThrowableInfo().getDescription()).append("\n");
 
             for (int i = 0; i < requiredTraceSize; i++) {
                 stackTraceBuilder.append("\tat ").append(failureTrace[i]).append("\n");
@@ -107,7 +107,7 @@ public class RootNodeExecutionContext {
 
         } else {
             // fallback position - just normal logging
-            log.info("SubstepExecutionFailure @ " + failure.getExeccutionNode().toDebugString(), failureCause);
+            log.info("SubstepExecutionFailure @ " + failure.getExeccutionNode().toDebugString(),  failure.getThrowableInfo().getThrowable());
         }
 
     }
