@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.technophobia.substeps.execution.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +87,18 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         final ExecutionConfigWrapper config = new ExecutionConfigWrapper(theConfig);
         config.initProperties();
 
+        final String dryRunProperty = System.getProperty(DRY_RUN_KEY);
+        final boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
+
+        final MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : this.methodExecutor;
+
+        if (dryRun) {
+            log.info("**** DRY RUN ONLY **");
+        }
+
+
         final SetupAndTearDown setupAndTearDown = new SetupAndTearDown(config.getInitialisationClasses(),
-                this.methodExecutor);
+                methodExecutorToUse);
 
         final String loggingConfigName = config.getDescription() != null ? config.getDescription() : "SubStepsMojo";
 
@@ -133,19 +144,12 @@ public class ExecutionNodeRunner implements SubstepsRunner {
             }
         }
 
+        // TODO - put a switch in here, only really relevant to headless builds running a full suite..
         processUncalledAndUnused(syntax);
         
         ExecutionContext.put(Scope.SUITE, INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY,
                 this.notificationDistributor);
 
-        final String dryRunProperty = System.getProperty(DRY_RUN_KEY);
-        final boolean dryRun = dryRunProperty != null && Boolean.parseBoolean(dryRunProperty);
-
-        final MethodExecutor methodExecutorToUse = dryRun ? new DryRunImplementationCache() : this.methodExecutor;
-
-        if (dryRun) {
-            log.info("**** DRY RUN ONLY **");
-        }
 
         this.nodeExecutionContext = new RootNodeExecutionContext(this.notificationDistributor,
                 Lists.<SubstepExecutionFailure> newArrayList(), setupAndTearDown, nonFatalTagmanager,
@@ -233,9 +237,6 @@ public class ExecutionNodeRunner implements SubstepsRunner {
     //final Map<ExecutionNodeUsage, List<ExecutionNodeUsage>> calleeHierarchy = new HashMap<ExecutionNodeUsage, List<ExecutionNodeUsage>>();
     
     
-    /**
-     * @param rootNode2
-     */
     private void buildCallHierarchy() {
                 
         final ExecutionNodeUsage rootUsage = new ExecutionNodeUsage(this.rootNode);
@@ -314,10 +315,13 @@ public class ExecutionNodeRunner implements SubstepsRunner {
         if (!this.nodeExecutionContext.haveTestsBeenRun()) {
 
             final Throwable t = new IllegalStateException("No tests executed");
-            this.rootNode.getResult().setFailed(t);
+
+            SubstepExecutionFailure sef = new SubstepExecutionFailure(t, this.rootNode, ExecutionResult.FAILED);
+            //this.rootNode.getResult().setFailed(t);
+
             this.notificationDistributor.onNodeFailed(this.rootNode, t);
 
-            this.nodeExecutionContext.addFailure(new SubstepExecutionFailure(t, this.rootNode));
+            this.nodeExecutionContext.addFailure(sef);
         }
 
         this.failures = this.nodeExecutionContext.getFailures();

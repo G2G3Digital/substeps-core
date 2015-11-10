@@ -18,17 +18,12 @@
  */
 package com.technophobia.substeps.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * a map of regex patterns to other things.
@@ -91,6 +86,31 @@ public class PatternMap<V> {
         return patternMap.values();
     }
 
+
+    public List<V> getRelaxedValue(String sourceKey, String[] keywordPrecedence){
+        // TODO - lookup in the relaxed map, based on the keyword precedence
+
+        String baseLine = null;
+
+        for (final String altKeyword : keywordPrecedence) {
+
+            baseLine = StringUtils.removeStart(sourceKey, altKeyword);
+            if (!baseLine.equals(sourceKey)){
+                break;
+            }
+        }
+
+        List<V> vals = null;
+        for (final String altKeyword : keywordPrecedence) {
+
+            vals = get(altKeyword + baseLine);
+            if (!vals.isEmpty()){
+                break;
+            }
+        }
+
+        return vals;
+    }
 
     public List<V> get(final String string) {
         List<V> vals = null;

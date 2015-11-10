@@ -16,6 +16,10 @@ Release Notes
 * Logging changed from debug to warn when setup or tear down fails [petergphillips]
 * Added some javadocs descriptions
 * Built a caller hierarchy and determined substep definitions that are not called in the current scope.  
+* Defensive code around early failure and an IndexOutOfBounds plus an error when no substeps files supplied.
+* Fixed issue around passing of variables into substeps when running in non strict mode
+* refactoring of the JMX server to return byte representations of results, wrapping setup failures inside the root node
+* Corrected the order of setting node state and sending out notifications
 
 1.1.2
 -----

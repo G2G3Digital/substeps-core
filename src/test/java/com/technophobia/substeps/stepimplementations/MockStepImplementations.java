@@ -185,4 +185,9 @@ public class MockStepImplementations {
         doCallback("meth12");
     }
 
+    @Step("Step with a variable \"([^\"]*)\"")
+    public void meth13(String var){
+        log.debug("meth13: " + var);
+        doCallback("step-with-a-variable " + var);
+    }
 }

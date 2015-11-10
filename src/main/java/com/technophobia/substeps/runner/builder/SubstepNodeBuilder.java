@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,12 +98,15 @@ public class SubstepNodeBuilder {
 
         if (substepsParent != null) {
 
+            log.trace("substepsParent != null for stepLine: " + step.getLine());
+
             stepNode = buildSubstepNode(scenarioDescription, step, subStepsMapLocal,
                     throwExceptionIfUnableToBuildMethodArgs, tags, depth, substepsParent);
             
             // this step was implemented by a substep as opposed to a step impl
 
         } else {
+            log.trace("substepsParent == null for stepLine: " + step.getLine());
 
             stepNode = buildStepImplementationNode(parent, step, throwExceptionIfUnableToBuildMethodArgs, tags, depth);
         }
@@ -113,7 +117,23 @@ public class SubstepNodeBuilder {
     private SubstepNode buildSubstepNode(final String scenarioDescription, final Step step,
             final PatternMap<ParentStep> subStepsMapLocal, final boolean throwExceptionIfUnableToBuildMethodArgs,
             final Set<String> tags, final int depth, final ParentStep substepsParent) {
-        substepsParent.initialiseParamValues(-1, step.getParameterLine());
+
+        log.trace("buildSubstepNode: scenarioDescription: " + scenarioDescription + " step line " + step.getLine() + " param line: " + step.getParameterLine());
+
+        // to allow parameter substitution when we're not strict
+        if (!this.parameters.getSyntax().isStrict()) {
+
+            log.trace("init param vals as not strict");
+
+            substepsParent.initialiseParamValues(-1, step.getParameterLine(), this.parameters.getSyntax().getNonStrictKeywordPrecedence());
+
+        }
+        else {
+
+            log.trace("init param vals as strict");
+
+            substepsParent.initialiseParamValues(-1, step.getParameterLine());
+        }
 
         final ExampleParameter parametersForSubSteps = substepsParent.getParamValueMap();
 
@@ -147,10 +167,16 @@ public class SubstepNodeBuilder {
     }
 
     private ParentStep locateSubStepsParent(final PatternMap<ParentStep> subStepsMapLocal, final Step step) {
+
+        log.trace("locateSubStepsParent for step line: " + step.getLine());
+
         ParentStep substepsParent = subStepsMapLocal.get(step.getLine(), 0);
 
         // if we're not strict then we can look for other step defs that fit
         if (!this.parameters.getSyntax().isStrict() && substepsParent == null) {
+
+            log.trace("nothing in subStepsMapLocal, not strict, checking elsewhere..");
+
             final String originalKeyword = step.getKeyword();
 
             for (final String altKeyword : this.parameters.getSyntax().getNonStrictKeywordPrecedence()) {
@@ -161,10 +187,16 @@ public class SubstepNodeBuilder {
                     substepsParent = subStepsMapLocal.get(altLine, 0);
                     if (substepsParent != null) {
                         // do we need to modify the parent ??
+                        log.trace("subStepsMapLocal.get(altLine) result for: " + altLine + " cloning with alt line");
 
-                        substepsParent = substepsParent.cloneWithAltLine(altLine);
+                        // TODO - the alt line is the original source line, with the keyword swapped - variable names might not map when this step is initialised
+
+                        substepsParent = substepsParent.cloneWithAltLine(substepsParent.getParent().getLine());
 
                         break;
+                    }
+                    else {
+                        log.trace("subStepsMapLocal.get(altLine) no results for: " + altLine);
                     }
                 }
             }
@@ -358,10 +390,15 @@ public class SubstepNodeBuilder {
 
     public String substitutePlaceholders(final String stepParameter, final Map<String, String> parentArguments) {
         // is there anything to replace?
+
+        log.trace("substitutePlaceholders stepParameter: " + stepParameter);
         String rtn;
         final String paramRegEx = ".*<([^>]*)>.*";
         final Pattern findParamPattern = Pattern.compile(paramRegEx);
         if (parentArguments != null && findParamPattern.matcher(stepParameter).matches()) {
+
+            log.trace("parentArguments != null && findParamPattern.matcher");
+
             // need to do a replacement, split on >
             rtn = stepParameter;
             final String paramRegEx2 = ".*<(.*)";
@@ -374,7 +411,11 @@ public class SubstepNodeBuilder {
                 if (matcher.find()) {
                     final String key = matcher.group(1);
                     String val = parentArguments.get(key);
-                    log.debug("replacing: <" + key + "> with: " + val + " in string: " + rtn);
+                    log.debug("replacing: <" + key + "> with: " + val + " in string: [" + rtn + "]");
+
+                    if ("value".equals(key)){
+                        log.debug("break");
+                    }
 
                     if (val == null) {
                         val = " ";

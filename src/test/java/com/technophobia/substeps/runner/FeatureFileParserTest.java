@@ -18,8 +18,7 @@
  */
 package com.technophobia.substeps.runner;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.*;
 
 import java.io.File;
 import java.util.List;
@@ -196,6 +195,12 @@ public class FeatureFileParserTest {
         Assert.assertNotNull(tags);
         Assert.assertTrue(tags.contains("@tag1"));
         Assert.assertTrue(tags.contains("@tag2"));
+
+
+        final Set<String> tags2 = ff.getScenarios().get(1).getTags();
+        Assert.assertNotNull(tags2);
+        Assert.assertThat(tags2, hasSize(1));
+        Assert.assertTrue(tags2.contains("@tag3"));
 
     }
 

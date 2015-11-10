@@ -20,6 +20,8 @@ package com.technophobia.substeps.runner.node;
 
 import java.util.List;
 
+import com.technophobia.substeps.execution.ExecutionResult;
+import com.technophobia.substeps.model.exception.SubstepsRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +71,8 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
         boolean shouldContinue = true;
 
-        context.getNotificationDistributor().onNodeStarted(node);
+//        node.getResult().setStarted();
+
 
         if (node.hasError()) {
 
@@ -79,6 +82,8 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
 
         } else {
             node.getResult().setStarted();
+            context.getNotificationDistributor().onNodeStarted(node);
+
             shouldContinue = runSetup(node, context);
         }
 
@@ -112,7 +117,7 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
         }
     }
 
-    private void recordResult(final NODE_TYPE node, final boolean success, final RootNodeExecutionContext context) {
+    protected void recordResult(final NODE_TYPE node, final boolean success, final RootNodeExecutionContext context) {
 
         if (success) {
             if (log.isTraceEnabled()) {
@@ -120,28 +125,46 @@ public abstract class AbstractNodeRunner<NODE_TYPE extends IExecutionNode, VISIT
                 log.trace("node success");
             }
 
-            context.getNotificationDistributor().onNodeFinished(node);
-
             node.getResult().setFinished();
+            context.getNotificationDistributor().onNodeFinished(node);
 
         } else {
 
             final List<SubstepExecutionFailure> failures = context.getFailures();
 
-            if (log.isDebugEnabled()) {
+//            if (log.isDebugEnabled()) {
+//
+//                log.debug("node failures");
+//            }
 
-                log.debug("node failures");
+            // it is possible to get here, without having got any failures - initialization exception for example
+
+            final Throwable lastException;
+            boolean nonCritical = false;
+            if (!failures.isEmpty()) {
+
+                final SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
+                // just notify on the last one in..?
+                lastException = lastFailure.getCause();
+                node.getResult().setScreenshot(lastFailure.getScreenshot());
+                if (node.getResult().getResult() == ExecutionResult.RUNNING) {
+                    node.getResult().setFailure(lastFailure);
+                }
+                nonCritical = lastFailure.isNonCritical();
+            }
+            else {
+                lastException = new SubstepsRuntimeException("Error throw during startup, initialisation issue ?");
+                lastException.fillInStackTrace();
+                SubstepExecutionFailure sef = new SubstepExecutionFailure(lastException, node, ExecutionResult.FAILED);
             }
 
-            final SubstepExecutionFailure lastFailure = failures.get(failures.size() - 1);
-            // just notify on the last one in..?
-            final Throwable lastException = lastFailure.getCause();
-            context.getNotificationDistributor().onNodeFailed(node, lastException);
 
             // TODO should this have been set earlier...?
-            node.getResult().setFailed(lastException);
 
-            node.getResult().setScreenshot(lastFailure.getScreenshot());
+//            SubstepExecutionFailure sef = new SubstepExecutionFailure(lastException, node, ExecutionResult.FAILED);
+//            sef.setNonCritical(nonCritical);
+            context.getNotificationDistributor().onNodeFailed(node, lastException);
+
         }
     }
 
