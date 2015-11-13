@@ -18,6 +18,9 @@
  */
 package com.technophobia.substeps.runner.node;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.technophobia.substeps.execution.node.BasicScenarioNode;
 import com.technophobia.substeps.execution.node.FeatureNode;
 import com.technophobia.substeps.execution.node.OutlineScenarioNode;
@@ -27,6 +30,8 @@ import com.technophobia.substeps.model.Scope;
 
 public class FeatureNodeRunner extends AbstractNodeRunner<FeatureNode, Boolean> {
 
+    private static final Logger log = LoggerFactory.getLogger(FeatureNodeRunner.class);
+
     BasicScenarioNodeRunner basicScenarioNodeRunner = new BasicScenarioNodeRunner();
     OutlineScenarioNodeRunner outlineScenarioNodeRunner = new OutlineScenarioNodeRunner();
 
@@ -34,6 +39,7 @@ public class FeatureNodeRunner extends AbstractNodeRunner<FeatureNode, Boolean> 
 
     @Override
     protected boolean execute(FeatureNode node, RootNodeExecutionContext context) {
+        log.info("Executing feature {}", node.getDescription());
 
         this.context = context;
 
