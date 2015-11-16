@@ -1,14 +1,13 @@
-substeps-core [![Build Status](https://travis-ci.org/G2G3Digital/substeps-core.svg)](https://travis-ci.org/G2G3Digital/substeps-core)
+[DEPRECATED] substeps-core [![Build Status](https://travis-ci.org/G2G3Digital/substeps-core.svg)](https://travis-ci.org/G2G3Digital/substeps-core)
 =============
 
-Welcome to the substeps-core project!
+The substeps-api repository has been merged into one with other core Substep libraries. No more pull requests on the repository will be accepted.
 
-Substeps documentation can be found [here](http://substeps.technophobia.com/ "Substeps documentation").  
-
-There is also a [Substeps Google group](http://groups.google.com/group/substeps?hl=en-GB "Substeps Google group") if you have any queries and where new releases will ne announced.
-
-Release Notes
-=============
+So the new home is [substeps-framework](https://github.com/G2G3Digital/substeps-framework) which now contains:
+ * substeps-api
+ * substeps-core
+ * substeps-runner
+ * substeps-glossary
 
 1.1.3
 -----
