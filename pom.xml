@@ -125,7 +125,7 @@
         <sonar.jacoco.jar>${basedir}/jacoco/jacocoagent.jar</sonar.jacoco.jar>
         <sonar.jacoco.reportPath>${basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
 
-        <xstream.version>1.4.2</xstream.version>
+        <xstream.version>1.4.19</xstream.version>
 
         <compileSource>1.5</compileSource>
         <compileTarget>1.5</compileTarget>
